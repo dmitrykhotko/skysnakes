@@ -2,7 +2,8 @@ import { Direction, Point, SnakeState } from '../../snake/snake';
 
 export enum CellType {
 	empty = '-',
-	snake = '*',
+	head = '@',
+	body = '*',
 	coin = '?'
 }
 
@@ -17,12 +18,13 @@ export abstract class BasePresenter {
 	private onInputCb?: (input: Direction) => void;
 	private drawServiceInfoFlag = false;
 
-	protected abstract clear: () => void;
 	protected abstract printField: (field: string[][]) => void;
 	protected abstract printServiceInfo: (info: string[]) => void;
 
 	constructor(
-		protected element: HTMLElement
+		protected element: HTMLElement,
+		protected width: number,
+		protected height: number
 	) {
 		this.init();
 	}
@@ -30,7 +32,6 @@ export abstract class BasePresenter {
 	draw = (state: SnakeState): void => {
 		const field = this.buildMap(state);
 
-		this.clear();
 		this.drawServiceInfo(state.serviceInfo);
 		this.printField(field);
 	}
@@ -45,6 +46,7 @@ export abstract class BasePresenter {
 
 	private init = () => {
 		this.element.addEventListener('keydown', this.onKeyDown);
+		this.element.focus();
 	}
 
 	private drawServiceInfo = (serviceInfo?: Record<string, string>) => {
@@ -96,12 +98,12 @@ export abstract class BasePresenter {
 		let current = tail;
 
 		while (true) {
-			field[current.y][current.x] = CellType.snake;
-
 			if (current === head) {
+				field[current.y][current.x] = CellType.head;
 				break;
 			}
 
+			field[current.y][current.x] = CellType.body;
 			current.next && (current = current.next);
 		}
 	}

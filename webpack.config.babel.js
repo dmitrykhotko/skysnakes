@@ -1,11 +1,15 @@
 import { join } from 'path';
 import { SourceMapDevToolPlugin } from 'webpack';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import StylelintPlugin from 'stylelint-webpack-plugin';
 
 import ESLintPlugin from 'eslint-webpack-plugin';
 
 const getPlugins = enableSourceMaps => {
 	const plugins = [
-		new ESLintPlugin({ fix: true, extensions: ['js', 'jsx', 'ts', 'tsx'] })
+		new MiniCssExtractPlugin({ filename: '[name].css' }),
+		new ESLintPlugin({ fix: true, extensions: ['js', 'jsx', 'ts', 'tsx'] }),
+		new StylelintPlugin({ fix: true, files: '**/*.scss' }),
 	];
 
 	if (enableSourceMaps) {
@@ -17,7 +21,8 @@ const getPlugins = enableSourceMaps => {
 
 export default ({ ENABLE_SOURCEMAPS = 'true' }) => ({
 	entry: {
-		index: './src/ts/index.ts'
+		'js/index': './src/ts/index.ts',
+		'css/index': './src/scss/index.scss'
 	},
 	output: {
 		libraryTarget: 'window',
@@ -35,6 +40,18 @@ export default ({ ENABLE_SOURCEMAPS = 'true' }) => ({
 				test: /\.js$/,
 				exclude: /node_modules/,
 				use: { loader: 'babel-loader' }
+			},
+			{
+				test: /\.scss$/,
+				use: [
+					'style-loader',
+					{
+						loader: MiniCssExtractPlugin.loader,
+						options: { esModule: false }
+					},
+					'css-loader?url=false',
+					'sass-loader'
+				]
 			}
 		]
 	},

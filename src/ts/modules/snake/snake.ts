@@ -1,3 +1,5 @@
+import { HEIGHT, SNAKE_LENGTH, WIDTH } from "../../utils/constants";
+
 export enum Direction {
 	Up = -1,
 	Down = 1,
@@ -47,9 +49,9 @@ export class Snake {
 	private score = 0;
 
 	constructor(
-		private width = 40,
-		private height = 20,
-		length = 3
+		private width = WIDTH,
+		private height = HEIGHT,
+		length = SNAKE_LENGTH
 	) {
 		this.cellsNum = this.width * this.height;
 		this.direction = Direction.Right;
@@ -77,12 +79,13 @@ export class Snake {
 
 		this.head.next = nextHead;
 		this.head = nextHead;
-		this.tail.next && (this.tail = this.tail.next);
-		this.tail.prev = undefined;
 
 		if (this.faceCoin()) {
 			return;
 		}
+
+		this.tail.next && (this.tail = this.tail.next);
+		this.tail.prev = undefined;
 	};
 
 	getState = (): SnakeState => {
