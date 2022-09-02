@@ -26,18 +26,10 @@ export type SnakeState = {
 
 export class Snake {
 	private static headCalculators = {
-		[Direction.Up]: (point: Point): Point => {
-			return { x: point.x, y: point.y - 1 }
-		},
-		[Direction.Down]: (point: Point): Point => {
-			return { x: point.x, y: point.y + 1 }
-		},
-		[Direction.Left]: (point: Point): Point => {
-			return { x: point.x - 1, y: point.y }
-		},
-		[Direction.Right]: (point: Point): Point => {
-			return { x: point.x + 1, y: point.y }
-		}
+		[Direction.Up]: (point: Point): Point => ({ x: point.x, y: point.y - 1 }),
+		[Direction.Down]: (point: Point): Point => ({ x: point.x, y: point.y + 1 }),
+		[Direction.Left]: (point: Point): Point => ({ x: point.x - 1, y: point.y }),
+		[Direction.Right]: (point: Point): Point => ({ x: point.x + 1, y: point.y })
 	};
 
 	private cellsNum: number;
@@ -45,6 +37,7 @@ export class Snake {
 	private head = { x: 0, y: 0 } as Point;
 	private tail = { x: 0, y: 0 } as Point;
 	private direction: Direction;
+	private nextDirection?: Direction;
 	private inProgress: boolean;
 	private score = 0;
 
@@ -62,10 +55,15 @@ export class Snake {
 	}
 
 	move = (): void => {
+		if (this.nextDirection) {
+			this.direction = this.nextDirection;
+			this.nextDirection = undefined;
+		}
+
 		const nextHead = Snake.headCalculators[this.direction]((this.head));
 		const { x, y } = nextHead;
 
-		if (x === this.width || y === this.height || x === -1 || y === -1) {
+		if (x === this.width || y === this.height || !~x || !~y) {
 			this.inProgress = false;
 			return;
 		}
@@ -119,7 +117,7 @@ export class Snake {
 			return;
 		}
 
-		this.direction = direction
+		this.nextDirection = direction;
 	};
 
 	private getFreeCells = (): number[] => {
