@@ -1,4 +1,4 @@
-import { HEIGHT, WIDTH } from '../../../utils/constants';
+import { HEIGHT, SERVICE_INFO_WIDTH, WIDTH } from '../../../utils/constants';
 import { BasePresenter, CellType } from './basePresenter';
 
 export class CanvasPresenter extends BasePresenter {
@@ -10,10 +10,19 @@ export class CanvasPresenter extends BasePresenter {
 	}
 
 	private ctx?: CanvasRenderingContext2D;
+	private serviceInfoWidth: number
+	private fieldWidth: number;
+	private fieldHeight: number;
 	private cellSize = 25;
 
-	constructor(element: HTMLElement, width = WIDTH, height = HEIGHT) {
+	constructor(element: HTMLElement, width = WIDTH, height = HEIGHT, serviceInfoWidth = SERVICE_INFO_WIDTH) {
 		super(element, width, height);
+
+		this.serviceInfoWidth = serviceInfoWidth;
+
+		this.fieldWidth = this.width * this.cellSize;
+		this.fieldHeight = this.height * this.cellSize;
+
 		this.initContext();
 	}
 
@@ -28,21 +37,16 @@ export class CanvasPresenter extends BasePresenter {
 	}
 
 	printServiceInfo = (info: string[]): void => {
-		console.clear();
-		console.log('***** SERVICE INFO *****');
-
 		for (let i = 0; i < info.length; i++) {
-			console.log(info[i]);
+			this.drawServiceLine(info[i], i + 1);
 		}
-
-		console.log('************************\n\n');
 	}
 
 	private initContext = (): void => {
 		const canvas = this.element as HTMLCanvasElement;
 
-		canvas.width = this.width * this.cellSize;
-		canvas.height = this.height * this.cellSize;
+		canvas.width = this.fieldWidth + this.serviceInfoWidth;
+		canvas.height = this.fieldHeight;
 
 		const ctx = canvas.getContext('2d');
 
@@ -69,5 +73,17 @@ export class CanvasPresenter extends BasePresenter {
 			this.ctx.strokeStyle = CanvasPresenter.colors[CellType.empty];
 			this.ctx.strokeRect(cY, cX, this.cellSize, this.cellSize);
 		}
+	}
+
+	private drawServiceLine = (text: string, lineNumber: number) => {
+		if (!this.ctx) {
+			return;
+		}
+
+		this.ctx.clearRect(this.fieldWidth + 1, this.cellSize * lineNumber - this.cellSize * .75, this.serviceInfoWidth, this.cellSize * 2);
+
+		this.ctx.fillStyle = 'blue';
+		this.ctx.font = `${this.cellSize * .75}px serif`;
+		this.ctx.fillText(text, this.fieldWidth + this.cellSize, this.cellSize * lineNumber);
 	}
 }
