@@ -31,12 +31,12 @@ export abstract class BaseRenderer {
 
 	render = (state: SnakeState): void => {
 		if (!this.isInitialized) {
-			this.drawMap();
 			this.isInitialized = true;
+			this.renderMap();
 		}
 
-		this.drawServiceInfo(state.serviceInfo);
-		this.drawItems(state);
+		this.renderServiceInfo(state.serviceInfo);
+		this.renderItems(state);
 
 		this.prevSnakeState = state;
 	}
@@ -50,16 +50,12 @@ export abstract class BaseRenderer {
 		this.element.focus();
 	}
 
-	private drawServiceInfo = (serviceInfo?: Record<string, string>) => {
+	private renderServiceInfo = (serviceInfo?: Record<string, string>) => {
 		if (!serviceInfo) {
 			return;
 		}
 
 		const data = Object.entries(serviceInfo);
-
-		if (!data.length) {
-			return;
-		}
 
 		for (let i = 0; i < data.length; i++) {
 			const [key, value] = data[i];
@@ -67,27 +63,25 @@ export abstract class BaseRenderer {
 		}
 	}
 
-	private onKeyDown = ({ key }: KeyboardEvent) => {
+	private onKeyDown = ({ key }: KeyboardEvent): void => {
 		const input = BaseRenderer.inputMapping[key];
 		input !== undefined && this.onInputCb && this.onInputCb(input);
 	}
 
-	private drawMap = (): void => {
+	private renderMap = (): void => {
 		for (let i = 0; i < this.width; i++) {
-
 			for (let j = 0; j < this.height; j++) {
 				this.renderCell({ x: i, y: j }, CellType.empty);
 			}
 		}
 	};
 
-	private drawSnake = (head: Point, tail: Point) => {
+	private renderSnake = (head: Point, tail: Point): void => {
 		let current = tail;
 
 		while (true) {
 			if (current === head) {
-				this.renderCell(current, CellType.head);
-				break;
+				return this.renderCell(current, CellType.head);
 			}
 
 			this.renderCell(current, CellType.body);
@@ -95,7 +89,7 @@ export abstract class BaseRenderer {
 		}
 	}
 
-	private drawItems({ head, tail, coin }: SnakeState): void {
+	private renderItems({ head, tail, coin }: SnakeState): void {
 		if (this.prevSnakeState) {
 			const { head: prevHead, tail: prevTail, coin: prevCoin } = this.prevSnakeState;
 
@@ -103,7 +97,7 @@ export abstract class BaseRenderer {
 			this.rerenderCell({ p1: prevHead, p2: head, t1: CellType.body, t2: CellType.head });
 			this.rerenderCell({ p1: prevTail, p2: tail, t1: CellType.empty });
 		} else {
-			this.drawSnake(head, tail);
+			this.renderSnake(head, tail);
 			this.renderCell(coin, CellType.coin);
 		}
 	}
