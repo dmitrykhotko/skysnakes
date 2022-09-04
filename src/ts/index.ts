@@ -1,20 +1,23 @@
 import { Controller } from './modules/controller/controller';
-import { CanvasRenderer } from './modules/renderers/instances/canvasRenderer';
+import { SmartRenderer } from './modules/renderers/instances/smartRenderer';
 import { Snake } from './modules/snake/snake';
-import { GAME_SPEED } from './utils/constants';
+import { Timer } from './modules/timer/timer';
 
 const run = () => {
-	const snake = new Snake();
 	const canvas = document.querySelector('.js-CanvasPresenter');
 	
 	if (!canvas) {
 		return;
 	}
-	
-	const canvasRenderer = new CanvasRenderer(canvas as HTMLElement);
-	const controller = new Controller(snake, canvasRenderer, GAME_SPEED);
 
-	controller.start();
+	const timer = new Timer();
+	const snake = new Snake();
+
+	const smartRenderer = new SmartRenderer(canvas as HTMLElement);
+	const controller = new Controller(snake, smartRenderer, timer.stop);
+
+	timer.subscribe(smartRenderer);
+	timer.subscribe(controller);
 };
 
 run();

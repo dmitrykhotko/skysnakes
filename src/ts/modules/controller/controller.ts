@@ -1,32 +1,23 @@
+import { Observer } from '../observable/observer';
 import { Renderer } from '../renderers/renderer';
 import { Direction, Snake } from '../snake/snake';
 
-export class Controller {
-	private intervalId?: NodeJS.Timer;
-
+export class Controller implements Observer {
 	constructor(
 		private snake: Snake,
 		private renderer: Renderer,
-		private framesNumber: number
+		private onFinish: () => void
 	) {
-		this.renderer.onInput((input: Direction) => {
-			this.snake.setDirection(input);
-		})
+		this.renderer.onInput((input: Direction) => this.snake.setDirection(input));
 	}
 
-	start = (): void => {
-		const interval = 1000 / this.framesNumber;
-
-		this.renderer.render(this.snake.getState());
-		this.intervalId = setInterval(this.frame, interval);
-	}
-
-	private frame = () => {
+	notify(): void {
 		const state = this.snake.getState();
+
 		this.renderer.render(state);
 
 		if (!state.inProgress) {
-			return clearInterval(this.intervalId);
+			this.onFinish();
 		}
 
 		this.snake.move();
