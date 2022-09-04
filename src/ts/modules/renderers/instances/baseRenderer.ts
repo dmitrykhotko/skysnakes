@@ -1,4 +1,5 @@
 import { Direction, Point, SnakeState } from '../../snake/snake';
+import { Renderer } from '../renderer';
 
 export enum CellType {
 	empty = '-',
@@ -6,7 +7,8 @@ export enum CellType {
 	body = '*',
 	coin = '?'
 }
-export abstract class BaseRenderer {
+
+export abstract class BaseRenderer implements Renderer {
 	private onInputCb?: (input: Direction) => void;
 	private isInitialized = false;
 	private prevSnakeState?: SnakeState;
