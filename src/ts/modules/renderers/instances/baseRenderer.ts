@@ -7,13 +7,6 @@ export enum CellType {
 	coin = '?'
 }
 export abstract class BaseRenderer {
-	private static inputMapping: Record<string, Direction> = {
-		ArrowUp: Direction.Up,
-		ArrowDown: Direction.Down,
-		ArrowLeft: Direction.Left,
-		ArrowRight: Direction.Right
-	};
-
 	private onInputCb?: (input: Direction) => void;
 	private isInitialized = false;
 	private prevSnakeState?: SnakeState;
@@ -22,11 +15,9 @@ export abstract class BaseRenderer {
 	protected abstract renderTextLine: (string: string, lineNumber: number) => void;
 
 	constructor(
-		protected element: HTMLElement,
 		protected width: number,
 		protected height: number
 	) {
-		this.init();
 	}
 
 	render = (state: SnakeState): void => {
@@ -45,12 +36,11 @@ export abstract class BaseRenderer {
 		this.onInputCb = cb;
 	}
 
-	private init = () => {
-		this.element.addEventListener('keydown', this.onKeyDown);
-		this.element.focus();
+	protected input = (direction: Direction): void => {
+		this.onInputCb && this.onInputCb(direction);
 	}
 
-	private renderServiceInfo = (serviceInfo?: Record<string, string>) => {
+	private renderServiceInfo = (serviceInfo?: Record<string, string>): void => {
 		if (!serviceInfo) {
 			return;
 		}
@@ -61,11 +51,6 @@ export abstract class BaseRenderer {
 			const [key, value] = data[i];
 			this.renderTextLine(`${key}: ${value}`, i + 1);
 		}
-	}
-
-	private onKeyDown = ({ key }: KeyboardEvent): void => {
-		const input = BaseRenderer.inputMapping[key];
-		input !== undefined && this.onInputCb && this.onInputCb(input);
 	}
 
 	private renderMap = (): void => {

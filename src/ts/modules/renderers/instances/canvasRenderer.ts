@@ -1,5 +1,5 @@
 import { HEIGHT, TEXT_AREA_WIDTH, WIDTH } from '../../../utils/constants';
-import { Point } from '../../snake/snake';
+import { Direction, Point } from '../../snake/snake';
 import { BaseRenderer, CellType } from './baseRenderer';
 
 export class CanvasRenderer extends BaseRenderer {
@@ -8,23 +8,27 @@ export class CanvasRenderer extends BaseRenderer {
 		[CellType.head]: 'red',
 		[CellType.body]: 'blue',
 		[CellType.coin]: 'red',
-	}
+	};
+
+	private static inputMapping: Record<string, Direction> = {
+		ArrowUp: Direction.Up,
+		ArrowDown: Direction.Down,
+		ArrowLeft: Direction.Left,
+		ArrowRight: Direction.Right
+	};
 
 	private ctx?: CanvasRenderingContext2D;
-	private textAreaWidth: number
 	private fieldWidth: number;
 	private fieldHeight: number;
 	private cellSize = 25;
 
-	constructor(element: HTMLElement, width = WIDTH, height = HEIGHT, textAreaWidth = TEXT_AREA_WIDTH) {
-		super(element, width, height);
-
-		this.textAreaWidth = textAreaWidth;
+	constructor(private element: HTMLElement, width = WIDTH, height = HEIGHT, private textAreaWidth = TEXT_AREA_WIDTH) {
+		super(width, height);
 
 		this.fieldWidth = this.width * this.cellSize;
 		this.fieldHeight = this.height * this.cellSize;
 
-		this.initContext();
+		this.init();
 	}
 
 	protected renderCell = ({ x, y }: Point, type: CellType): void => {
@@ -57,7 +61,7 @@ export class CanvasRenderer extends BaseRenderer {
 		this.ctx.fillText(text, this.fieldWidth + this.cellSize, this.cellSize * lineNumber);
 	}
 
-	private initContext = (): void => {
+	private init = (): void => {
 		const canvas = this.element as HTMLCanvasElement;
 		const ctx = canvas.getContext('2d');
 
@@ -69,5 +73,12 @@ export class CanvasRenderer extends BaseRenderer {
 		canvas.height = this.fieldHeight;
 
 		this.ctx = ctx;
-	};
+
+		this.element.addEventListener('keydown', this.onKeyDown);
+		this.element.focus();
+	}
+
+	private onKeyDown = ({ key }: KeyboardEvent): void => {
+		super.input(CanvasRenderer.inputMapping[key]);
+	}
 }
