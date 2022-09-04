@@ -79,6 +79,6 @@ export class CanvasRenderer extends BaseRenderer {
 	}
 
 	private onKeyDown = ({ key }: KeyboardEvent): void => {
-		super.input(CanvasRenderer.inputMapping[key]);
+		this.input(CanvasRenderer.inputMapping[key]);
 	}
 }
