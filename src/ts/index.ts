@@ -1,5 +1,5 @@
-import { Controller } from './modules/controller/controller';
-import { SmartRenderer } from './modules/renderers/instances/smartRenderer';
+import { SmartController } from './modules/controller/smartController';
+import { CanvasRenderer } from './modules/renderers/instances/canvasRenderer';
 import { Snake } from './modules/snake/snake';
 import { Timer } from './modules/timer/timer';
 
@@ -13,10 +13,9 @@ const run = () => {
 	const timer = new Timer();
 	const snake = new Snake();
 
-	const smartRenderer = new SmartRenderer(canvas as HTMLElement);
-	const controller = new Controller(snake, smartRenderer, timer.stop);
+	const canvasRenderer = new CanvasRenderer(canvas as HTMLElement);
+	const controller = new SmartController(snake, canvasRenderer, timer.stop);
 
-	timer.subscribe(smartRenderer);
 	timer.subscribe(controller);
 };
 

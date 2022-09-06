@@ -1,10 +1,10 @@
 import { HEIGHT, SNAKE_LENGTH, WIDTH } from "../../utils/constants";
 
 export enum Direction {
-	Up = -1,
-	Down = 1,
-	Left = -2,
-	Right = 2
+	Up,
+	Down,
+	Left,
+	Right
 }
 
 export type Point = {
@@ -16,6 +16,7 @@ export type Point = {
 
 export type SnakeState = {
 	inProgress: boolean;
+	direction: Direction;
 	width: number;
 	height: number;
 	coin: Point;
@@ -24,8 +25,15 @@ export type SnakeState = {
 	serviceInfo?: Record<string, string>;
 }
 
+const directionWeights = {
+	[Direction.Up]: -1,
+	[Direction.Down]: 1,
+	[Direction.Left]: -2,
+	[Direction.Right]: 2
+};
+
 export class Snake {
-	private static headCalculators = {
+	public static headCalculators = {
 		[Direction.Up]: (point: Point): Point => ({ x: point.x, y: point.y - 1 }),
 		[Direction.Down]: (point: Point): Point => ({ x: point.x, y: point.y + 1 }),
 		[Direction.Left]: (point: Point): Point => ({ x: point.x - 1, y: point.y }),
@@ -37,7 +45,7 @@ export class Snake {
 	private head = { x: 0, y: 0 } as Point;
 	private tail = { x: 0, y: 0 } as Point;
 	private direction: Direction;
-	private nextDirection?: Direction;
+	private nextDirection?: Direction = -1;
 	private inProgress: boolean;
 	private score = 0;
 
@@ -55,7 +63,7 @@ export class Snake {
 	}
 
 	move = (): void => {
-		if (this.nextDirection) {
+		if (this.nextDirection !== undefined && !!~this.nextDirection) {
 			this.direction = this.nextDirection;
 			this.nextDirection = undefined;
 		}
@@ -87,7 +95,7 @@ export class Snake {
 	};
 
 	getState = (): SnakeState => {
-		const { inProgress, width, height, coin, head, tail } = this;
+		const { inProgress, width, height, coin, head, tail, direction } = this;
 		const serviceInfo = {
 			direction: Direction[this.direction],
 			inProgress: inProgress.toString(),
@@ -98,7 +106,7 @@ export class Snake {
 		};
 
 		return {
-			inProgress, width, height, coin, head, tail, serviceInfo
+			inProgress, direction, width, height, coin, head, tail, serviceInfo
 		};
 	};
 
@@ -113,7 +121,7 @@ export class Snake {
 	};
 
 	setDirection = (direction: Direction): void => {
-		if (!(this.direction + direction)) {
+		if (!(directionWeights[this.direction] + directionWeights[direction])) {
 			return;
 		}
 

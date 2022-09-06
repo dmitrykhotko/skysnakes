@@ -34,12 +34,12 @@ export abstract class BaseRenderer implements Renderer {
 		this.prevSnakeState = state;
 	}
 
-	onInput = (cb: (input: Direction) => void): void => {
-		this.onInputCb = cb;
+	input = (direction: Direction): void => {
+		this.onInputCb && this.onInputCb(direction);
 	}
 
-	protected input = (direction: Direction): void => {
-		this.onInputCb && this.onInputCb(direction);
+	onInput = (cb: (input: Direction) => void): void => {
+		this.onInputCb = cb;
 	}
 
 	private renderServiceInfo = (serviceInfo?: Record<string, string>): void => {
