@@ -8,7 +8,7 @@ export class Controller implements Observer {
 		private renderer: Renderer,
 		private onFinish: () => void
 	) {
-		this.renderer.onInput((input: Direction) => this.snake.setDirection(input));
+		this.renderer.onInput((input: Direction) => this.snake.sendDirection(input));
 	}
 
 	notify(): void {

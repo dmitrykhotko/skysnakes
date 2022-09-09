@@ -39,7 +39,7 @@ export class SmartController implements Observer {
 		private width = WIDTH,
 		private height = HEIGHT,
 	) {
-		this.renderer.onInput((input: D) => this.snake.setDirection(input));
+		this.renderer.onInput((input: D) => this.snake.sendDirection(input));
 	}
 
 	notify(): void {

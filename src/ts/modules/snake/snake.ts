@@ -25,6 +25,14 @@ export type SnakeState = {
 	serviceInfo?: Record<string, string>;
 }
 
+type Player = {
+	head: Point,
+	tail: Point,
+	direction: Direction,
+	score: number,
+	nextDirection?: Direction
+}
+
 const directionWeights = {
 	[Direction.Up]: -1,
 	[Direction.Down]: 1,
@@ -42,32 +50,25 @@ export class Snake {
 
 	private cellsNum: number;
 	private coin = { x: 0, y: 0 } as Point;
-	private head = { x: 0, y: 0 } as Point;
-	private tail = { x: 0, y: 0 } as Point;
-	private nextDirection?: Direction = -1;
+	private player: Player;
 	private inProgress: boolean;
-	private score = 0;
 
 	constructor(
-		private direction = Direction.Right,
 		private width = WIDTH,
 		private height = HEIGHT,
+		direction = Direction.Right,
 		length = SNAKE_LENGTH,
 	) {
 		this.cellsNum = this.width * this.height;
 		this.inProgress = true;
-
+		this.player = { ...this.makeBody(length, direction), direction, score: 0 };
 		this.makeCoin();
-		this.makeBody(length);
 	}
 
 	move = (): void => {
-		if (this.nextDirection !== undefined && !!~this.nextDirection) {
-			this.direction = this.nextDirection;
-			this.nextDirection = undefined;
-		}
+		this.applyDirection();
 
-		const nextHead = Snake.headCalcs[this.direction]((this.head));
+		const nextHead = Snake.headCalcs[this.player.direction]((this.player.head));
 		const { x, y } = nextHead;
 
 		if (x === this.width || y === this.height || !~x || !~y || this.faceBody(nextHead)) {
@@ -75,24 +76,24 @@ export class Snake {
 			return;
 		}
 
-		nextHead.prev = this.head;
-		this.head.next = nextHead;
-		this.head = nextHead;
+		nextHead.prev = this.player.head;
+		this.player.head.next = nextHead;
+		this.player.head = nextHead;
 
 		if (this.faceCoin()) {
 			return;
 		}
 
-		this.tail.next && (this.tail = this.tail.next);
-		this.tail.prev = undefined;
+		this.player.tail.next && (this.player.tail = this.player.tail.next);
+		this.player.tail.prev = undefined;
 	};
 
 	getState = (): SnakeState => {
-		const { inProgress, width, height, coin, head, tail, direction } = this;
+		const { inProgress, width, height, coin, player: { head, tail, score, direction } } = this;
 		const serviceInfo = {
-			direction: Direction[this.direction],
+			direction: Direction[direction],
 			inProgress: inProgress.toString(),
-			score: this.score.toString(),
+			score: score.toString(),
 			coin: `x: ${coin.x}, y: ${coin.y}`,
 			head: `x: ${head.x}, y: ${head.y}`,
 			tail: `x: ${tail.x}, y: ${tail.y}`
@@ -120,12 +121,19 @@ export class Snake {
 		this.coin = { x, y };
 	};
 
-	setDirection = (direction: Direction): void => {
-		if (!(directionWeights[this.direction] + directionWeights[direction])) {
+	sendDirection = (direction: Direction): void => {
+		if (!(directionWeights[this.player.direction] + directionWeights[direction])) {
 			return;
 		}
 
-		this.nextDirection = direction;
+		this.player.nextDirection = direction;
+	};
+
+	private applyDirection = () => {
+		if (this.player.nextDirection !== undefined && !!~this.player.nextDirection) {
+			this.player.direction = this.player.nextDirection;
+			this.player.nextDirection = undefined;
+		}
 	};
 
 	private getFreeCells = (): number[] => {
@@ -144,15 +152,15 @@ export class Snake {
 	}
 
 	private faceCoin = (): boolean => {
-		if (!this.comparePoints(this.head, this.coin)) {
+		if (!this.comparePoints(this.player.head, this.coin)) {
 			return false;
 		}
 
-		this.head.next = this.coin;
-		this.coin.prev = this.head;
-		this.head = this.coin;
+		this.player.head.next = this.coin;
+		this.coin.prev = this.player.head;
+		this.player.head = this.coin;
 
-		this.score++;
+		this.player.score++;
 
 		this.makeCoin();
 
@@ -160,7 +168,7 @@ export class Snake {
 	};
 
 	private faceBody = (newPoint: Point) => {
-		let point: Point | undefined = this.head.prev;
+		let point: Point | undefined = this.player.head.prev;
 
 		while (point) {
 			if (this.comparePoints(newPoint, point)) {
@@ -173,17 +181,17 @@ export class Snake {
 		return false;
 	}
 
-	private makeBody = (length: number) => {
-		this.head = this.getStartPoint();
+	private makeBody = (length: number, direction: Direction): { head: Point, tail: Point } => {
+		const head = this.getStartPoint(direction);
 
 		const D = Direction;
-		const xStep = this.direction === D.Left ? 1 : this.direction === D.Right ? -1 : 0;
-		const yStep = this.direction === D.Up ? 1 : this.direction === D.Down ? -1 : 0;
+		const xStep = direction === D.Left ? 1 : direction === D.Right ? -1 : 0;
+		const yStep = direction === D.Up ? 1 : direction === D.Down ? -1 : 0;
 
-		let point: Point = { x: this.head.x + xStep, y: this.head.y + yStep };
+		let point: Point = { x: head.x + xStep, y: head.y + yStep };
 
-		this.head.prev = point;
-		point.next = this.head;
+		head.prev = point;
+		point.next = head;
 
 		for (let i = 0; i < length - 2; i++) {
 			const newPoint: Point = { x: point.x + xStep, y: point.y + yStep };
@@ -193,12 +201,14 @@ export class Snake {
 			point = newPoint;
 		}
 
-		this.tail = point;
+		const tail = point;
+
+		return { head, tail };
 	}
 
 	private getBodySet = (): Set<number> => {
 		const set: Set<number> = new Set<number>();
-		let point: Point | undefined = this.head;
+		let point: Point | undefined = this.player.head;
 
 		while (point) {
 			set.add(point.x + point.y * this.width)
@@ -212,9 +222,9 @@ export class Snake {
 
 	private comparePoints = ({ x: x1, y: y1 }: Point, { x: x2, y: y2 }: Point) => x1 === x2 && y1 === y2;
 
-	private getStartPoint = (): Point => {
+	private getStartPoint = (direction: Direction): Point => {
 		let head: Point;
-		switch (this.direction) {
+		switch (direction) {
 			case Direction.Right:
 				head = { x: 0, y: this.height / 2 };
 				break;
