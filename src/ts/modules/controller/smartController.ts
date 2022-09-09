@@ -1,10 +1,9 @@
 import { HEIGHT, WIDTH } from '../../utils/constants';
 import { Observer } from '../observable/observer';
 import { Renderer } from '../renderers/renderer';
-import { Direction as D, Point, Snake, SnakeState } from '../snake/snake';
+import { Direction as D, Point, Snake } from '../snake/snake';
 
 enum Position {
-	Empty,
 	Top,
 	Left,
 	Bottom,
@@ -15,20 +14,21 @@ enum Position {
 	BottomRight
 }
 
-const rightLeftToggler = ({ x } : Point): D => x === 0 ? D.Right : D.Left;
-const upDownToggler = ({ y }: Point): D => y === 0 ? D.Down : D.Up;
-const topCornerToggler = (dir: D) => ((_: Point, d: D) => d === D.Up ? dir : D.Down);
-const bottomCornerToggler = (dir: D) => ((_: Point, d: D) => d === D.Down ? dir : D.Up);
+const P = Position;
+const faceTopBottom = ({ x } : Point): D => x === 0 ? D.Right : D.Left;
+const fateLeftRight = ({ y }: Point): D => y === 0 ? D.Down : D.Up;
+const faceTopCorner = (dir: D) => ((_: Point, d: D) => d === D.Up ? dir : D.Down);
+const faceBottomCorner = (dir: D) => ((_: Point, d: D) => d === D.Down ? dir : D.Up);
 
-const directionTogglers = {
-	[Position.Top]: rightLeftToggler,
-	[Position.Left]: upDownToggler,
-	[Position.Bottom]: rightLeftToggler,
-	[Position.Right]: upDownToggler,
-	[Position.TopLeft]: topCornerToggler(D.Right),
-	[Position.TopRight]: topCornerToggler(D.Left),
-	[Position.BottomLeft]: bottomCornerToggler(D.Right),
-	[Position.BottomRight]: bottomCornerToggler(D.Left)
+const directionSwitchers = {
+	[P.Top]: faceTopBottom,
+	[P.Left]: fateLeftRight,
+	[P.Bottom]: faceTopBottom,
+	[P.Right]: fateLeftRight,
+	[P.TopLeft]: faceTopCorner(D.Right),
+	[P.TopRight]: faceTopCorner(D.Left),
+	[P.BottomLeft]: faceBottomCorner(D.Right),
+	[P.BottomRight]: faceBottomCorner(D.Left)
 };
 
 export class SmartController implements Observer {
@@ -44,48 +44,38 @@ export class SmartController implements Observer {
 
 	notify(): void {
 		const state = this.snake.getState();
+		const { head, direction, inProgress } = state;
 
 		this.renderer.render(state);
 
-		if (!state.inProgress) {
+		if (!inProgress) {
 			return this.onFinish();
 		}
 
-		const pos = this.getPosition(state);
-		pos !== Position.Empty && this.renderer.input(directionTogglers[pos](state.head, state.direction));
+		const pos = this.getPosition(head, direction);
+		pos !== undefined && this.renderer.input(directionSwitchers[pos](head, direction));
 
 		this.snake.move();
 	}
 
-	private getPosition = ({ head, direction }: SnakeState): Position => {
-		const { x, y } = Snake.headCalculators[direction](head);
+	private getPosition = (head: Point, direction: D): Position | undefined => {
+		const { x, y } = Snake.headCalcs[direction](head);
+		const { width, height } = this;
 
-		let pos = Position.Empty;
+		let pos: Position;
 
-		if (!!~x && !!~y && x !== this.width && y !== this.height) {
-			return pos;
+		if (!!~x && !!~y && x !== width && y !== height) {
+			return undefined;
 		}
 
-		if (x === -1) {
-			if (y === -1) {
-				pos = Position.TopLeft
-			} else if (y === this.height) {
-				pos = Position.BottomLeft;
-			} else {
-				pos = Position.Left;
-			}
-		} else if (x === this.width) {
-			if (y === -1) {
-				pos = Position.TopRight
-			} else if (y === this.height) {
-				pos = Position.BottomRight;
-			} else {
-				pos = Position.Right;
-			}
-		} else if (y === -1) {
-			pos = Position.Top;
+		if (!~x) {
+			pos = !~y ? P.TopLeft : y === height ? P.BottomLeft : P.Left;
+		} else if (x === width) {
+			pos = !~y ? P.TopRight : y === height ? P.BottomRight : P.Right;
+		} else if (!~y) {
+			pos = P.Top;
 		} else {
-			pos = Position.Bottom;
+			pos = P.Bottom;
 		}
 
 		return pos;
