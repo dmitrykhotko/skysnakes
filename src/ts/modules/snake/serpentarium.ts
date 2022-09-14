@@ -4,7 +4,7 @@ import { Point } from "../../utils/types";
 import { Snake, SnakeState } from "./snake";
 
 export type SnakeData = {
-	head: Point;
+	head: Point,
 	direction: Direction
 }
 

@@ -26,3 +26,13 @@ export enum Player {
 	P1 = 1,
 	P2 = 2
 }
+
+export enum PlayerMode {
+	SinglePlayer = 'single',
+	Multiplayer = 'multi'
+}
+
+export enum ArenaType {
+	Normal = 'normal',
+	Soft = 'soft'
+}

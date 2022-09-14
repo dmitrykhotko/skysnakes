@@ -1,38 +1,12 @@
 import { HEIGHT, WIDTH } from '../../utils/constants';
-import { ControlInput, Direction as D, Input, MoveInput, Player } from '../../utils/enums';
-import { Point } from '../../utils/types';
+import { ArenaType, ControlInput, Direction as D, Input, MoveInput, Player, PlayerMode } from '../../utils/enums';
+import { UserSettings } from '../../utils/types';
 import { Field } from '../field/field';
 import { Observer } from '../observable/observer';
 import { Presenter } from '../presenter/presenter';
-import { Snake } from '../snake/snake';
-
-enum Position {
-	Top,
-	Left,
-	Bottom,
-	Right,
-	TopLeft,
-	TopRight,
-	BottomLeft,
-	BottomRight
-}
-
-const P = Position;
-const faceTopBottom = ({ x } : Point): D => x === 0 ? D.Right : D.Left;
-const fateLeftRight = ({ y }: Point): D => y === 0 ? D.Down : D.Up;
-const faceTopCorner = (dir: D) => ((_: Point, d: D) => d === D.Up ? dir : D.Down);
-const faceBottomCorner = (dir: D) => ((_: Point, d: D) => d === D.Down ? dir : D.Up);
-
-const directionSwitchers = {
-	[P.Top]: faceTopBottom,
-	[P.Left]: fateLeftRight,
-	[P.Bottom]: faceTopBottom,
-	[P.Right]: fateLeftRight,
-	[P.TopLeft]: faceTopCorner(D.Right),
-	[P.TopRight]: faceTopCorner(D.Left),
-	[P.BottomLeft]: faceBottomCorner(D.Right),
-	[P.BottomRight]: faceBottomCorner(D.Left)
-};
+import { ArenaStrategy } from './arenaStrategies/arenaStrategy';
+import { NormalStrategy } from './arenaStrategies/instances/normalStrategy';
+import { SoftWallsStrategy } from './arenaStrategies/instances/softWallsStrategy';
 
 const inputToSnakeIdDirection = {
 	[MoveInput.RUp]: { snakeId: Player.P1, direction: D.Up },
@@ -43,7 +17,17 @@ const inputToSnakeIdDirection = {
 	[MoveInput.LDown]: { snakeId: Player.P2, direction: D.Down },
 	[MoveInput.LLeft]: { snakeId: Player.P2, direction: D.Left },
 	[MoveInput.LRight]: { snakeId: Player.P2, direction: D.Right },
-}
+};
+
+const playerModeToDirections = {
+	[PlayerMode.SinglePlayer]: [D.Right],
+	[PlayerMode.Multiplayer]: [D.Left, D.Right]
+};
+
+const arenaStrategies = {
+	[ArenaType.Normal]: NormalStrategy,
+	[ArenaType.Soft]: SoftWallsStrategy
+};
 
 export type ControllerOptions = {
 	snakesDirections: D[],
@@ -65,6 +49,7 @@ export class SmartController implements Observer {
 	private presenter: Presenter;
 	private width: number;
 	private height: number;
+	private arenaStrategy!: ArenaStrategy;
 	private onStart: () => void;
 	private onFinish: () => void;
 
@@ -99,20 +84,26 @@ export class SmartController implements Observer {
 
 	notify(): void {
 		const state = this.field.getState();
-		const { snakes } = state;
+		const { inProgress } = state;
 
 		this.presenter.render(state);
 
-		if (!this.field.inProgress) {
+		if (!inProgress) {
 			return this.onFinish();
 		}
 
-		Object.values(snakes).forEach(({ id, head, direction }) => {
-			const pos = this.getPosition(head, direction);
-			pos !== undefined && this.field.sendDirection(id, directionSwitchers[pos](head, direction));
-		})
-		
+		this.arenaStrategy.apply(this.field, state);
 		this.field.move();
+	}
+
+	private start = () => {
+		const { playerMode, arenaType } = this.getUserSettings();
+		const directions = playerModeToDirections[playerMode];
+
+		this.arenaStrategy = new arenaStrategies[arenaType]();
+		this.presenter.reset();
+		this.field = new Field(directions, this.width, this.height);
+		this.onStart();
 	}
 
 	private handleMoveInput = (input: MoveInput) => {
@@ -130,32 +121,5 @@ export class SmartController implements Observer {
 		}
 	}
 
-	private start = () => {
-		this.presenter.reset();
-		this.field.reset();
-		this.onStart();
-	}
-
-	private getPosition = (head: Point, direction: D): Position | undefined => {
-		const { x, y } = Snake.headCalcs[direction](head);
-		const { width, height } = this;
-
-		let pos: Position;
-
-		if (!!~x && !!~y && x !== width && y !== height) {
-			return undefined;
-		}
-
-		if (!~x) {
-			pos = !~y ? P.TopLeft : y === height ? P.BottomLeft : P.Left;
-		} else if (x === width) {
-			pos = !~y ? P.TopRight : y === height ? P.BottomRight : P.Right;
-		} else if (!~y) {
-			pos = P.Top;
-		} else {
-			pos = P.Bottom;
-		}
-
-		return pos;
-	}
+	private getUserSettings = (): UserSettings => this.presenter.getUserSettings();
 }

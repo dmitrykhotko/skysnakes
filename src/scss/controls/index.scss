@@ -1,0 +1,16 @@
+.Snake .Snake {
+	&__Controls {
+		margin-bottom: 10px;
+	}
+
+	&__ControlsArea {
+		display: inline-block;
+		width: fit-content;
+		margin-bottom: 10px;
+		border-radius: 5px;
+	}
+
+	&__ControlsStart {
+		display: block;
+	}
+}

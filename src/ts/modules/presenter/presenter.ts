@@ -1,4 +1,5 @@
 import { Input } from "../../utils/enums"
+import { UserSettings } from "../../utils/types";
 import { FieldState } from "../field/field";
 
 export abstract class Presenter {
@@ -9,4 +10,6 @@ export abstract class Presenter {
 	abstract render(states: FieldState): void;
 
 	abstract reset(): void;
+
+	abstract getUserSettings(): UserSettings;
 }

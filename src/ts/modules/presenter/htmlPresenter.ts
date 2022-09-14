@@ -1,4 +1,5 @@
-import { ControlInput, Input, MoveInput } from "../../utils/enums";
+import { ArenaType, ControlInput, Input, MoveInput, PlayerMode } from "../../utils/enums";
+import { UserSettings } from "../../utils/types";
 import { FieldState } from "../field/field";
 import { Observer } from "../observable/observer";
 import { Renderer } from "../renderers/renderer";
@@ -27,13 +28,27 @@ export class HtmlPresenter implements Presenter, Observer {
 		this.renderer.reset()
 	}
 
+	getUserSettings = (): UserSettings => {
+		const playerMode = this.getControlValue<PlayerMode>('playerMode');
+		const arenaType = this.getControlValue<ArenaType>('arenaType');
+
+		return {
+			playerMode,
+			arenaType
+		};
+	}
+
 	notify(params: MoveInput): void {
 		this.input(params);
 	}
 
-	private initControlPanel = () => {
-		const startBtn = this.controlPanel.querySelector('.js-Snake__Start');
+	private getControlValue = <T>(name: string): T => {
+		const control = this.controlPanel.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement;
+		return control.value as unknown as T;
+	}
 
+	private initControlPanel = () => {
+		const startBtn = this.controlPanel.querySelector('.js-Snake__ControlsStart');
 		startBtn?.addEventListener('click', this.onStartBtnClick);
 	}
 

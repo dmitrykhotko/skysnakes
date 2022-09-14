@@ -6,15 +6,18 @@ import { Serpentarium, SnakeData } from '../snake/serpentarium';
 import { SnakeState } from '../snake/snake';
 
 export type FieldState = {
+	inProgress: boolean,
 	coin: Point,
-	snakes: Record<Player, SnakeState>
+	snakes: Record<Player, SnakeState>,
+	width: number,
+	height: number
 };
 
 export class Field {
 	private snakes!: Serpentarium;
 	private cellsNum!: number;
 	private coin = { x: 0, y: 0 } as Point;
-	private inProgressValue = true;
+	private inProgress = true;
 	private initialData: SnakeData[];
 
 	constructor(
@@ -24,13 +27,10 @@ export class Field {
 	) {
 		this.initialData = directions.map(d => ({ head: this.getStartPoint(d), direction: d }));
 		this.cellsNum = this.width * this.height;
-		this.reset();
+		this.snakes = new Serpentarium(this.initialData);
+		this.makeCoin();
 	}
 	
-	get inProgress(): boolean {
-		return this.inProgressValue;
-	}
-
 	move = (): void => {
 		const heads = this.snakes.moveHead();
 		const ids = this.handleMoveHead(heads);
@@ -38,8 +38,11 @@ export class Field {
 	};
 
 	getState = (): FieldState => ({
+		inProgress: this.inProgress,
 		coin: this.coin,
-		snakes: this.snakes.getState()
+		snakes: this.snakes.getState(),
+		width: this.width,
+		height: this.height
 	});
 
 	makeCoin = (): void => {
@@ -56,12 +59,6 @@ export class Field {
 		this.snakes.sendDirection(snakeId, direction);
 	}
 
-	reset = (): void => {
-		this.snakes = new Serpentarium(this.initialData);
-		this.inProgressValue = true;
-		this.makeCoin();
-	}
-
 	private handleMoveHead = (states: Record<Player, Point>): Player[] => {
 		const ids: Player[] = [];
 
@@ -70,7 +67,7 @@ export class Field {
 			const { x, y } = point;
 
 			if (x === this.width || y === this.height || !~x || !~y || this.snakes.faceBody(point)) {
-				return (this.inProgressValue = false);
+				return (this.inProgress = false);
 			}
 
 			if (this.faceCoin(point)) {

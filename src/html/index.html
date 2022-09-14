@@ -14,7 +14,35 @@
 <body class="Snake">
   <h1>Snake</h1>
   <div class="Snake__Controls js-Snake__Controls">
-    <button class="Snake__Start js-Snake__Start">Start</button>
+    <fieldset class="Snake__ControlsArea">
+      <legend>Players:</legend>
+
+      <span>
+        <input type="radio" id="singlePlayerMode" name="playerMode" value="single" checked>
+        <label for="singlePlayerMode">single</label>
+      </span>
+
+      <span>
+        <input type="radio" id="multiPlayerMode" name="playerMode" value="multi">
+        <label for="multiPlayerMode">multi</label>
+      </span>
+    </fieldset>
+
+    <fieldset class="Snake__ControlsArea">
+      <legend>Arena mode:</legend>
+
+      <span>
+        <input type="radio" id="normalArenaType" name="arenaType" value="normal" checked>
+        <label for="normalArenaType">normal</label>
+      </span>
+
+      <span>
+        <input type="radio" id="softArenaType" name="arenaType" value="soft">
+        <label for="softArenaType">soft</label>
+      </span>
+    </fieldset>
+
+    <button class="Snake__ControlsStart js-Snake__ControlsStart">Start</button>
   </div>
   <canvas class="Snake__CanvasPresenter js-Snake__CanvasPresenter" width="1000" height="500" tabindex="1"></canvas>
   <script type="text/javascript" src="/js/index.js"></script>
