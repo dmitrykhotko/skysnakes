@@ -45,6 +45,7 @@ export abstract class BaseRenderer extends Renderer {
 
 	reset(): void {
 		this.isInitialized = false;
+		this.prevSnakeState = undefined;
 	}
 
 	private renderServiceInfo = (serviceInfo: Record<string, string>, line = 0): void => {
