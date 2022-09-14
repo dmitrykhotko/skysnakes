@@ -1,7 +1,10 @@
 import { HEIGHT, WIDTH } from '../../utils/constants';
+import { ControlInput, Direction as D, Input, MoveInput, Player } from '../../utils/enums';
+import { Point } from '../../utils/types';
+import { Field } from '../field/field';
 import { Observer } from '../observable/observer';
-import { Renderer } from '../renderers/renderer';
-import { Direction as D, Point, Snake } from '../snake/snake';
+import { Presenter } from '../presenter/presenter';
+import { Snake } from '../snake/snake';
 
 enum Position {
 	Top,
@@ -31,31 +34,106 @@ const directionSwitchers = {
 	[P.BottomRight]: faceBottomCorner(D.Left)
 };
 
+const inputToSnakeIdDirection = {
+	[MoveInput.RUp]: { snakeId: Player.P1, direction: D.Up },
+	[MoveInput.RDown]: { snakeId: Player.P1, direction: D.Down },
+	[MoveInput.RLeft]: { snakeId: Player.P1, direction: D.Left },
+	[MoveInput.RRight]: { snakeId: Player.P1, direction: D.Right },
+	[MoveInput.LUp]: { snakeId: Player.P2, direction: D.Up },
+	[MoveInput.LDown]: { snakeId: Player.P2, direction: D.Down },
+	[MoveInput.LLeft]: { snakeId: Player.P2, direction: D.Left },
+	[MoveInput.LRight]: { snakeId: Player.P2, direction: D.Right },
+}
+
+export type ControllerOptions = {
+	snakesDirections: D[],
+	presenter: Presenter,
+	width?: number,
+	height?: number,
+	autostart?: boolean,
+	onStart: () => void,
+	onFinish: () => void
+}
+
+const defaultOptions = {
+	width: WIDTH,
+	height: HEIGHT,
+	autostart: false
+}
 export class SmartController implements Observer {
+	private field: Field;
+	private presenter: Presenter;
+	private width: number;
+	private height: number;
+	private onStart: () => void;
+	private onFinish: () => void;
+
 	constructor(
-		private snake: Snake,
-		private renderer: Renderer,
-		private onFinish: () => void,
-		private width = WIDTH,
-		private height = HEIGHT,
+		options: ControllerOptions
 	) {
-		this.renderer.onInput((input: D) => this.snake.sendDirection(input));
+		const cOptions = { ...defaultOptions, ...options };
+		const { snakesDirections, autostart } = cOptions;
+
+		({
+			presenter: this.presenter,
+			width: this.width,
+			height: this.height,
+			onStart: this.onStart,
+			onFinish: this.onFinish,
+		} = cOptions);
+
+		this.field = new Field(snakesDirections, this.width, this.height);
+
+		this.presenter.onInput((input: Input) => {
+			if (MoveInput[input]) {
+				this.handleMoveInput(input as MoveInput);
+			}
+
+			if (ControlInput[input]) {
+				this.handleControlInput(input as ControlInput);
+			}
+		});
+
+		autostart && this.start();
 	}
 
 	notify(): void {
-		const state = this.snake.getState();
-		const { head, direction, inProgress } = state;
+		const state = this.field.getState();
+		const { snakes } = state;
 
-		this.renderer.render(state);
+		this.presenter.render(state);
 
-		if (!inProgress) {
+		if (!this.field.inProgress) {
 			return this.onFinish();
 		}
 
-		const pos = this.getPosition(head, direction);
-		pos !== undefined && this.renderer.input(directionSwitchers[pos](head, direction));
+		Object.values(snakes).forEach(({ id, head, direction }) => {
+			const pos = this.getPosition(head, direction);
+			pos !== undefined && this.field.sendDirection(id, directionSwitchers[pos](head, direction));
+		})
+		
+		this.field.move();
+	}
 
-		this.snake.move();
+	private handleMoveInput = (input: MoveInput) => {
+		const { snakeId, direction } = inputToSnakeIdDirection[input];
+		this.field.sendDirection(snakeId, direction);
+	}
+
+	private handleControlInput = (input: ControlInput) => {
+		switch (input) {
+			case ControlInput.Start:
+				this.start();
+				break;
+			default:
+				break;
+		}
+	}
+
+	private start = () => {
+		this.presenter.reset();
+		this.field.reset();
+		this.onStart();
 	}
 
 	private getPosition = (head: Point, direction: D): Position | undefined => {

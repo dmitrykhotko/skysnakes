@@ -5,5 +5,5 @@ export interface Observable {
 
 	unsubscribe(observer: Observer): void
 
-	notify(): void
+	notify(params: unknown): void
 }

@@ -48,7 +48,6 @@
         "space-in-parens": ["error", "never"],
         "array-bracket-spacing": ["error", "never"],
         "object-curly-spacing": ["error", "always"],
-        "radix": ["error"],
         "camelcase": ["error", {"properties": "never"}],
         // "id-length": ["error", {"exceptions": ["x", "y", "z", "e", "_", "$", "a", "b", "c", "i", "j", "k", "s"]}],
         "eqeqeq": ["error", "always"],

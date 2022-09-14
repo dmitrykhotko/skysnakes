@@ -1,4 +1,6 @@
-import { Direction, Point, SnakeState } from '../../snake/snake';
+import { Point } from '../../../utils/types';
+import { FieldState } from '../../field/field';
+import { SnakeState } from '../../snake/snake';
 import { Renderer } from '../renderer';
 
 export enum CellType {
@@ -8,10 +10,9 @@ export enum CellType {
 	coin = '?'
 }
 
-export abstract class BaseRenderer implements Renderer {
-	private onInputCb?: (input: Direction) => void;
+export abstract class BaseRenderer extends Renderer {
 	private isInitialized = false;
-	private prevSnakeState?: SnakeState;
+	private prevSnakeState?: FieldState;
 
 	protected abstract renderCell: (point: Point, type: CellType) => void;
 	protected abstract renderTextLine: (string: string, lineNumber: number) => void;
@@ -20,38 +21,38 @@ export abstract class BaseRenderer implements Renderer {
 		protected width: number,
 		protected height: number
 	) {
+		super();
 	}
 
-	render = (state: SnakeState): void => {
+	render = (state: FieldState): void => {
 		if (!this.isInitialized) {
 			this.isInitialized = true;
 			this.renderMap();
 		}
 
-		this.renderServiceInfo(state.serviceInfo);
-		this.renderItems(state);
+		let linesNum = 0;
 
+		Object.values(state.snakes).forEach(state => {
+			this.renderServiceInfo(state.serviceInfo, linesNum);
+			this.renderItems(state, this.prevSnakeState?.snakes[state.id]);
+	
+			linesNum = Object.keys(state.serviceInfo).length + 1;
+		});
+
+		this.renderCoin(state.coin, this.prevSnakeState);
 		this.prevSnakeState = state;
 	}
 
-	input = (direction: Direction): void => {
-		this.onInputCb && this.onInputCb(direction);
+	reset(): void {
+		this.isInitialized = false;
 	}
 
-	onInput = (cb: (input: Direction) => void): void => {
-		this.onInputCb = cb;
-	}
-
-	private renderServiceInfo = (serviceInfo?: Record<string, string>): void => {
-		if (!serviceInfo) {
-			return;
-		}
-
+	private renderServiceInfo = (serviceInfo: Record<string, string>, line = 0): void => {
 		const data = Object.entries(serviceInfo);
 
 		for (let i = 0; i < data.length; i++) {
 			const [key, value] = data[i];
-			this.renderTextLine(`${key}: ${value}`, i + 1);
+			this.renderTextLine(`${key}: ${value}`, line + i + 1);
 		}
 	}
 
@@ -76,18 +77,25 @@ export abstract class BaseRenderer implements Renderer {
 		}
 	}
 
-	private renderItems({ head, tail, coin }: SnakeState): void {
-		if (this.prevSnakeState) {
-			const { head: prevHead, tail: prevTail, coin: prevCoin } = this.prevSnakeState;
+	private renderItems(state: SnakeState, prevState?: SnakeState): void {
+		const { head, tail } = state;
+		if (prevState) {
+			const { head: prevHead, tail: prevTail } = prevState;
 
-			this.rerenderCell({ p1: prevCoin, p2: coin, t2: CellType.coin });
 			this.rerenderCell({ p1: prevHead, p2: head, t1: CellType.body, t2: CellType.head });
 			this.rerenderCell({ p1: prevTail, p2: tail, t1: CellType.empty });
 		} else {
 			this.renderSnake(head, tail);
-			this.renderCell(coin, CellType.coin);
 		}
 	}
+
+	private renderCoin = (coin: Point, prevState?: FieldState): void => {
+		if (prevState) {
+			this.rerenderCell({ p1: prevState.coin, p2: coin, t2: CellType.coin });
+		} else {
+			this.renderCell(coin, CellType.coin);
+		}
+	};
 
 	private rerenderCell({ p1, p2, t1, t2 }: { p1: Point, p2: Point, t1?: CellType, t2?: CellType}): void {
 		if (p1.x === p2.x && p1.y === p2.y) {

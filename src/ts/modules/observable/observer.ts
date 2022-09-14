@@ -1,3 +1,3 @@
 export interface Observer {
-	notify(): void
+	notify(params: unknown): void
 }

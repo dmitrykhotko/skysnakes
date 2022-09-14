@@ -1,31 +1,20 @@
 import { GAME_SPEED } from '../../utils/constants';
-import { Observable } from '../observable/observable';
-import { Observer } from '../observable/observer';
+import { ObservableBase } from '../observable/observableBase';
 
-export class Timer implements Observable {
-	private observers = new Set<Observer>();
+export class Timer extends ObservableBase {
+	private interval: number;
 	private intervalId?: NodeJS.Timer;
 
 	constructor(
-		private framesNumber = GAME_SPEED,
-		autostart = true
+		framesNumber = GAME_SPEED
 	) {
-		autostart && this.start();
+		super();
+		this.interval = 1000 / framesNumber;
 	}
 
-	subscribe = (observer: Observer): void => {
-		this.observers.add(observer);
-	};
-
-	unsubscribe = (observer: Observer): void => {
-		this.observers.delete(observer);
-	};
-
-	notify = (): void => this.observers.forEach(observer => observer.notify());
-
 	start = (): void => {
-		const interval = 1000 / this.framesNumber;
-		this.intervalId = setInterval(this.notify, interval);
+		this.stop();
+		this.intervalId = setInterval(this.notify, this.interval);
 	};
 
 	stop = (): void => clearInterval(this.intervalId);

@@ -1,9 +1,7 @@
-import { Direction, SnakeState } from "../snake/snake"
+import { FieldState } from "../field/field"
+import { ObservableBase } from "../observable/observableBase"
 
-export interface Renderer {
-	render(state: SnakeState): void
-
-	input(direction: Direction): void
-
-	onInput(cb: (input: Direction) => void): void
+export abstract class Renderer extends ObservableBase {
+	abstract render(states: FieldState): void;
+	abstract reset(): void;
 }
