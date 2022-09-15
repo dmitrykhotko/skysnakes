@@ -35,7 +35,14 @@ export abstract class BaseRenderer extends Renderer {
 			this.renderServiceInfo(state.serviceInfo, linesNum);
 			this.renderItems(state, this.arenaPrevState?.snakes[state.id]);
 
-			linesNum = Object.keys(state.serviceInfo).length + 1;
+			linesNum += Object.keys(state.serviceInfo).length + 1;
+		});
+
+		linesNum++;
+
+		this.renderTextLine('DEATHS:', linesNum++);
+		Object.entries(state.score).forEach(([player, score]) => {
+			this.renderTextLine(`${Player[parseInt(player) as Player]}: ${score}`, linesNum++);
 		});
 
 		this.renderCoin(state.coin, this.arenaPrevState);

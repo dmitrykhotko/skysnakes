@@ -1,6 +1,5 @@
 import { Player } from '../../../../utils/enums';
 import { Point } from '../../../../utils/types';
-import { SnakeState } from '../../../snake/snake';
 import { Arena } from '../../arena';
 import { ArenaStrategy } from '../arenaStrategy';
 
@@ -20,7 +19,7 @@ export abstract class BaseWallsStrategy extends ArenaStrategy {
 	};
 
 	private getPosition = (head: Point): Position | undefined => {
-		const { x, y } = head; // Snake.headCalcs[direction](head);
+		const { x, y } = head;
 
 		let pos: Position;
 

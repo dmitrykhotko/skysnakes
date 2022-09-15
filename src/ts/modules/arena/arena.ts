@@ -12,9 +12,12 @@ export type ArenaState = {
 	snakes: Record<Player, SnakeState>;
 	width: number;
 	height: number;
+	score: Record<Player, number>;
 };
 
 export class Arena {
+	private static score = {} as Record<Player, number>;
+
 	private snakes!: Serpentarium;
 	private cellsNum!: number;
 	private coin = { x: 0, y: 0 } as Point;
@@ -33,6 +36,10 @@ export class Arena {
 		this.makeCoin();
 	}
 
+	static resetScore = (): void => {
+		Arena.score = {} as Record<Player, number>;
+	};
+
 	move = (): void => {
 		const heads = this.snakes.moveHead();
 		const ids = this.handleMoveHead(heads);
@@ -44,7 +51,8 @@ export class Arena {
 		coin: this.coin,
 		snakes: this.snakes.getState(),
 		width: this.width,
-		height: this.height
+		height: this.height,
+		score: Arena.score
 	});
 
 	makeCoin = (): void => {
@@ -72,6 +80,9 @@ export class Arena {
 			const id = parseInt(snakeId) as Player;
 
 			if (this.snakes.faceBody(point)) {
+				!Arena.score[id] && (Arena.score[id] = 0);
+				Arena.score[id]++;
+
 				return (this.inProgress = false);
 			}
 

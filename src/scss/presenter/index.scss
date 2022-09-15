@@ -2,6 +2,9 @@
 	&__CanvasPresenter {
 		width: 1200px;
 		height: 500px;
-		border: 10px solid green;
+
+		&:focus{
+			outline: none;
+		}
 	}
 }

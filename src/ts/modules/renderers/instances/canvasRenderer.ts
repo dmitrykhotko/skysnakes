@@ -17,8 +17,8 @@ const keyInputMapping: Record<string, MoveInput> = {
 const colors = {
 	[CellType.empty]: '#758384',
 	[CellType.head1]: '#34495E',
-	[CellType.head2]: '#D35400',
-	[CellType.body]: '#A9CCE3',
+	[CellType.head2]: '#229954',
+	[CellType.body]: '#E67E22',
 	[CellType.coin]: '#F1C40F'
 };
 

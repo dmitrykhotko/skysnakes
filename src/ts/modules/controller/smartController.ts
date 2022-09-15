@@ -94,7 +94,7 @@ export class SmartController implements Observer {
 		this.arena.move();
 	}
 
-	private start = () => {
+	private start = (): void => {
 		const { playerMode, arenaType } = this.getUserSettings();
 		const directions = playerModeToDirections[playerMode];
 
@@ -104,15 +104,23 @@ export class SmartController implements Observer {
 		this.onStart();
 	};
 
-	private handleMoveInput = (input: MoveInput) => {
+	private reset = (): void => {
+		Arena.resetScore();
+		this.start();
+	};
+
+	private handleMoveInput = (input: MoveInput): void => {
 		const { snakeId, direction } = inputToSnakeIdDirection[input];
 		this.arena.sendDirection(snakeId, direction);
 	};
 
-	private handleControlInput = (input: ControlInput) => {
+	private handleControlInput = (input: ControlInput): void => {
 		switch (input) {
 			case ControlInput.Start:
 				this.start();
+				break;
+			case ControlInput.Reset:
+				this.reset();
 				break;
 			default:
 				break;
