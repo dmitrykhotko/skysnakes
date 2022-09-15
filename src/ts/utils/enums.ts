@@ -34,5 +34,6 @@ export enum PlayerMode {
 
 export enum ArenaType {
 	Normal = 'normal',
-	Soft = 'soft'
+	Soft = 'soft',
+	Transparent = 'transparent'
 }

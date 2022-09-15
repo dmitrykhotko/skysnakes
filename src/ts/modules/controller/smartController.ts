@@ -1,73 +1,72 @@
 import { HEIGHT, WIDTH } from '../../utils/constants';
-import { ArenaType, ControlInput, Direction as D, Input, MoveInput, Player, PlayerMode } from '../../utils/enums';
+import { ArenaType, ControlInput, Direction, Input, MoveInput, Player, PlayerMode } from '../../utils/enums';
 import { UserSettings } from '../../utils/types';
-import { Field } from '../field/field';
+import { Arena } from '../arena/arena';
 import { Observer } from '../observable/observer';
 import { Presenter } from '../presenter/presenter';
-import { ArenaStrategy } from './arenaStrategies/arenaStrategy';
-import { NormalStrategy } from './arenaStrategies/instances/normalStrategy';
-import { SoftWallsStrategy } from './arenaStrategies/instances/softWallsStrategy';
+import { NormalStrategy } from '../arena/strategies/instances/normalStrategy';
+import { SoftWallsStrategy } from '../arena/strategies/instances/softWallsStrategy';
+import { TransparentWallsStrategy } from '../arena/strategies/instances/transparentWallsStrategy';
+import { ArenaStrategy } from '../arena/strategies/arenaStrategy';
+
+const { Up, Down, Left, Right } = Direction;
+const { P1, P2 } = Player;
 
 const inputToSnakeIdDirection = {
-	[MoveInput.RUp]: { snakeId: Player.P1, direction: D.Up },
-	[MoveInput.RDown]: { snakeId: Player.P1, direction: D.Down },
-	[MoveInput.RLeft]: { snakeId: Player.P1, direction: D.Left },
-	[MoveInput.RRight]: { snakeId: Player.P1, direction: D.Right },
-	[MoveInput.LUp]: { snakeId: Player.P2, direction: D.Up },
-	[MoveInput.LDown]: { snakeId: Player.P2, direction: D.Down },
-	[MoveInput.LLeft]: { snakeId: Player.P2, direction: D.Left },
-	[MoveInput.LRight]: { snakeId: Player.P2, direction: D.Right },
+	[MoveInput.RUp]: { snakeId: P1, direction: Up },
+	[MoveInput.RDown]: { snakeId: P1, direction: Down },
+	[MoveInput.RLeft]: { snakeId: P1, direction: Left },
+	[MoveInput.RRight]: { snakeId: P1, direction: Right },
+	[MoveInput.LUp]: { snakeId: P2, direction: Up },
+	[MoveInput.LDown]: { snakeId: P2, direction: Down },
+	[MoveInput.LLeft]: { snakeId: P2, direction: Left },
+	[MoveInput.LRight]: { snakeId: P2, direction: Right }
 };
 
 const playerModeToDirections = {
-	[PlayerMode.SinglePlayer]: [D.Right],
-	[PlayerMode.Multiplayer]: [D.Left, D.Right]
+	[PlayerMode.SinglePlayer]: [Right],
+	[PlayerMode.Multiplayer]: [Left, Right]
 };
 
 const arenaStrategies = {
 	[ArenaType.Normal]: NormalStrategy,
-	[ArenaType.Soft]: SoftWallsStrategy
+	[ArenaType.Soft]: SoftWallsStrategy,
+	[ArenaType.Transparent]: TransparentWallsStrategy
 };
 
 export type ControllerOptions = {
-	snakesDirections: D[],
-	presenter: Presenter,
-	width?: number,
-	height?: number,
-	autostart?: boolean,
-	onStart: () => void,
-	onFinish: () => void
-}
+	presenter: Presenter;
+	width?: number;
+	height?: number;
+	autostart?: boolean;
+	onStart: () => void;
+	onFinish: () => void;
+};
 
 const defaultOptions = {
 	width: WIDTH,
 	height: HEIGHT,
 	autostart: false
-}
+};
 export class SmartController implements Observer {
-	private field: Field;
+	private arena!: Arena;
 	private presenter: Presenter;
 	private width: number;
 	private height: number;
-	private arenaStrategy!: ArenaStrategy;
 	private onStart: () => void;
 	private onFinish: () => void;
 
-	constructor(
-		options: ControllerOptions
-	) {
+	constructor(options: ControllerOptions) {
 		const cOptions = { ...defaultOptions, ...options };
-		const { snakesDirections, autostart } = cOptions;
+		const { autostart } = cOptions;
 
 		({
 			presenter: this.presenter,
 			width: this.width,
 			height: this.height,
 			onStart: this.onStart,
-			onFinish: this.onFinish,
+			onFinish: this.onFinish
 		} = cOptions);
-
-		this.field = new Field(snakesDirections, this.width, this.height);
 
 		this.presenter.onInput((input: Input) => {
 			if (MoveInput[input]) {
@@ -83,7 +82,7 @@ export class SmartController implements Observer {
 	}
 
 	notify(): void {
-		const state = this.field.getState();
+		const state = this.arena.getState();
 		const { inProgress } = state;
 
 		this.presenter.render(state);
@@ -92,24 +91,23 @@ export class SmartController implements Observer {
 			return this.onFinish();
 		}
 
-		this.arenaStrategy.apply(this.field, state);
-		this.field.move();
+		this.arena.move();
 	}
 
 	private start = () => {
 		const { playerMode, arenaType } = this.getUserSettings();
 		const directions = playerModeToDirections[playerMode];
 
-		this.arenaStrategy = new arenaStrategies[arenaType]();
 		this.presenter.reset();
-		this.field = new Field(directions, this.width, this.height);
+		const arenaStrategy = new arenaStrategies[arenaType](this.width, this.height) as ArenaStrategy;
+		this.arena = new Arena(directions, arenaStrategy, this.width, this.height);
 		this.onStart();
-	}
+	};
 
 	private handleMoveInput = (input: MoveInput) => {
 		const { snakeId, direction } = inputToSnakeIdDirection[input];
-		this.field.sendDirection(snakeId, direction);
-	}
+		this.arena.sendDirection(snakeId, direction);
+	};
 
 	private handleControlInput = (input: ControlInput) => {
 		switch (input) {
@@ -119,7 +117,7 @@ export class SmartController implements Observer {
 			default:
 				break;
 		}
-	}
+	};
 
 	private getUserSettings = (): UserSettings => this.presenter.getUserSettings();
 }

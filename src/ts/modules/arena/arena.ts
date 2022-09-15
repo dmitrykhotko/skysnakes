@@ -2,18 +2,19 @@ import { HEIGHT, WIDTH } from '../../utils/constants';
 import { Direction, Player } from '../../utils/enums';
 import { comparePoints } from '../../utils/helpers';
 import { Point } from '../../utils/types';
+import { ArenaStrategy } from './strategies/arenaStrategy';
 import { Serpentarium, SnakeData } from '../snake/serpentarium';
 import { SnakeState } from '../snake/snake';
 
-export type FieldState = {
-	inProgress: boolean,
-	coin: Point,
-	snakes: Record<Player, SnakeState>,
-	width: number,
-	height: number
+export type ArenaState = {
+	inProgress: boolean;
+	coin: Point;
+	snakes: Record<Player, SnakeState>;
+	width: number;
+	height: number;
 };
 
-export class Field {
+export class Arena {
 	private snakes!: Serpentarium;
 	private cellsNum!: number;
 	private coin = { x: 0, y: 0 } as Point;
@@ -22,6 +23,7 @@ export class Field {
 
 	constructor(
 		directions: Direction[],
+		private strategy: ArenaStrategy,
 		private width = WIDTH,
 		private height = HEIGHT
 	) {
@@ -30,14 +32,14 @@ export class Field {
 		this.snakes = new Serpentarium(this.initialData);
 		this.makeCoin();
 	}
-	
+
 	move = (): void => {
 		const heads = this.snakes.moveHead();
 		const ids = this.handleMoveHead(heads);
 		this.snakes.moveTail(ids);
 	};
 
-	getState = (): FieldState => ({
+	getState = (): ArenaState => ({
 		inProgress: this.inProgress,
 		coin: this.coin,
 		snakes: this.snakes.getState(),
@@ -57,16 +59,25 @@ export class Field {
 
 	sendDirection = (snakeId: Player, direction: Direction): void => {
 		this.snakes.sendDirection(snakeId, direction);
-	}
+	};
+
+	setHead = (snakeId: Player, head: Point): void => {
+		this.snakes.setHead(snakeId, head);
+	};
 
 	private handleMoveHead = (states: Record<Player, Point>): Player[] => {
 		const ids: Player[] = [];
 
 		Object.entries(states).forEach(([snakeId, point]) => {
 			const id = parseInt(snakeId) as Player;
-			const { x, y } = point;
 
-			if (x === this.width || y === this.height || !~x || !~y || this.snakes.faceBody(point)) {
+			if (this.snakes.faceBody(point)) {
+				return (this.inProgress = false);
+			}
+
+			const success = this.strategy.run(point, this, id);
+
+			if (!success) {
 				return (this.inProgress = false);
 			}
 
@@ -80,7 +91,7 @@ export class Field {
 		});
 
 		return ids;
-	}
+	};
 
 	private getFreeCells = (): number[] => {
 		const cells: number[] = [];
@@ -95,7 +106,7 @@ export class Field {
 		}
 
 		return cells;
-	}
+	};
 
 	private faceCoin = (head: Point): boolean => {
 		return comparePoints(head, this.coin);
@@ -124,5 +135,5 @@ export class Field {
 		}
 
 		return head;
-	}
+	};
 }

@@ -1,14 +1,14 @@
-import { SNAKE_LENGTH } from "../../utils/constants";
-import { Direction, Player } from "../../utils/enums";
-import { Point } from "../../utils/types";
+import { SNAKE_LENGTH } from '../../utils/constants';
+import { Direction, Player } from '../../utils/enums';
+import { Point } from '../../utils/types';
 
 export type SnakeState = {
-	id: Player,
-	direction: Direction,
-	head: Point,
-	tail: Point,
-	serviceInfo: Record<string, string>
-}
+	id: Player;
+	direction: Direction;
+	head: Point;
+	tail: Point;
+	serviceInfo: Record<string, string>;
+};
 
 const directionWeights = {
 	[Direction.Up]: -1,
@@ -33,13 +33,17 @@ export class Snake {
 		private id = Player.P1,
 		private head: Point,
 		private direction = Direction.Right,
-		length = SNAKE_LENGTH,
+		length = SNAKE_LENGTH
 	) {
 		this.tail = this.initBody(length);
 	}
 
 	get snakeHead(): Point {
 		return this.head;
+	}
+
+	set snakeHead(head: Point) {
+		this.head = head;
 	}
 
 	get snakeId(): Player {
@@ -49,7 +53,7 @@ export class Snake {
 	moveHead = (): Point => {
 		this.applyDirection();
 
-		const nextHead = Snake.headCalcs[this.direction]((this.head));
+		const nextHead = Snake.headCalcs[this.direction](this.head);
 
 		nextHead.prev = this.head;
 		this.head.next = nextHead;
@@ -63,7 +67,7 @@ export class Snake {
 		this.tail.prev = undefined;
 
 		return this.tail;
-	}
+	};
 
 	getState = (): SnakeState => {
 		const { id, coin, head, tail, score, direction } = this;
@@ -113,7 +117,7 @@ export class Snake {
 
 		for (let i = 0; i < length - 2; i++) {
 			const newPoint: Point = { x: point.x + xStep, y: point.y + yStep };
-			
+
 			point.prev = newPoint;
 			newPoint.next = point;
 			point = newPoint;
@@ -122,5 +126,5 @@ export class Snake {
 		const tail = point;
 
 		return tail;
-	}
+	};
 }

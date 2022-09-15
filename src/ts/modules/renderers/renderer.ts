@@ -1,7 +1,7 @@
-import { FieldState } from "../field/field"
-import { ObservableBase } from "../observable/observableBase"
+import { ArenaState } from '../arena/arena';
+import { BaseObservable } from '../observable/baseObservable';
 
-export abstract class Renderer extends ObservableBase {
-	abstract render(states: FieldState): void;
+export abstract class Renderer extends BaseObservable {
+	abstract render(states: ArenaState): void;
 	abstract reset(): void;
 }

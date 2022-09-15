@@ -1,20 +1,18 @@
-import { Direction, Player } from "../../utils/enums";
-import { comparePoints } from "../../utils/helpers";
-import { Point } from "../../utils/types";
-import { Snake, SnakeState } from "./snake";
+import { Direction, Player } from '../../utils/enums';
+import { comparePoints } from '../../utils/helpers';
+import { Point } from '../../utils/types';
+import { Snake, SnakeState } from './snake';
 
 export type SnakeData = {
-	head: Point,
-	direction: Direction
-}
+	head: Point;
+	direction: Direction;
+};
 
 export class Serpentarium {
 	private snakesDicto = {} as Record<Player, Snake>;
 	private snakes: Snake[] = [];
 
-	constructor(
-		private initialData: SnakeData[]
-	) {
+	constructor(private initialData: SnakeData[]) {
 		this.initSnakes();
 	}
 
@@ -33,12 +31,12 @@ export class Serpentarium {
 			const snake = this.snakesDicto[id];
 			snake && snake.moveTail();
 		});
-	}
+	};
 
 	incScore = (snakeId: Player): void => {
 		const snake = this.snakesDicto[snakeId];
 		snake && snake.incScore();
-	}
+	};
 
 	faceBody = (newHead: Point): boolean => {
 		let isCrashed = false;
@@ -56,7 +54,7 @@ export class Serpentarium {
 		});
 
 		return isCrashed;
-	}
+	};
 
 	getBodiesSet = (width: number): Set<number> => {
 		const set: Set<number> = new Set<number>();
@@ -65,13 +63,13 @@ export class Serpentarium {
 			let point: Point | undefined = snakeHead;
 
 			while (point) {
-				set.add(point.x + point.y * width)
+				set.add(point.x + point.y * width);
 				point = point.prev;
 			}
 		});
 
 		return set;
-	}
+	};
 
 	getState = (): Record<Player, SnakeState> =>
 		this.snakes.reduce((acc, snake) => {
@@ -82,7 +80,12 @@ export class Serpentarium {
 	sendDirection = (snakeId: Player, direction: Direction): void => {
 		const snake = this.snakesDicto[snakeId];
 		snake && snake.sendDirection(direction);
-	}
+	};
+
+	setHead = (snakeId: Player, head: Point): void => {
+		const snake = this.snakesDicto[snakeId];
+		snake && (snake.snakeHead = head);
+	};
 
 	private initSnakes = () => {
 		this.initialData.length && this.snakes.push(this.getSnake(Player.P1, this.initialData[0]));
@@ -92,9 +95,9 @@ export class Serpentarium {
 			acc[snake.snakeId] = snake;
 			return acc;
 		}, {} as Record<Player, Snake>);
-	}
+	};
 
 	private getSnake = (player: Player, { head, direction }: SnakeData): Snake => {
 		return new Snake(player, head, direction);
-	}
+	};
 }

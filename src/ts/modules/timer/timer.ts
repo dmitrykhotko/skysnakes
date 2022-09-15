@@ -1,13 +1,11 @@
 import { GAME_SPEED } from '../../utils/constants';
-import { ObservableBase } from '../observable/observableBase';
+import { BaseObservable } from '../observable/baseObservable';
 
-export class Timer extends ObservableBase {
+export class Timer extends BaseObservable {
 	private interval: number;
 	private intervalId?: NodeJS.Timer;
 
-	constructor(
-		framesNumber = GAME_SPEED
-	) {
+	constructor(framesNumber = GAME_SPEED) {
 		super();
 		this.interval = 1000 / framesNumber;
 	}
