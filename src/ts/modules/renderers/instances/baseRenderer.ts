@@ -1,13 +1,15 @@
+import { Player } from '../../../utils/enums';
 import { Point } from '../../../utils/types';
 import { ArenaState } from '../../arena/arena';
 import { SnakeState } from '../../snake/snake';
 import { Renderer } from '../renderer';
 
 export enum CellType {
-	empty = '-',
-	head = '@',
-	body = '*',
-	coin = '?'
+	empty = 1,
+	head1 = 2,
+	head2 = 3,
+	body = 4,
+	coin = 5
 }
 
 export abstract class BaseRenderer extends Renderer {
@@ -62,12 +64,13 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	};
 
-	private renderSnake = (head: Point, tail: Point): void => {
+	private renderSnake = (id: Player, head: Point, tail: Point): void => {
 		let current = tail;
 
 		while (true) {
 			if (current === head) {
-				return this.renderCell(current, CellType.head);
+				const headType = this.getHeadType(id);
+				return this.renderCell(current, headType);
 			}
 
 			this.renderCell(current, CellType.body);
@@ -76,14 +79,16 @@ export abstract class BaseRenderer extends Renderer {
 	};
 
 	private renderItems(state: SnakeState, prevState?: SnakeState): void {
-		const { head, tail } = state;
+		const { id, head, tail } = state;
+
 		if (prevState) {
 			const { head: prevHead, tail: prevTail } = prevState;
+			const headType = this.getHeadType(id);
 
-			this.rerenderCell({ p1: prevHead, p2: head, t1: CellType.body, t2: CellType.head });
+			this.rerenderCell({ p1: prevHead, p2: head, t1: CellType.body, t2: headType });
 			this.rerenderCell({ p1: prevTail, p2: tail, t1: CellType.empty });
 		} else {
-			this.renderSnake(head, tail);
+			this.renderSnake(id, head, tail);
 		}
 	}
 
@@ -94,6 +99,8 @@ export abstract class BaseRenderer extends Renderer {
 			this.renderCell(coin, CellType.coin);
 		}
 	};
+
+	private getHeadType = (id: Player): CellType => (id === Player.P1 ? CellType.head1 : CellType.head2);
 
 	private rerenderCell({ p1, p2, t1, t2 }: { p1: Point; p2: Point; t1?: CellType; t2?: CellType }): void {
 		if (p1.x === p2.x && p1.y === p2.y) {

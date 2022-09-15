@@ -16,9 +16,10 @@ const keyInputMapping: Record<string, MoveInput> = {
 
 const colors = {
 	[CellType.empty]: '#758384',
-	[CellType.head]: 'black',
-	[CellType.body]: 'blue',
-	[CellType.coin]: 'red'
+	[CellType.head1]: '#34495E',
+	[CellType.head2]: '#D35400',
+	[CellType.body]: '#A9CCE3',
+	[CellType.coin]: '#F1C40F'
 };
 
 export class CanvasRenderer extends BaseRenderer {
