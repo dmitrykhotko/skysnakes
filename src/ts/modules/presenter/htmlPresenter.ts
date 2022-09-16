@@ -45,18 +45,12 @@ export class HtmlPresenter implements Presenter, Observer {
 	};
 
 	private initControlPanel = () => {
-		const startBtn = this.controlPanel.querySelector('.js-Snake__ControlsStart');
-		startBtn?.addEventListener('click', this.onStartBtnClick);
-
-		const resetBtn = this.controlPanel.querySelector('.js-Snake__ControlsReset');
-		resetBtn?.addEventListener('click', this.onResetBtnClick);
+		this.initControlButton('.js-Snake__Start', ControlInput.Start);
+		this.initControlButton('.js-Snake__Reset', ControlInput.Reset);
 	};
 
-	private onStartBtnClick = () => {
-		this.input(ControlInput.Start);
-	};
-
-	private onResetBtnClick = () => {
-		this.input(ControlInput.Reset);
+	private initControlButton = (selector: string, input: ControlInput) => {
+		const button = this.controlPanel.querySelector(selector);
+		button?.addEventListener('click', () => this.input(input));
 	};
 }
