@@ -1,4 +1,4 @@
-import { SmartController } from './modules/controller/smartController';
+import { Controller } from './modules/controller/controller';
 import { HtmlPresenter } from './modules/presenter/htmlPresenter';
 import { CanvasRenderer } from './modules/renderers/instances/canvasRenderer';
 import { Timer } from './modules/timer/timer';
@@ -13,9 +13,9 @@ const run = () => {
 	}
 
 	const timer = new Timer();
-	const canvasRenderer = new CanvasRenderer(canvas as HTMLElement);
+	const canvasRenderer = new CanvasRenderer({ element: canvas as HTMLElement });
 	const presenter = new HtmlPresenter(canvasRenderer, controlPanel as HTMLElement);
-	const controller = new SmartController({
+	const controller = new Controller({
 		presenter,
 		autostart,
 		onStart: timer.start,

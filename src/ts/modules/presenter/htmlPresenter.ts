@@ -1,4 +1,4 @@
-import { ArenaType, ControlInput, Input, MoveInput, PlayerMode } from '../../utils/enums';
+import { ArenaType, ControlInput, Input, MoveInput, PlayerMode, DrawGrid } from '../../utils/enums';
 import { UserSettings } from '../../utils/types';
 import { ArenaState } from '../arena/arena';
 import { Observer } from '../observable/observer';
@@ -7,6 +7,7 @@ import { Presenter } from './presenter';
 
 export class HtmlPresenter implements Presenter, Observer {
 	private onInputCb?: (input: Input) => void;
+	private deathsNumInput!: HTMLInputElement;
 
 	constructor(private renderer: Renderer, private controlPanel: HTMLElement) {
 		this.renderer.subscribe(this);
@@ -21,17 +22,21 @@ export class HtmlPresenter implements Presenter, Observer {
 
 	render = (state: ArenaState): void => this.renderer.render(state);
 
-	reset = (): void => {
-		this.renderer.reset();
+	reset = (drawGrid: DrawGrid): void => {
+		this.renderer.reset(drawGrid);
 	};
 
 	getUserSettings = (): UserSettings => {
-		const playerMode = this.getControlValue<PlayerMode>('playerMode');
-		const arenaType = this.getControlValue<ArenaType>('arenaType');
+		const playerMode = this.getRadioValue<PlayerMode>('playerMode');
+		const arenaType = this.getRadioValue<ArenaType>('arenaType');
+		const drawGrid = this.getRadioValue<DrawGrid>('drawGrid');
+		const deathsNum = parseInt(this.deathsNumInput.value);
 
 		return {
 			playerMode,
-			arenaType
+			arenaType,
+			deathsNum,
+			drawGrid
 		};
 	};
 
@@ -39,7 +44,7 @@ export class HtmlPresenter implements Presenter, Observer {
 		this.input(params);
 	}
 
-	private getControlValue = <T>(name: string): T => {
+	private getRadioValue = <T>(name: string): T => {
 		const control = this.controlPanel.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement;
 		return control.value as unknown as T;
 	};
@@ -47,6 +52,8 @@ export class HtmlPresenter implements Presenter, Observer {
 	private initControlPanel = () => {
 		this.initControlButton('.js-Snake__Start', ControlInput.Start);
 		this.initControlButton('.js-Snake__Reset', ControlInput.Reset);
+
+		this.deathsNumInput = this.controlPanel.querySelector('.js-Snake__DeathsNum') as HTMLInputElement;
 	};
 
 	private initControlButton = (selector: string, input: ControlInput) => {

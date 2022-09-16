@@ -34,7 +34,13 @@ const arenaStrategies = {
 	[ArenaType.Transparent]: TransparentWallsStrategy
 };
 
-export type ControllerOptions = {
+const defaultProps = {
+	width: WIDTH,
+	height: HEIGHT,
+	autostart: false
+};
+
+export type ControllerProps = {
 	presenter: Presenter;
 	width?: number;
 	height?: number;
@@ -42,13 +48,7 @@ export type ControllerOptions = {
 	onStart: () => void;
 	onFinish: () => void;
 };
-
-const defaultOptions = {
-	width: WIDTH,
-	height: HEIGHT,
-	autostart: false
-};
-export class SmartController implements Observer {
+export class Controller implements Observer {
 	private arena!: Arena;
 	private presenter: Presenter;
 	private width: number;
@@ -56,9 +56,9 @@ export class SmartController implements Observer {
 	private onStart: () => void;
 	private onFinish: () => void;
 
-	constructor(options: ControllerOptions) {
-		const cOptions = { ...defaultOptions, ...options };
-		const { autostart } = cOptions;
+	constructor(properties: ControllerProps) {
+		const props = { ...defaultProps, ...properties };
+		const { autostart } = props;
 
 		({
 			presenter: this.presenter,
@@ -66,7 +66,7 @@ export class SmartController implements Observer {
 			height: this.height,
 			onStart: this.onStart,
 			onFinish: this.onFinish
-		} = cOptions);
+		} = props);
 
 		this.presenter.onInput((input: Input) => {
 			if (MoveInput[input]) {
@@ -95,12 +95,13 @@ export class SmartController implements Observer {
 	}
 
 	private start = (): void => {
-		const { playerMode, arenaType } = this.getUserSettings();
+		const { width, height } = this;
+		const { playerMode, arenaType, drawGrid, deathsNum } = this.getUserSettings();
 		const directions = playerModeToDirections[playerMode];
+		const strategy = new arenaStrategies[arenaType](this.width, this.height) as ArenaStrategy;
 
-		this.presenter.reset();
-		const arenaStrategy = new arenaStrategies[arenaType](this.width, this.height) as ArenaStrategy;
-		this.arena = new Arena(directions, arenaStrategy, this.width, this.height);
+		this.presenter.reset(drawGrid);
+		this.arena = new Arena({ directions, strategy, width, height, deathsNum });
 		this.onStart();
 	};
 

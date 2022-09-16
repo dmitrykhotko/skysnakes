@@ -1,4 +1,4 @@
-import { ArenaType, PlayerMode } from './enums';
+import { ArenaType, PlayerMode, DrawGrid } from './enums';
 
 export type Point = {
 	x: number;
@@ -10,4 +10,6 @@ export type Point = {
 export type UserSettings = {
 	playerMode: PlayerMode;
 	arenaType: ArenaType;
+	drawGrid: DrawGrid;
+	deathsNum: number;
 };

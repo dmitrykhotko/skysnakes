@@ -6,38 +6,63 @@ import { ArenaStrategy } from './strategies/arenaStrategy';
 import { Serpentarium, SnakeData } from '../snake/serpentarium';
 import { SnakeState } from '../snake/snake';
 
+type Score = {
+	deaths: number;
+	coins: number;
+};
+
 export type ArenaState = {
 	inProgress: boolean;
 	coin: Point;
 	snakes: Record<Player, SnakeState>;
 	width: number;
 	height: number;
-	score: Record<Player, number>;
+	score: Record<Player, Score>;
+};
+
+export type ArenaProps = {
+	directions: Direction[];
+	strategy: ArenaStrategy;
+	deathsNum: number;
+	width?: number;
+	height?: number;
+};
+
+const defaultProps = {
+	width: WIDTH,
+	height: HEIGHT
 };
 
 export class Arena {
-	private static score = {} as Record<Player, number>;
+	private static score = {} as Record<Player, Score>;
 
 	private snakes!: Serpentarium;
+	private strategy!: ArenaStrategy;
 	private cellsNum!: number;
 	private coin = { x: 0, y: 0 } as Point;
 	private inProgress = true;
 	private initialData: SnakeData[];
+	private width = WIDTH;
+	private height = HEIGHT;
 
-	constructor(
-		directions: Direction[],
-		private strategy: ArenaStrategy,
-		private width = WIDTH,
-		private height = HEIGHT
-	) {
+	constructor(properties: ArenaProps) {
+		const props = { ...defaultProps, ...properties };
+		const { directions } = props;
+
+		({ strategy: this.strategy, width: this.width, height: this.height } = props);
+
 		this.initialData = directions.map(d => ({ head: this.getStartPoint(d), direction: d }));
 		this.cellsNum = this.width * this.height;
 		this.snakes = new Serpentarium(this.initialData);
 		this.makeCoin();
+
+		const players = this.snakes.getPlayers();
+
+		Object.keys(Arena.score).length !== players.length && this.initScore(players);
 	}
 
 	static resetScore = (): void => {
-		Arena.score = {} as Record<Player, number>;
+		Arena.score = {} as Record<Player, Score>;
 	};
 
 	move = (): void => {
@@ -73,6 +98,12 @@ export class Arena {
 		this.snakes.setHead(snakeId, head);
 	};
 
+	private initScore = (players: Player[]) =>
+		(Arena.score = players.reduce((acc, player) => {
+			acc[player] = { deaths: 0, coins: 0 };
+			return acc;
+		}, {} as Record<Player, Score>));
+
 	private handleMoveHead = (states: Record<Player, Point>): Player[] => {
 		const ids: Player[] = [];
 
@@ -80,9 +111,7 @@ export class Arena {
 			const id = parseInt(snakeId) as Player;
 
 			if (this.snakes.faceBody(point)) {
-				!Arena.score[id] && (Arena.score[id] = 0);
-				Arena.score[id]++;
-
+				Arena.score[id].deaths++;
 				return (this.inProgress = false);
 			}
 
@@ -93,8 +122,8 @@ export class Arena {
 			}
 
 			if (this.faceCoin(point)) {
+				Arena.score[id].coins++;
 				this.makeCoin();
-				this.snakes.incScore(id);
 				return;
 			}
 

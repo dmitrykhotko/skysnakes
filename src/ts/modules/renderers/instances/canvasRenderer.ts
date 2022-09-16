@@ -1,7 +1,7 @@
 import { HEIGHT, TEXT_AREA_WIDTH, WIDTH } from '../../../utils/constants';
-import { MoveInput } from '../../../utils/enums';
+import { MoveInput, DrawGrid } from '../../../utils/enums';
 import { Point } from '../../../utils/types';
-import { BaseRenderer, CellType } from './baseRenderer';
+import { BaseRenderer, DrawingObject } from './baseRenderer';
 
 const keyInputMapping: Record<string, MoveInput> = {
 	ArrowUp: MoveInput.RUp,
@@ -15,21 +15,44 @@ const keyInputMapping: Record<string, MoveInput> = {
 };
 
 const colors = {
-	[CellType.empty]: '#758384',
-	[CellType.head1]: '#34495E',
-	[CellType.head2]: '#229954',
-	[CellType.body]: '#E67E22',
-	[CellType.coin]: '#F1C40F'
+	[DrawingObject.empty]: '#E8F8F5',
+	[DrawingObject.head1]: '#34495E',
+	[DrawingObject.head2]: '#229954',
+	[DrawingObject.body]: '#E67E22',
+	[DrawingObject.coin]: '#F1C40F',
+	[DrawingObject.grid]: '#758384'
+};
+
+const defaultProps = {
+	textAreaWidth: TEXT_AREA_WIDTH,
+	drawGrid: DrawGrid.No,
+	width: WIDTH,
+	height: HEIGHT
+};
+
+export type CanvasRendererProps = {
+	element: HTMLElement;
+	textAreaWidth?: number;
+	drawGrid?: DrawGrid;
+	width?: number;
+	height?: number;
 };
 
 export class CanvasRenderer extends BaseRenderer {
+	private element: HTMLElement;
+	private textAreaWidth: number;
 	private ctx!: CanvasRenderingContext2D;
 	private arenaWidth: number;
 	private arenaHeight: number;
 	private cellSize = 25;
 
-	constructor(private element: HTMLElement, width = WIDTH, height = HEIGHT, private textAreaWidth = TEXT_AREA_WIDTH) {
+	constructor(properties: CanvasRendererProps) {
+		const props = { ...defaultProps, ...properties };
+		const { width, height } = props;
+
 		super(width, height);
+
+		({ element: this.element, textAreaWidth: this.textAreaWidth, drawGrid: this.drawGrid } = props);
 
 		this.arenaWidth = this.width * this.cellSize;
 		this.arenaHeight = this.height * this.cellSize;
@@ -37,12 +60,12 @@ export class CanvasRenderer extends BaseRenderer {
 		this.init();
 	}
 
-	override reset = (): void => {
-		super.reset();
+	override reset = (drawGrid: DrawGrid): void => {
+		super.reset(drawGrid);
 		this.focus();
 	};
 
-	protected renderCell = ({ x, y }: Point, type: CellType): void => {
+	protected renderCell = ({ x, y }: Point, type: DrawingObject): void => {
 		if (x >= this.width || y >= this.height) {
 			return;
 		}
@@ -50,13 +73,17 @@ export class CanvasRenderer extends BaseRenderer {
 		const cX = x * this.cellSize;
 		const cY = y * this.cellSize;
 
-		if (type !== CellType.empty) {
+		if (type !== DrawingObject.empty) {
 			this.ctx.fillStyle = colors[type];
 			this.ctx.fillRect(cX, cY, this.cellSize, this.cellSize);
 		} else {
-			this.ctx.clearRect(cX, cY, this.cellSize, this.cellSize);
-			this.ctx.strokeStyle = colors[CellType.empty];
-			this.ctx.strokeRect(cX, cY, this.cellSize, this.cellSize);
+			this.ctx.fillStyle = colors[type];
+			this.ctx.fillRect(cX, cY, this.cellSize, this.cellSize);
+
+			if (this.drawGrid === DrawGrid.Yes) {
+				this.ctx.strokeStyle = colors[DrawingObject.grid];
+				this.ctx.strokeRect(cX, cY, this.cellSize, this.cellSize);
+			}
 		}
 	};
 

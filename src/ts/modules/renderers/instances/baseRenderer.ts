@@ -1,55 +1,66 @@
-import { Player } from '../../../utils/enums';
+import { Player, DrawGrid } from '../../../utils/enums';
 import { Point } from '../../../utils/types';
 import { ArenaState } from '../../arena/arena';
 import { SnakeState } from '../../snake/snake';
 import { Renderer } from '../renderer';
 
-export enum CellType {
+export enum DrawingObject {
 	empty = 1,
 	head1 = 2,
 	head2 = 3,
 	body = 4,
-	coin = 5
+	coin = 5,
+	grid = 6
 }
 
 export abstract class BaseRenderer extends Renderer {
+	protected drawGrid = DrawGrid.No;
+
 	private isInitialized = false;
 	private arenaPrevState?: ArenaState;
 
-	protected abstract renderCell: (point: Point, type: CellType) => void;
+	protected abstract renderCell: (point: Point, type: DrawingObject) => void;
 	protected abstract renderTextLine: (string: string, lineNumber: number) => void;
 
-	constructor(protected width: number, protected height: number) {
+	constructor(protected width: number, protected height: number, private renderServiceInfoFlag = false) {
 		super();
 	}
 
 	render = (state: ArenaState): void => {
+		let lineNumber = 0;
+
 		if (!this.isInitialized) {
 			this.isInitialized = true;
 			this.renderMap();
 		}
 
-		let linesNum = 0;
-
 		Object.values(state.snakes).forEach(state => {
-			this.renderServiceInfo(state.serviceInfo, linesNum);
-			this.renderItems(state, this.arenaPrevState?.snakes[state.id]);
+			if (this.renderServiceInfoFlag) {
+				this.renderServiceInfo(state.serviceInfo, lineNumber);
+				lineNumber += Object.keys(state.serviceInfo).length + 1;
+			}
 
-			linesNum += Object.keys(state.serviceInfo).length + 1;
+			this.renderItems(state, this.arenaPrevState?.snakes[state.id]);
 		});
 
-		linesNum++;
+		lineNumber++;
 
-		this.renderTextLine('DEATHS:', linesNum++);
-		Object.entries(state.score).forEach(([player, score]) => {
-			this.renderTextLine(`${Player[parseInt(player) as Player]}: ${score}`, linesNum++);
+		this.renderTextLine('SCORE:', lineNumber++);
+
+		Object.entries(state.score).forEach(([player, { deaths, coins }]) => {
+			this.renderTextLine(`Player: ${Player[parseInt(player) as Player]}`, lineNumber++);
+			this.renderTextLine(`Deaths: ${deaths}`, lineNumber++);
+			this.renderTextLine(`Coins: ${coins}`, lineNumber);
+
+			lineNumber += 2;
 		});
 
 		this.renderCoin(state.coin, this.arenaPrevState);
 		this.arenaPrevState = state;
 	};
 
-	reset(): void {
+	reset(drawGrid: DrawGrid): void {
+		this.drawGrid = drawGrid;
 		this.isInitialized = false;
 		this.arenaPrevState = undefined;
 	}
@@ -66,7 +77,7 @@ export abstract class BaseRenderer extends Renderer {
 	private renderMap = (): void => {
 		for (let i = 0; i < this.width; i++) {
 			for (let j = 0; j < this.height; j++) {
-				this.renderCell({ x: i, y: j }, CellType.empty);
+				this.renderCell({ x: i, y: j }, DrawingObject.empty);
 			}
 		}
 	};
@@ -80,7 +91,7 @@ export abstract class BaseRenderer extends Renderer {
 				return this.renderCell(current, headType);
 			}
 
-			this.renderCell(current, CellType.body);
+			this.renderCell(current, DrawingObject.body);
 			current.next && (current = current.next);
 		}
 	};
@@ -92,8 +103,8 @@ export abstract class BaseRenderer extends Renderer {
 			const { head: prevHead, tail: prevTail } = prevState;
 			const headType = this.getHeadType(id);
 
-			this.rerenderCell({ p1: prevHead, p2: head, t1: CellType.body, t2: headType });
-			this.rerenderCell({ p1: prevTail, p2: tail, t1: CellType.empty });
+			this.rerenderCell({ p1: prevHead, p2: head, t1: DrawingObject.body, t2: headType });
+			this.rerenderCell({ p1: prevTail, p2: tail, t1: DrawingObject.empty });
 		} else {
 			this.renderSnake(id, head, tail);
 		}
@@ -101,15 +112,15 @@ export abstract class BaseRenderer extends Renderer {
 
 	private renderCoin = (coin: Point, prevState?: ArenaState): void => {
 		if (prevState) {
-			this.rerenderCell({ p1: prevState.coin, p2: coin, t2: CellType.coin });
+			this.rerenderCell({ p1: prevState.coin, p2: coin, t2: DrawingObject.coin });
 		} else {
-			this.renderCell(coin, CellType.coin);
+			this.renderCell(coin, DrawingObject.coin);
 		}
 	};
 
-	private getHeadType = (id: Player): CellType => (id === Player.P1 ? CellType.head1 : CellType.head2);
+	private getHeadType = (id: Player): DrawingObject => (id === Player.P1 ? DrawingObject.head1 : DrawingObject.head2);
 
-	private rerenderCell({ p1, p2, t1, t2 }: { p1: Point; p2: Point; t1?: CellType; t2?: CellType }): void {
+	private rerenderCell({ p1, p2, t1, t2 }: { p1: Point; p2: Point; t1?: DrawingObject; t2?: DrawingObject }): void {
 		if (p1.x === p2.x && p1.y === p2.y) {
 			return;
 		}

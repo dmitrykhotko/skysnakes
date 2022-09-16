@@ -24,8 +24,6 @@ export class Snake {
 		[Direction.Right]: (point: Point): Point => ({ x: point.x + 1, y: point.y })
 	};
 
-	private coin = { x: 0, y: 0 } as Point;
-	private score = 0;
 	private tail: Point;
 	private nextDirection?: Direction;
 
@@ -70,11 +68,9 @@ export class Snake {
 	};
 
 	getState = (): SnakeState => {
-		const { id, coin, head, tail, score, direction } = this;
+		const { id, head, tail, direction } = this;
 		const serviceInfo = {
 			direction: Direction[direction],
-			score: score.toString(),
-			coin: `x: ${coin.x}, y: ${coin.y}`,
 			head: `x: ${head.x}, y: ${head.y}`,
 			tail: `x: ${tail.x}, y: ${tail.y}`
 		};
@@ -95,8 +91,6 @@ export class Snake {
 
 		this.nextDirection = direction;
 	};
-
-	incScore = (): number => this.score++;
 
 	private applyDirection = () => {
 		if (this.nextDirection !== undefined && !!~this.nextDirection) {

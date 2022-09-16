@@ -38,3 +38,8 @@ export enum ArenaType {
 	Soft = 'soft',
 	Transparent = 'transparent'
 }
+
+export enum DrawGrid {
+	Yes = 'yes',
+	No = 'no'
+}

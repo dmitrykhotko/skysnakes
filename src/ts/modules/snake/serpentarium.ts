@@ -33,11 +33,6 @@ export class Serpentarium {
 		});
 	};
 
-	incScore = (snakeId: Player): void => {
-		const snake = this.snakesDicto[snakeId];
-		snake && snake.incScore();
-	};
-
 	faceBody = (newHead: Point): boolean => {
 		let isCrashed = false;
 
@@ -86,6 +81,8 @@ export class Serpentarium {
 		const snake = this.snakesDicto[snakeId];
 		snake && (snake.snakeHead = head);
 	};
+
+	getPlayers = (): Player[] => this.snakes.map(snake => snake.snakeId);
 
 	private initSnakes = () => {
 		this.initialData.length && this.snakes.push(this.getSnake(Player.P1, this.initialData[0]));
