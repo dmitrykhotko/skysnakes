@@ -9,7 +9,7 @@ const getPlugins = enableSourceMaps => {
 	const plugins = [
 		new MiniCssExtractPlugin({ filename: '[name].css' }),
 		new ESLintPlugin({ fix: true, extensions: ['js', 'jsx', 'ts', 'tsx'] }),
-		new StylelintPlugin({ fix: true, files: '**/*.scss' }),
+		new StylelintPlugin({ fix: true, files: '**/*.scss' })
 	];
 
 	if (enableSourceMaps) {

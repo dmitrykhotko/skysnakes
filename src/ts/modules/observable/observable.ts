@@ -1,9 +1,9 @@
-import { Observer } from "./observer"
+import { Observer } from './observer';
 
 export interface Observable {
-	subscribe(observer: Observer): void
+	subscribe(observer: Observer): void;
 
-	unsubscribe(observer: Observer): void
+	unsubscribe(observer: Observer): void;
 
-	notify(params: unknown): void
+	notify(params: unknown): void;
 }
