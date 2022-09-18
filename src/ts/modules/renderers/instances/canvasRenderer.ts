@@ -46,13 +46,13 @@ export class CanvasRenderer extends BaseRenderer {
 	private arenaHeight: number;
 	private cellSize = 25;
 
-	constructor(properties: CanvasRendererProps) {
-		const props = { ...defaultProps, ...properties };
-		const { width, height } = props;
+	constructor(props: CanvasRendererProps) {
+		const cProps = { ...defaultProps, ...props };
+		const { width, height } = cProps;
 
 		super(width, height);
 
-		({ element: this.element, textAreaWidth: this.textAreaWidth, drawGrid: this.drawGrid } = props);
+		({ element: this.element, textAreaWidth: this.textAreaWidth, drawGrid: this.drawGrid } = cProps);
 
 		this.arenaWidth = this.width * this.cellSize;
 		this.arenaHeight = this.height * this.cellSize;
@@ -62,6 +62,7 @@ export class CanvasRenderer extends BaseRenderer {
 
 	override reset = (drawGrid: DrawGrid): void => {
 		super.reset(drawGrid);
+		this.ctx.clearRect(this.arenaWidth + 1, 0, this.textAreaWidth, this.arenaHeight);
 		this.focus();
 	};
 

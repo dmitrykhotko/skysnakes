@@ -12,7 +12,7 @@ export class Serpentarium {
 	private snakesDicto = {} as Record<Player, Snake>;
 	private snakes: Snake[] = [];
 
-	constructor(private initialData: SnakeData[]) {
+	constructor(private props: SnakeData[]) {
 		this.initSnakes();
 	}
 
@@ -85,8 +85,8 @@ export class Serpentarium {
 	getPlayers = (): Player[] => this.snakes.map(snake => snake.snakeId);
 
 	private initSnakes = () => {
-		this.initialData.length && this.snakes.push(this.getSnake(Player.P1, this.initialData[0]));
-		this.initialData.length > 1 && this.snakes.push(this.getSnake(Player.P2, this.initialData[1]));
+		this.props.length && this.snakes.push(this.getSnake(Player.P1, this.props[0]));
+		this.props.length > 1 && this.snakes.push(this.getSnake(Player.P2, this.props[1]));
 
 		this.snakesDicto = this.snakes.reduce((acc, snake) => {
 			acc[snake.snakeId] = snake;

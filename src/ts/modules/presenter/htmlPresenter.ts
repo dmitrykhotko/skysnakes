@@ -30,7 +30,7 @@ export class HtmlPresenter implements Presenter, Observer {
 		const playerMode = this.getRadioValue<PlayerMode>('playerMode');
 		const arenaType = this.getRadioValue<ArenaType>('arenaType');
 		const drawGrid = this.getRadioValue<DrawGrid>('drawGrid');
-		const deathsNum = parseInt(this.deathsNumInput.value);
+		const deathsNum = +this.deathsNumInput.value;
 
 		return {
 			playerMode,

@@ -27,32 +27,40 @@ export abstract class BaseRenderer extends Renderer {
 	}
 
 	render = (state: ArenaState): void => {
-		let lineNumber = 0;
+		const { snakes, score, loosers } = state;
+		let lineNumber = 1;
 
 		if (!this.isInitialized) {
 			this.isInitialized = true;
 			this.renderMap();
 		}
 
-		Object.values(state.snakes).forEach(state => {
-			if (this.renderServiceInfoFlag) {
-				this.renderServiceInfo(state.serviceInfo, lineNumber);
-				lineNumber += Object.keys(state.serviceInfo).length + 1;
-			}
+		if (loosers.length) {
+			this.renderTextLine(`LOOSER${loosers.length > 1 ? 'S' : ''}:`, lineNumber++);
+			loosers.forEach(looser => {
+				this.renderTextLine(`${Player[looser]}`, lineNumber++);
+			});
 
-			this.renderItems(state, this.arenaPrevState?.snakes[state.id]);
-		});
-
-		lineNumber++;
+			lineNumber += 2;
+		}
 
 		this.renderTextLine('SCORE:', lineNumber++);
 
-		Object.entries(state.score).forEach(([player, { deaths, coins }]) => {
+		Object.entries(score).forEach(([player, { deaths, coins }]) => {
 			this.renderTextLine(`Player: ${Player[parseInt(player) as Player]}`, lineNumber++);
 			this.renderTextLine(`Deaths: ${deaths}`, lineNumber++);
 			this.renderTextLine(`Coins: ${coins}`, lineNumber);
 
 			lineNumber += 2;
+		});
+
+		Object.values(snakes).forEach(snake => {
+			if (this.renderServiceInfoFlag) {
+				this.renderServiceInfo(snake.serviceInfo, lineNumber);
+				lineNumber += Object.keys(snake.serviceInfo).length + 1;
+			}
+
+			this.renderItems(snake, this.arenaPrevState?.snakes[snake.id]);
 		});
 
 		this.renderCoin(state.coin, this.arenaPrevState);

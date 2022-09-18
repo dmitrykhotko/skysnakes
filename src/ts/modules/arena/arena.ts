@@ -18,6 +18,7 @@ export type ArenaState = {
 	width: number;
 	height: number;
 	score: Record<Player, Score>;
+	loosers: Player[];
 };
 
 export type ArenaProps = {
@@ -34,6 +35,7 @@ const defaultProps = {
 };
 
 export class Arena {
+	private static scoreInitialized = false;
 	private static score = {} as Record<Player, Score>;
 
 	private snakes!: Serpentarium;
@@ -42,23 +44,23 @@ export class Arena {
 	private coin = { x: 0, y: 0 } as Point;
 	private inProgress = true;
 	private initialData: SnakeData[];
+	private deathsNum: number;
+	private loosers = [] as Player[];
 	private width = WIDTH;
 	private height = HEIGHT;
 
-	constructor(properties: ArenaProps) {
-		const props = { ...defaultProps, ...properties };
-		const { directions } = props;
+	constructor(props: ArenaProps) {
+		const aProps = { ...defaultProps, ...props };
+		const { directions } = aProps;
 
-		({ strategy: this.strategy, width: this.width, height: this.height } = props);
+		({ strategy: this.strategy, width: this.width, deathsNum: this.deathsNum, height: this.height } = aProps);
 
 		this.initialData = directions.map(d => ({ head: this.getStartPoint(d), direction: d }));
 		this.cellsNum = this.width * this.height;
 		this.snakes = new Serpentarium(this.initialData);
 		this.makeCoin();
 
-		const players = this.snakes.getPlayers();
-
-		Object.keys(Arena.score).length !== players.length && this.initScore(players);
+		this.initScore();
 	}
 
 	static resetScore = (): void => {
@@ -77,7 +79,8 @@ export class Arena {
 		snakes: this.snakes.getState(),
 		width: this.width,
 		height: this.height,
-		score: Arena.score
+		score: Arena.score,
+		loosers: this.loosers
 	});
 
 	makeCoin = (): void => {
@@ -98,39 +101,65 @@ export class Arena {
 		this.snakes.setHead(snakeId, head);
 	};
 
-	private initScore = (players: Player[]) =>
-		(Arena.score = players.reduce((acc, player) => {
+	private initScore = () => {
+		const players = this.snakes.getPlayers();
+
+		if (Arena.scoreInitialized && Object.keys(Arena.score).length === players.length) {
+			return;
+		}
+
+		Arena.scoreInitialized = true;
+		Arena.score = players.reduce((acc, player) => {
 			acc[player] = { deaths: 0, coins: 0 };
 			return acc;
-		}, {} as Record<Player, Score>));
+		}, {} as Record<Player, Score>);
+	};
 
 	private handleMoveHead = (states: Record<Player, Point>): Player[] => {
 		const ids: Player[] = [];
 
 		Object.entries(states).forEach(([snakeId, point]) => {
-			const id = parseInt(snakeId) as Player;
+			const id = +snakeId as Player;
 
 			if (this.snakes.faceBody(point)) {
-				Arena.score[id].deaths++;
-				return (this.inProgress = false);
+				return this.finish(id);
 			}
 
 			const success = this.strategy.run(point, this, id);
 
 			if (!success) {
-				return (this.inProgress = false);
+				return this.finish(id);
 			}
 
 			if (this.faceCoin(point)) {
 				Arena.score[id].coins++;
-				this.makeCoin();
-				return;
+				return this.makeCoin();
 			}
 
 			ids.push(id);
 		});
 
+		!this.inProgress && this.judge();
+
 		return ids;
+	};
+
+	private finish = (id: Player): void => {
+		Arena.score[id].deaths++;
+		this.inProgress = false;
+	};
+
+	private judge = (): void => {
+		Object.entries(Arena.score).forEach(([id, score]) => {
+			const player = +id as Player;
+
+			if (score.deaths === this.deathsNum) {
+				this.loosers.push(player);
+				Arena.scoreInitialized = false;
+			}
+		});
+
+		this.loosers.length && (Arena.scoreInitialized = false);
 	};
 
 	private getFreeCells = (): number[] => {

@@ -56,9 +56,9 @@ export class Controller implements Observer {
 	private onStart: () => void;
 	private onFinish: () => void;
 
-	constructor(properties: ControllerProps) {
-		const props = { ...defaultProps, ...properties };
-		const { autostart } = props;
+	constructor(props: ControllerProps) {
+		const cProps = { ...defaultProps, ...props };
+		const { autostart } = cProps;
 
 		({
 			presenter: this.presenter,
@@ -66,7 +66,7 @@ export class Controller implements Observer {
 			height: this.height,
 			onStart: this.onStart,
 			onFinish: this.onFinish
-		} = props);
+		} = cProps);
 
 		this.presenter.onInput((input: Input) => {
 			if (MoveInput[input]) {
