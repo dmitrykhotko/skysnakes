@@ -1,28 +1,26 @@
 import { Controller } from './modules/controller/controller';
-import { HtmlPresenter } from './modules/presenter/htmlPresenter';
+import { Observer } from './modules/observable/observer';
+import { SettingsProvider } from './modules/settingsProvider/settingsProvider';
 import { CanvasRenderer } from './modules/renderers/instances/canvasRenderer';
 import { Timer } from './modules/timer/timer';
 
 const run = () => {
 	const autostart = true;
 	const canvas = document.querySelector('.js-Snake__CanvasPresenter');
-	const controlPanel = document.querySelector('.js-Snake__Controls');
+	const controlPanel = document.querySelector('.js-Snake__Settings');
 
-	if (!(canvas && controlPanel)) {
-		return;
-	}
+	SettingsProvider.init(controlPanel as HTMLElement);
 
 	const timer = new Timer();
-	const canvasRenderer = new CanvasRenderer({ element: canvas as HTMLElement });
-	const presenter = new HtmlPresenter(canvasRenderer, controlPanel as HTMLElement);
+	const renderer = new CanvasRenderer({ element: canvas as HTMLElement });
 	const controller = new Controller({
-		presenter,
+		renderer,
 		autostart,
 		onStart: timer.start,
 		onFinish: timer.stop
 	});
 
-	timer.subscribe(controller);
+	timer.subscribe(controller.notify.bind(controller) as Observer);
 };
 
 run();

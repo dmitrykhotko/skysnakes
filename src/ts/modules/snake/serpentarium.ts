@@ -1,7 +1,7 @@
 import { Direction, Player } from '../../utils/enums';
 import { comparePoints } from '../../utils/helpers';
 import { Point } from '../../utils/types';
-import { Snake, SnakeState } from './snake';
+import { Snake } from './snake';
 
 export type SnakeData = {
 	head: Point;
@@ -16,21 +16,14 @@ export class Serpentarium {
 		this.initSnakes();
 	}
 
-	moveHead = (): Record<Player, Point> => {
+	move = (): Record<Player, Point> => {
 		const snakes = {} as Record<Player, Point>;
 
 		this.snakes.forEach(snake => {
-			snakes[snake.snakeId] = snake.moveHead();
+			snakes[snake.snakeId] = snake.move();
 		});
 
 		return snakes;
-	};
-
-	moveTail = (ids: Player[]): void => {
-		ids.forEach(id => {
-			const snake = this.snakesDicto[id];
-			snake && snake.moveTail();
-		});
 	};
 
 	faceBody = (newHead: Point): boolean => {
@@ -66,23 +59,21 @@ export class Serpentarium {
 		return set;
 	};
 
-	getState = (): Record<Player, SnakeState> =>
-		this.snakes.reduce((acc, snake) => {
-			acc[snake.snakeId] = snake.getState();
-			return acc;
-		}, {} as Record<Player, SnakeState>);
-
 	sendDirection = (snakeId: Player, direction: Direction): void => {
 		const snake = this.snakesDicto[snakeId];
 		snake && snake.sendDirection(direction);
 	};
 
-	setHead = (snakeId: Player, head: Point): void => {
-		const snake = this.snakesDicto[snakeId];
-		snake && (snake.snakeHead = head);
-	};
+	// setHead = (snakeId: Player, head: Point): void => {
+	// 	const snake = this.snakesDicto[snakeId];
+	// 	snake && (snake.snakeHead = head);
+	// };
 
 	getPlayers = (): Player[] => this.snakes.map(snake => snake.snakeId);
+
+	grow = (snakeId: Player): void => {
+		this.snakesDicto[snakeId].grow();
+	};
 
 	private initSnakes = () => {
 		this.props.length && this.snakes.push(this.getSnake(Player.P1, this.props[0]));

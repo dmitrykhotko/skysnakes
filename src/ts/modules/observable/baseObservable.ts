@@ -12,5 +12,5 @@ export abstract class BaseObservable implements Observable {
 		this.observers.delete(observer);
 	};
 
-	notify = (params?: unknown): void => this.observers.forEach(observer => observer.notify(params));
+	notify = (...params: unknown[]): void => this.observers.forEach(observer => observer(...params));
 }

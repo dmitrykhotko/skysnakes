@@ -119,7 +119,7 @@ export class CanvasRenderer extends BaseRenderer {
 
 	private onKeyDown = ({ key }: KeyboardEvent): void => {
 		const input = keyInputMapping[key];
-		input && this.notify(input);
+		input && this.input(input);
 	};
 
 	private focus = (): void => {

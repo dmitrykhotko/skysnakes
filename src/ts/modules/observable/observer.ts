@@ -1,3 +1,1 @@
-export interface Observer {
-	notify(params: unknown): void;
-}
+export type Observer = (...params: unknown[]) => void;

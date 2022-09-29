@@ -1,7 +1,7 @@
-import { Player, DrawGrid } from '../../../utils/enums';
-import { Point } from '../../../utils/types';
+import { DrawGrid, MoveInput, Player } from '../../../utils/enums';
+import { InputActions as actions, state } from '../../redux';
+import { Point, SnakeState } from '../../../utils/types';
 import { ArenaState } from '../../arena/arena';
-import { SnakeState } from '../../snake/snake';
 import { Renderer } from '../renderer';
 
 export enum DrawingObject {
@@ -22,7 +22,7 @@ export abstract class BaseRenderer extends Renderer {
 	protected abstract renderCell: (point: Point, type: DrawingObject) => void;
 	protected abstract renderTextLine: (string: string, lineNumber: number) => void;
 
-	constructor(protected width: number, protected height: number, private renderServiceInfoFlag = false) {
+	constructor(protected width: number, protected height: number) {
 		super();
 	}
 
@@ -47,20 +47,16 @@ export abstract class BaseRenderer extends Renderer {
 		this.renderTextLine('SCORE:', lineNumber++);
 
 		Object.entries(score).forEach(([player, { deaths, coins }]) => {
-			this.renderTextLine(`Player: ${Player[parseInt(player) as Player]}`, lineNumber++);
+			this.renderTextLine(`Player: ${Player[+player as Player]}`, lineNumber++);
 			this.renderTextLine(`Deaths: ${deaths}`, lineNumber++);
 			this.renderTextLine(`Coins: ${coins}`, lineNumber);
 
 			lineNumber += 2;
 		});
 
-		Object.values(snakes).forEach(snake => {
-			if (this.renderServiceInfoFlag) {
-				this.renderServiceInfo(snake.serviceInfo, lineNumber);
-				lineNumber += Object.keys(snake.serviceInfo).length + 1;
-			}
-
-			this.renderItems(snake, this.arenaPrevState?.snakes[snake.id]);
+		Object.entries(snakes).forEach(([player, snake]) => {
+			const id = +player as Player;
+			this.renderItems(id, snake, this.arenaPrevState?.snakes[id]);
 		});
 
 		this.renderCoin(state.coin, this.arenaPrevState);
@@ -73,13 +69,8 @@ export abstract class BaseRenderer extends Renderer {
 		this.arenaPrevState = undefined;
 	}
 
-	private renderServiceInfo = (serviceInfo: Record<string, string>, line = 0): void => {
-		const data = Object.entries(serviceInfo);
-
-		for (let i = 0; i < data.length; i++) {
-			const [key, value] = data[i];
-			this.renderTextLine(`${key}: ${value}`, line + i + 1);
-		}
+	protected input = (input: MoveInput): void => {
+		state.dispatch(actions.setMoveInput(input));
 	};
 
 	private renderMap = (): void => {
@@ -104,8 +95,8 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	};
 
-	private renderItems(state: SnakeState, prevState?: SnakeState): void {
-		const { id, head, tail } = state;
+	private renderItems(id: Player, state: SnakeState, prevState?: SnakeState): void {
+		const { head, tail } = state;
 
 		if (prevState) {
 			const { head: prevHead, tail: prevTail } = prevState;

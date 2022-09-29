@@ -1,26 +1,33 @@
-import { HEIGHT, WIDTH } from '../../utils/constants';
-import { ArenaType, ControlInput, Direction, Input, MoveInput, Player, PlayerMode } from '../../utils/enums';
-import { UserSettings } from '../../utils/types';
-import { Arena } from '../arena/arena';
+import { HEIGHT, SET_DIRECTION, SET_RESET, SET_START, WIDTH } from '../../utils/constants';
+import { ArenaType, ControlInput, Direction, MoveInput, Player, PlayerMode } from '../../utils/enums';
+import {
+	Action,
+	ArenaActions,
+	ArenaStore,
+	InputActions,
+	InputStore,
+	SettingsStore,
+	SnakesActions,
+	SnakesStore,
+	state
+} from '../redux';
+import { Arena, ArenaState } from '../arena/arena';
+import { NormalStrategy, SoftWallsStrategy, TransparentWallsStrategy } from '../arena/strategies';
 import { Observer } from '../observable/observer';
-import { Presenter } from '../presenter/presenter';
-import { NormalStrategy } from '../arena/strategies/instances/normalStrategy';
-import { SoftWallsStrategy } from '../arena/strategies/instances/softWallsStrategy';
-import { TransparentWallsStrategy } from '../arena/strategies/instances/transparentWallsStrategy';
-import { ArenaStrategy } from '../arena/strategies/arenaStrategy';
+import { Renderer } from '../renderers/renderer';
 
 const { Up, Down, Left, Right } = Direction;
 const { P1, P2 } = Player;
 
-const inputToSnakeIdDirection = {
-	[MoveInput.RUp]: { snakeId: P1, direction: Up },
-	[MoveInput.RDown]: { snakeId: P1, direction: Down },
-	[MoveInput.RLeft]: { snakeId: P1, direction: Left },
-	[MoveInput.RRight]: { snakeId: P1, direction: Right },
-	[MoveInput.LUp]: { snakeId: P2, direction: Up },
-	[MoveInput.LDown]: { snakeId: P2, direction: Down },
-	[MoveInput.LLeft]: { snakeId: P2, direction: Left },
-	[MoveInput.LRight]: { snakeId: P2, direction: Right }
+const inputToIdDirection = {
+	[MoveInput.RUp]: { id: P1, direction: Up },
+	[MoveInput.RDown]: { id: P1, direction: Down },
+	[MoveInput.RLeft]: { id: P1, direction: Left },
+	[MoveInput.RRight]: { id: P1, direction: Right },
+	[MoveInput.LUp]: { id: P2, direction: Up },
+	[MoveInput.LDown]: { id: P2, direction: Down },
+	[MoveInput.LLeft]: { id: P2, direction: Left },
+	[MoveInput.LRight]: { id: P2, direction: Right }
 };
 
 const playerModeToDirections = {
@@ -41,16 +48,16 @@ const defaultProps = {
 };
 
 export type ControllerProps = {
-	presenter: Presenter;
+	renderer: Renderer;
 	width?: number;
 	height?: number;
 	autostart?: boolean;
 	onStart: () => void;
 	onFinish: () => void;
 };
-export class Controller implements Observer {
+export class Controller {
 	private arena!: Arena;
-	private presenter: Presenter;
+	private renderer: Renderer;
 	private width: number;
 	private height: number;
 	private onStart: () => void;
@@ -61,64 +68,66 @@ export class Controller implements Observer {
 		const { autostart } = cProps;
 
 		({
-			presenter: this.presenter,
+			renderer: this.renderer,
 			width: this.width,
 			height: this.height,
 			onStart: this.onStart,
 			onFinish: this.onFinish
 		} = cProps);
 
-		this.presenter.onInput((input: Input) => {
-			if (MoveInput[input]) {
-				this.handleMoveInput(input as MoveInput);
-			}
-
-			if (ControlInput[input]) {
-				this.handleControlInput(input as ControlInput);
-			}
-		});
-
+		this.subscribe();
 		autostart && this.start();
 	}
 
 	notify(): void {
-		const state = this.arena.getState();
-		const { inProgress } = state;
+		const store = state.get();
+		const arenaState = {
+			...(store as ArenaStore).arena,
+			snakes: (store as SnakesStore).snakes
+		} as ArenaState;
 
-		this.presenter.render(state);
+		this.renderer.render(arenaState);
 
-		if (!inProgress) {
+		if (!arenaState.inProgress) {
 			return this.onFinish();
 		}
 
 		this.arena.move();
 	}
 
-	private start = (): void => {
+	private start = (reset = false, ...actions: Action[]): void => {
 		const { width, height } = this;
-		const { playerMode, arenaType, drawGrid, deathsNum } = this.getUserSettings();
+		const { playerMode, arenaType, drawGrid, deathsNum } = (state.get() as SettingsStore).settings;
 		const directions = playerModeToDirections[playerMode];
-		const strategy = new arenaStrategies[arenaType](this.width, this.height) as ArenaStrategy;
+		this.renderer.reset(drawGrid);
 
-		this.presenter.reset(drawGrid);
-		this.arena = new Arena({ directions, strategy, width, height, deathsNum });
+		!this.arena && (this.arena = new Arena({ width, height }));
+		this.arena.start(directions, deathsNum, reset);
+
 		this.onStart();
+		state.dispatch(ArenaActions.setStrategy(new arenaStrategies[arenaType]()), ...actions);
 	};
 
 	private reset = (): void => {
-		Arena.resetScore();
-		this.start();
+		this.start(true, InputActions.releaseControlInput());
 	};
 
-	private handleMoveInput = (input: MoveInput): void => {
-		const { snakeId, direction } = inputToSnakeIdDirection[input];
-		this.arena.sendDirection(snakeId, direction);
+	private subscribe = (): void => {
+		state.subscribe(this.handleMoveInput as Observer, SET_DIRECTION);
+		state.subscribe(this.handleControlInput as Observer, SET_START);
+		state.subscribe(this.handleControlInput as Observer, SET_RESET);
 	};
 
-	private handleControlInput = (input: ControlInput): void => {
-		switch (input) {
+	private handleMoveInput = (newStore: InputStore): void => {
+		const { id, direction } = inputToIdDirection[newStore.input.moveInput];
+		state.dispatch(SnakesActions.sendDirection(direction, id));
+		this.arena.sendDirection(id, direction);
+	};
+
+	private handleControlInput = (newStore: InputStore): void => {
+		switch (newStore.input.controlInput) {
 			case ControlInput.Start:
-				this.start();
+				this.start(false, InputActions.releaseControlInput());
 				break;
 			case ControlInput.Reset:
 				this.reset();
@@ -127,6 +136,4 @@ export class Controller implements Observer {
 				break;
 		}
 	};
-
-	private getUserSettings = (): UserSettings => this.presenter.getUserSettings();
 }

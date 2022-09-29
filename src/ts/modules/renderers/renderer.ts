@@ -1,8 +1,7 @@
 import { DrawGrid } from '../../utils/enums';
 import { ArenaState } from '../arena/arena';
-import { BaseObservable } from '../observable/baseObservable';
 
-export abstract class Renderer extends BaseObservable {
+export abstract class Renderer {
 	abstract render(states: ArenaState): void;
 	abstract reset(drawGrid: DrawGrid): void;
 }

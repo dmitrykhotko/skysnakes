@@ -18,7 +18,8 @@ export enum MoveInput {
 
 export enum ControlInput {
 	Start = 9,
-	Reset = 10
+	Reset = 10,
+	Empty = 11
 }
 
 export type Input = MoveInput | ControlInput;

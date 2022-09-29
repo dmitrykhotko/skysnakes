@@ -13,3 +13,13 @@ export type UserSettings = {
 	drawGrid: DrawGrid;
 	deathsNum: number;
 };
+
+export type SnakeState = {
+	head: Point;
+	tail: Point;
+};
+
+export type Score = {
+	deaths: number;
+	coins: number;
+};

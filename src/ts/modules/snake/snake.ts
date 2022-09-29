@@ -1,14 +1,8 @@
-import { SNAKE_LENGTH } from '../../utils/constants';
+import { SEND_DIRECTION, SNAKE_LENGTH } from '../../utils/constants';
 import { Direction, Player } from '../../utils/enums';
 import { Point } from '../../utils/types';
-
-export type SnakeState = {
-	id: Player;
-	direction: Direction;
-	head: Point;
-	tail: Point;
-	serviceInfo: Record<string, string>;
-};
+import { Observer } from '../observable/observer';
+import { SnakesActions, SnakesStore, state } from '../redux';
 
 const directionWeights = {
 	[Direction.Up]: -1,
@@ -25,6 +19,7 @@ export class Snake {
 	};
 
 	private tail: Point;
+	private prevTail?: Point;
 	private nextDirection?: Direction;
 
 	constructor(
@@ -48,7 +43,7 @@ export class Snake {
 		return this.id;
 	}
 
-	moveHead = (): Point => {
+	move = (): Point => {
 		this.applyDirection();
 
 		const nextHead = Snake.headCalcs[this.direction](this.head);
@@ -57,39 +52,43 @@ export class Snake {
 		this.head.next = nextHead;
 		this.head = nextHead;
 
-		return this.head;
-	};
-
-	moveTail = (): Point => {
+		this.prevTail = this.tail;
 		this.tail.next && (this.tail = this.tail.next);
 		this.tail.prev = undefined;
 
-		return this.tail;
+		state.dispatch(SnakesActions.setSnake({ head: this.head, tail: this.tail }, this.snakeId));
+
+		return this.head;
 	};
 
-	getState = (): SnakeState => {
-		const { id, head, tail, direction } = this;
-		const serviceInfo = {
-			direction: Direction[direction],
-			head: `x: ${head.x}, y: ${head.y}`,
-			tail: `x: ${tail.x}, y: ${tail.y}`
-		};
-
-		return {
-			id,
-			direction,
-			head,
-			tail,
-			serviceInfo
-		};
-	};
-
-	sendDirection = (direction: Direction): void => {
-		if (!(directionWeights[this.direction] + directionWeights[direction])) {
+	grow = (): void => {
+		if (!this.prevTail) {
 			return;
 		}
 
-		this.nextDirection = direction;
+		this.prevTail.next = this.tail;
+		this.tail.prev = this.prevTail;
+		this.tail = this.prevTail;
+
+		this.prevTail = undefined;
+
+		state.dispatch(SnakesActions.setTail(this.tail, this.snakeId));
+	};
+
+	sendDirection = (newDirection: Direction): void => {
+		if (!(directionWeights[this.direction] + directionWeights[newDirection])) {
+			return;
+		}
+
+		this.nextDirection = newDirection;
+	};
+
+	private subscribe = () => {
+		state.subscribe(this.sendDirection as Observer, SEND_DIRECTION);
+	};
+
+	private onSendDirection = (state: SnakesStore) => {
+		state.snakes[this.id] && this.sendDirection(state.snakes[this.id].newDirection);
 	};
 
 	private applyDirection = () => {

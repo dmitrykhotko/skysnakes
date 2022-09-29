@@ -11,25 +11,25 @@ export enum Position {
 }
 
 export abstract class BaseWallsStrategy extends ArenaStrategy {
-	run = (head: Point, arena: Arena, snakeId: number): boolean => {
-		const position = this.getPosition(head);
-		position !== undefined && this.applyPosition(arena, snakeId, position, head);
+	run = (head: Point, width: number, height: number, snakeId: number): boolean => {
+		const position = this.getPosition(head, width, height);
+		position !== undefined && this.applyPosition(snakeId, position, head, width, height);
 
 		return true;
 	};
 
-	private getPosition = (head: Point): Position | undefined => {
+	private getPosition = (head: Point, width: number, height: number): Position | undefined => {
 		const { x, y } = head;
 
 		let pos: Position;
 
-		if (!!~x && !!~y && x !== this.width && y !== this.height) {
+		if (!!~x && !!~y && x !== width && y !== height) {
 			return undefined;
 		}
 
 		if (!~x) {
 			pos = Position.Left;
-		} else if (x === this.width) {
+		} else if (x === width) {
 			pos = Position.Right;
 		} else if (!~y) {
 			pos = Position.Top;
@@ -40,5 +40,5 @@ export abstract class BaseWallsStrategy extends ArenaStrategy {
 		return pos;
 	};
 
-	protected abstract applyPosition(arena: Arena, id: Player, position: Position, head: Point): void;
+	protected abstract applyPosition(id: Player, position: Position, head: Point, width: number, height: number): void;
 }
