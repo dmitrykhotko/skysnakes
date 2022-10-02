@@ -30,8 +30,8 @@ export class Serpentarium {
 	faceBody = (newHead: Point): boolean => {
 		let isCrashed = false;
 
-		this.snakes.forEach(({ snakeHead }) => {
-			let point: Point | undefined = snakeHead.prev;
+		for (let i = 0; i < this.snakes.length; i++) {
+			let point: Point | undefined = this.snakes[i].snakeHead.prev;
 
 			while (point) {
 				if (comparePoints(newHead, point)) {
@@ -40,7 +40,7 @@ export class Serpentarium {
 
 				point = point.prev;
 			}
-		});
+		}
 
 		return isCrashed;
 	};

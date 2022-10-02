@@ -48,7 +48,7 @@ export class Arena {
 		const actions = [this.setCoin(), ArenaActions.setInProgress(true)];
 		resetScore && this.resetScore();
 
-		this.dispatch(...actions);
+		state.dispatch(...actions);
 	};
 
 	move = (): void => {
@@ -79,7 +79,7 @@ export class Arena {
 			}
 		}
 
-		actionsList.length && this.dispatch(...actionsList);
+		actionsList.length && state.dispatch(...actionsList);
 	};
 
 	private subscribe = (): void => {
@@ -100,12 +100,8 @@ export class Arena {
 		return ArenaActions.setCoin({ x, y });
 	};
 
-	private dispatch = (...actions: Action[]) => {
-		state.dispatch(...actions);
-	};
-
 	private resetScore = (): void => {
-		this.dispatch(
+		state.dispatch(
 			ArenaActions.setScore(
 				this.snakes.getPlayers().reduce((acc, player) => {
 					acc[player] = { deaths: 0, coins: 0 };
@@ -137,7 +133,7 @@ export class Arena {
 			}
 		});
 
-		loosers.length && this.dispatch(ArenaActions.setLoosers(loosers));
+		loosers.length && state.dispatch(ArenaActions.setLoosers(loosers));
 	};
 
 	private getFreeCells = (): number[] => {
