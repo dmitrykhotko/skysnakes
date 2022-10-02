@@ -2,7 +2,7 @@ import { Observable } from './observable';
 import { Observer } from './observer';
 
 export abstract class BaseObservable implements Observable {
-	protected observers = new Set<Observer>();
+	private observers = new Set<Observer>();
 
 	subscribe = (observer: Observer): void => {
 		this.observers.add(observer);
@@ -13,4 +13,8 @@ export abstract class BaseObservable implements Observable {
 	};
 
 	notify = (...params: unknown[]): void => this.observers.forEach(observer => observer(...params));
+
+	reset = (): void => {
+		this.observers = new Set<Observer>();
+	};
 }

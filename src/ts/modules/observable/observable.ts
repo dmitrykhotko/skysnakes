@@ -6,4 +6,6 @@ export interface Observable {
 	unsubscribe(observer: Observer, type?: string): void;
 
 	notify(...params: unknown[]): void;
+
+	reset(): void;
 }

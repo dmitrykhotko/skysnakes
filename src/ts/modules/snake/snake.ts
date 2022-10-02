@@ -27,15 +27,6 @@ export class Snake {
 		this.subscribe();
 	}
 
-	get snakeHead(): Point {
-		const { head } = (state.get() as SnakesStore).snakes[this.id];
-		return head;
-	}
-
-	set snakeHead(head: Point) {
-		state.dispatch(SnakesActions.setHead(head, this.snakeId));
-	}
-
 	get snakeId(): Player {
 		return this.id;
 	}

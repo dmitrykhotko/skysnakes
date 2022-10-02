@@ -1,6 +1,8 @@
+import { SEND_DIRECTION } from '../../utils/constants';
 import { Direction, Player } from '../../utils/enums';
 import { comparePoints } from '../../utils/helpers';
 import { Point } from '../../utils/types';
+import { SnakesStore, state } from '../redux';
 import { Snake } from './snake';
 
 export type SnakeData = {
@@ -10,7 +12,7 @@ export type SnakeData = {
 
 export class Serpentarium {
 	private snakesDicto = {} as Record<Player, Snake>;
-	private snakes: Snake[] = [];
+	private snakes!: Snake[];
 
 	constructor(private props: SnakeData[]) {
 		this.initSnakes();
@@ -29,9 +31,10 @@ export class Serpentarium {
 
 	faceBody = (newHead: Point): boolean => {
 		let isCrashed = false;
+		const snakes = Object.values((state.get() as SnakesStore).snakes);
 
-		for (let i = 0; i < this.snakes.length; i++) {
-			let point: Point | undefined = this.snakes[i].snakeHead.prev;
+		for (let i = 0; i < snakes.length; i++) {
+			let point: Point | undefined = snakes[i].head.prev;
 
 			while (point) {
 				if (comparePoints(newHead, point)) {
@@ -47,9 +50,10 @@ export class Serpentarium {
 
 	getBodiesSet = (width: number): Set<number> => {
 		const set: Set<number> = new Set<number>();
+		const snakes = Object.values((state.get() as SnakesStore).snakes);
 
-		this.snakes.forEach(({ snakeHead }) => {
-			let point: Point | undefined = snakeHead;
+		snakes.forEach(({ head }) => {
+			let point: Point | undefined = head;
 
 			while (point) {
 				set.add(point.x + point.y * width);
@@ -67,6 +71,9 @@ export class Serpentarium {
 	};
 
 	private initSnakes = () => {
+		state.reset(SEND_DIRECTION);
+
+		this.snakes = [];
 		this.props.length && this.snakes.push(this.getSnake(Player.P1, this.props[0]));
 		this.props.length > 1 && this.snakes.push(this.getSnake(Player.P2, this.props[1]));
 

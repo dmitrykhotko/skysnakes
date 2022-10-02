@@ -16,7 +16,7 @@ class State implements Observable {
 
 	private store: Store;
 	private traceShift = '';
-	private actionsObservers = {} as Record<string, Observer[]>;
+	private observers = {} as Record<string, Observer[]>;
 
 	constructor(private reducer: Reducer<Store>) {
 		this.dispatch = TRACE_STATE ? this.traceDispatch : this.dispathcInternal;
@@ -26,21 +26,29 @@ class State implements Observable {
 	get = (): Store => this.store;
 
 	subscribe = (observer: Observer, type: string): void => {
-		!this.actionsObservers[type] && (this.actionsObservers[type] = []);
-		this.actionsObservers[type].push(observer);
+		!this.observers[type] && (this.observers[type] = []);
+		this.observers[type].push(observer);
 	};
 
 	unsubscribe = (observer: Observer, type: string): void => {
-		const observers = this.actionsObservers[type];
+		const observers = this.observers[type];
 		const index = observers.indexOf(observer);
 		!!~index && observers.splice(index, 1);
 	};
 
 	notify = (type: string, newStore: Store, oldStore: Store): void => {
-		const observers = this.actionsObservers[type] || [];
+		const observers = this.observers[type] || [];
 
 		for (let i = 0; i < observers.length; i++) {
 			observers[i](newStore, oldStore);
+		}
+	};
+
+	reset = (type = ''): void => {
+		if (type === '') {
+			this.observers = {} as Record<string, Observer[]>;
+		} else {
+			this.observers[type] = [];
 		}
 	};
 
