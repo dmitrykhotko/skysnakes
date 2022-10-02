@@ -39,8 +39,8 @@ export class Arena {
 	}
 
 	start = (directions: Direction[], deathsNum: number, reset = false): void => {
-		const { loosers } = this.getStore();
-		const resetScore = loosers.length || reset;
+		const { score, loosers } = this.getStore();
+		const resetScore = Object.keys(score).length !== directions.length || loosers.length || reset;
 
 		this.deathsNum = deathsNum;
 		this.snakes = new Serpentarium(directions.map(d => ({ head: this.getStartPoint(d), direction: d })));
@@ -52,29 +52,32 @@ export class Arena {
 	};
 
 	move = (): void => {
-		const states = this.snakes.move();
+		const states = Object.entries(this.snakes.move());
 		const actionsList = [] as Action[];
 
-		Object.entries(states).forEach(([snakeId, point]) => {
-			const id = +snakeId as Player;
+		for (let i = 0; i < states.length; i++) {
+			const [snakeId, point] = states[i];
+			const id = +snakeId;
 
 			if (this.snakes.faceBody(point)) {
-				return actionsList.push(...this.finish(id));
+				actionsList.push(...this.finish(id));
+				continue;
 			}
 
 			const { strategy } = this.getStore();
 			const success = strategy.run(point, this.width, this.height, id);
 
 			if (!success) {
-				return actionsList.push(...this.finish(id));
+				actionsList.push(...this.finish(id));
+				continue;
 			}
 
 			if (this.faceCoin(point)) {
 				this.snakes.grow(id);
 				actionsList.push(ArenaActions.incCoins(id), this.setCoin());
-				return;
+				continue;
 			}
-		});
+		}
 
 		actionsList.length && this.dispatch(...actionsList);
 	};

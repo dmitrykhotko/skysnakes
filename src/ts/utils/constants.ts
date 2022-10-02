@@ -8,7 +8,7 @@ export const GAME_SPEED = 10;
 
 // DEV SETTINGS
 
-export const TRACE_STATE = true;
+export const TRACE_STATE = false;
 
 // ACTIONS
 

@@ -10,14 +10,14 @@ const directionWeights = {
 	[Direction.Left]: -2,
 	[Direction.Right]: 2
 };
-export class Snake {
-	public static headCalcs = {
-		[Direction.Up]: (point: Point): Point => ({ x: point.x, y: point.y - 1 }),
-		[Direction.Down]: (point: Point): Point => ({ x: point.x, y: point.y + 1 }),
-		[Direction.Left]: (point: Point): Point => ({ x: point.x - 1, y: point.y }),
-		[Direction.Right]: (point: Point): Point => ({ x: point.x + 1, y: point.y })
-	};
 
+const headCalcs = {
+	[Direction.Up]: (point: Point): Point => ({ x: point.x, y: point.y - 1 }),
+	[Direction.Down]: (point: Point): Point => ({ x: point.x, y: point.y + 1 }),
+	[Direction.Left]: (point: Point): Point => ({ x: point.x - 1, y: point.y }),
+	[Direction.Right]: (point: Point): Point => ({ x: point.x + 1, y: point.y })
+};
+export class Snake {
 	private prevTail?: Point;
 	private nextDirection?: Direction;
 
@@ -45,7 +45,7 @@ export class Snake {
 
 		this.applyDirection();
 
-		const nextHead = Snake.headCalcs[this.direction](head);
+		const nextHead = headCalcs[this.direction](head);
 
 		nextHead.prev = head;
 		head.next = nextHead;

@@ -19,9 +19,10 @@ export class Serpentarium {
 	move = (): Record<Player, Point> => {
 		const snakes = {} as Record<Player, Point>;
 
-		this.snakes.forEach(snake => {
+		for (let i = 0; i < this.snakes.length; i++) {
+			const snake = this.snakes[i];
 			snakes[snake.snakeId] = snake.move();
-		});
+		}
 
 		return snakes;
 	};

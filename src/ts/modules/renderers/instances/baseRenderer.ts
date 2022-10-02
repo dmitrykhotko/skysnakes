@@ -37,27 +37,35 @@ export abstract class BaseRenderer extends Renderer {
 
 		if (loosers.length) {
 			this.renderTextLine(`LOOSER${loosers.length > 1 ? 'S' : ''}:`, lineNumber++);
-			loosers.forEach(looser => {
-				this.renderTextLine(`${Player[looser]}`, lineNumber++);
-			});
+
+			for (let i = 0; i < loosers.length; i++) {
+				this.renderTextLine(`${Player[loosers[i]]}`, lineNumber++);
+			}
 
 			lineNumber += 2;
 		}
 
 		this.renderTextLine('SCORE:', lineNumber++);
 
-		Object.entries(score).forEach(([player, { deaths, coins }]) => {
+		const scoreArray = Object.entries(score);
+		const snakesAray = Object.entries(snakes);
+
+		for (let i = 0; i < scoreArray.length; i++) {
+			const [player, { deaths, coins }] = scoreArray[i];
+
 			this.renderTextLine(`Player: ${Player[+player as Player]}`, lineNumber++);
 			this.renderTextLine(`Deaths: ${deaths}`, lineNumber++);
 			this.renderTextLine(`Coins: ${coins}`, lineNumber);
 
 			lineNumber += 2;
-		});
+		}
 
-		Object.entries(snakes).forEach(([player, snake]) => {
+		for (let i = 0; i < snakesAray.length; i++) {
+			const [player, snake] = snakesAray[i];
+
 			const id = +player as Player;
 			this.renderItems(id, snake, this.arenaPrevState?.snakes[id]);
-		});
+		}
 
 		this.renderCoin(state.coin, this.arenaPrevState);
 		this.arenaPrevState = state;
