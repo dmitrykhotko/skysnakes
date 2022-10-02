@@ -1,6 +1,5 @@
 import { Player } from '../../../../utils/enums';
 import { Point } from '../../../../utils/types';
-import { Arena } from '../../arena';
 import { ArenaStrategy } from '../arenaStrategy';
 
 export enum Position {

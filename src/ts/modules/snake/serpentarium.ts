@@ -59,16 +59,6 @@ export class Serpentarium {
 		return set;
 	};
 
-	sendDirection = (snakeId: Player, direction: Direction): void => {
-		const snake = this.snakesDicto[snakeId];
-		snake && snake.sendDirection(direction);
-	};
-
-	// setHead = (snakeId: Player, head: Point): void => {
-	// 	const snake = this.snakesDicto[snakeId];
-	// 	snake && (snake.snakeHead = head);
-	// };
-
 	getPlayers = (): Player[] => this.snakes.map(snake => snake.snakeId);
 
 	grow = (snakeId: Player): void => {

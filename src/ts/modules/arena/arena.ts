@@ -1,4 +1,4 @@
-import { HEIGHT, SET_IN_PROGRESS, SET_SCORE_INITIALIZED, WIDTH } from '../../utils/constants';
+import { HEIGHT, SET_IN_PROGRESS, WIDTH } from '../../utils/constants';
 import { Direction, Player } from '../../utils/enums';
 import { comparePoints } from '../../utils/helpers';
 import { Action, ArenaActions, ArenaStore, state } from '../redux';
@@ -39,14 +39,14 @@ export class Arena {
 	}
 
 	start = (directions: Direction[], deathsNum: number, reset = false): void => {
-		const { scoreInitialized } = this.getStore();
-		const initScore = scoreInitialized === undefined || reset;
+		const { loosers } = this.getStore();
+		const resetScore = loosers.length || reset;
 
 		this.deathsNum = deathsNum;
 		this.snakes = new Serpentarium(directions.map(d => ({ head: this.getStartPoint(d), direction: d })));
 
 		const actions = [this.setCoin(), ArenaActions.setInProgress(true)];
-		initScore && actions.push(ArenaActions.setScoreInitialized(false));
+		resetScore && this.resetScore();
 
 		this.dispatch(...actions);
 	};
@@ -76,28 +76,15 @@ export class Arena {
 			}
 		});
 
-		this.dispatch(...actionsList);
+		actionsList.length && this.dispatch(...actionsList);
 	};
-
-	sendDirection = (snakeId: Player, direction: Direction): void => {
-		this.snakes.sendDirection(snakeId, direction);
-	};
-
-	// setHead = (snakeId: Player, head: Point): void => {
-	// 	this.snakes.setHead(snakeId, head);
-	// };
 
 	private subscribe = (): void => {
 		state.subscribe(this.onInProgressChanged as Observer, SET_IN_PROGRESS);
-		state.subscribe(this.onScoreInitializedChanged as Observer, SET_SCORE_INITIALIZED);
 	};
 
 	private onInProgressChanged = (newStore: ArenaStore): void => {
 		this.judge(newStore);
-	};
-
-	private onScoreInitializedChanged = (newStore: ArenaStore): void => {
-		this.initScore(newStore.arena.scoreInitialized);
 	};
 
 	private setCoin = (): Action => {
@@ -114,11 +101,7 @@ export class Arena {
 		state.dispatch(...actions);
 	};
 
-	private initScore = (initialized = false): void => {
-		if (initialized) {
-			return;
-		}
-
+	private resetScore = (): void => {
 		this.dispatch(
 			ArenaActions.setScore(
 				this.snakes.getPlayers().reduce((acc, player) => {
@@ -126,8 +109,7 @@ export class Arena {
 					return acc;
 				}, {} as Record<Player, Score>)
 			),
-			ArenaActions.setLoosers([]),
-			ArenaActions.setScoreInitialized(true)
+			ArenaActions.setLoosers([])
 		);
 	};
 
@@ -152,7 +134,7 @@ export class Arena {
 			}
 		});
 
-		loosers.length && this.dispatch(ArenaActions.setLoosers(loosers), ArenaActions.setScoreInitialized(false));
+		loosers.length && this.dispatch(ArenaActions.setLoosers(loosers));
 	};
 
 	private getFreeCells = (): number[] => {

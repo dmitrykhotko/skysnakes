@@ -76,7 +76,7 @@ export class Controller {
 		} = cProps);
 
 		this.subscribe();
-		autostart && this.start();
+		autostart && this.start(true);
 	}
 
 	notify(): void {
@@ -121,7 +121,6 @@ export class Controller {
 	private handleMoveInput = (newStore: InputStore): void => {
 		const { id, direction } = inputToIdDirection[newStore.input.moveInput];
 		state.dispatch(SnakesActions.sendDirection(direction, id));
-		this.arena.sendDirection(id, direction);
 	};
 
 	private handleControlInput = (newStore: InputStore): void => {

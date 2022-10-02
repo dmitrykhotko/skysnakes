@@ -5,7 +5,6 @@ import {
 	SET_IN_PROGRESS,
 	SET_LOOSERS,
 	SET_SCORE,
-	SET_SCORE_INITIALIZED,
 	SET_STRATEGY
 } from '../../../../utils/constants';
 import { Player } from '../../../../utils/enums';
@@ -22,7 +21,6 @@ export type ArenaStore = {
 		inProgress: boolean;
 		coin: Point;
 		loosers: Player[];
-		scoreInitialized?: boolean;
 		score: Record<Player, Score>;
 		strategy: ArenaStrategy;
 	};
@@ -78,8 +76,6 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 				return buildArenaState('inProgress');
 			case SET_LOOSERS:
 				return buildArenaState('loosers');
-			case SET_SCORE_INITIALIZED:
-				return buildArenaState('scoreInitialized');
 			case SET_SCORE:
 				return buildArenaState('score');
 			case SET_STRATEGY:

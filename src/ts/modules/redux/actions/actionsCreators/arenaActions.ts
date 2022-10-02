@@ -6,7 +6,6 @@ import {
 	SET_IN_PROGRESS,
 	SET_LOOSERS,
 	SET_SCORE,
-	SET_SCORE_INITIALIZED,
 	SET_STRATEGY
 } from '../../../../utils/constants';
 import { Player } from '../../../../utils/enums';
@@ -21,5 +20,4 @@ export abstract class ArenaActions extends SetActions {
 	static setScore = super.setValue<Record<Player, Score>>(SET_SCORE);
 	static incDeaths = super.setValue<Player>(INC_DEATHS);
 	static setStrategy = super.setValue<ArenaStrategy>(SET_STRATEGY);
-	static setScoreInitialized = super.setValue<boolean>(SET_SCORE_INITIALIZED);
 }

@@ -13,9 +13,9 @@ const initialState = {
 	snakes: {}
 } as SnakesStore;
 
-const setPoint = (state: Store, action: Action, pName: string): SnakesStore => {
+const setData = <T extends Point | Direction>(state: Store, action: Action, pName: string): SnakesStore => {
 	const snakesState = state as SnakesStore;
-	const { id, value } = action as SetValueByIdAction<Point, Player>;
+	const { id, value } = action as SetValueByIdAction<T, Player>;
 
 	return {
 		...snakesState,
@@ -60,10 +60,11 @@ export abstract class SnakesReducer extends Reducer<SnakesStore> {
 				break;
 			case SEND_DIRECTION:
 				propName = 'newDirection';
+				break;
 			default:
 				return state;
 		}
 
-		return setPoint(state, action, propName);
+		return setData(state, action, propName);
 	};
 }

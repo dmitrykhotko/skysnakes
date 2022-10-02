@@ -18,25 +18,22 @@ export class Snake {
 		[Direction.Right]: (point: Point): Point => ({ x: point.x + 1, y: point.y })
 	};
 
-	private tail: Point;
 	private prevTail?: Point;
 	private nextDirection?: Direction;
 
-	constructor(
-		private id = Player.P1,
-		private head: Point,
-		private direction = Direction.Right,
-		length = SNAKE_LENGTH
-	) {
-		this.tail = this.initBody(length);
+	constructor(private id = Player.P1, head: Point, private direction = Direction.Right, length = SNAKE_LENGTH) {
+		const tail = this.initBody(head, length);
+		state.dispatch(SnakesActions.setSnake({ head, tail }, this.snakeId));
+		this.subscribe();
 	}
 
 	get snakeHead(): Point {
-		return this.head;
+		const { head } = (state.get() as SnakesStore).snakes[this.id];
+		return head;
 	}
 
 	set snakeHead(head: Point) {
-		this.head = head;
+		state.dispatch(SnakesActions.setHead(head, this.snakeId));
 	}
 
 	get snakeId(): Player {
@@ -44,21 +41,23 @@ export class Snake {
 	}
 
 	move = (): Point => {
+		let { head, tail } = (state.get() as SnakesStore).snakes[this.id];
+
 		this.applyDirection();
 
-		const nextHead = Snake.headCalcs[this.direction](this.head);
+		const nextHead = Snake.headCalcs[this.direction](head);
 
-		nextHead.prev = this.head;
-		this.head.next = nextHead;
-		this.head = nextHead;
+		nextHead.prev = head;
+		head.next = nextHead;
+		head = nextHead;
 
-		this.prevTail = this.tail;
-		this.tail.next && (this.tail = this.tail.next);
-		this.tail.prev = undefined;
+		this.prevTail = tail;
+		tail.next && (tail = tail.next);
+		tail.prev = undefined;
 
-		state.dispatch(SnakesActions.setSnake({ head: this.head, tail: this.tail }, this.snakeId));
+		state.dispatch(SnakesActions.setSnake({ head, tail }, this.snakeId));
 
-		return this.head;
+		return head;
 	};
 
 	grow = (): void => {
@@ -66,16 +65,18 @@ export class Snake {
 			return;
 		}
 
-		this.prevTail.next = this.tail;
-		this.tail.prev = this.prevTail;
-		this.tail = this.prevTail;
+		let { tail } = (state.get() as SnakesStore).snakes[this.id];
+
+		this.prevTail.next = tail;
+		tail.prev = this.prevTail;
+		tail = this.prevTail;
 
 		this.prevTail = undefined;
 
-		state.dispatch(SnakesActions.setTail(this.tail, this.snakeId));
+		state.dispatch(SnakesActions.setTail(tail, this.snakeId));
 	};
 
-	sendDirection = (newDirection: Direction): void => {
+	private sendDirection = (newDirection: Direction): void => {
 		if (!(directionWeights[this.direction] + directionWeights[newDirection])) {
 			return;
 		}
@@ -84,7 +85,7 @@ export class Snake {
 	};
 
 	private subscribe = () => {
-		state.subscribe(this.sendDirection as Observer, SEND_DIRECTION);
+		state.subscribe(this.onSendDirection as Observer, SEND_DIRECTION);
 	};
 
 	private onSendDirection = (state: SnakesStore) => {
@@ -98,15 +99,15 @@ export class Snake {
 		}
 	};
 
-	private initBody = (length: number): Point => {
+	private initBody = (head: Point, length: number): Point => {
 		const D = Direction;
 		const xStep = this.direction === D.Left ? 1 : this.direction === D.Right ? -1 : 0;
 		const yStep = this.direction === D.Up ? 1 : this.direction === D.Down ? -1 : 0;
 
-		let point: Point = { x: this.head.x + xStep, y: this.head.y + yStep };
+		let point: Point = { x: head.x + xStep, y: head.y + yStep };
 
-		this.head.prev = point;
-		point.next = this.head;
+		head.prev = point;
+		point.next = head;
 
 		for (let i = 0; i < length - 2; i++) {
 			const newPoint: Point = { x: point.x + xStep, y: point.y + yStep };
