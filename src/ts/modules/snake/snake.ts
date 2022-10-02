@@ -17,6 +17,7 @@ const headCalcs = {
 	[Direction.Left]: (point: Point): Point => ({ x: point.x - 1, y: point.y }),
 	[Direction.Right]: (point: Point): Point => ({ x: point.x + 1, y: point.y })
 };
+
 export class Snake {
 	private prevTail?: Point;
 	private nextDirection?: Direction;
@@ -84,10 +85,12 @@ export class Snake {
 	};
 
 	private applyDirection = () => {
-		if (this.nextDirection !== undefined && !!~this.nextDirection) {
-			this.direction = this.nextDirection;
-			this.nextDirection = undefined;
+		if (this.nextDirection === undefined || !~this.nextDirection) {
+			return;
 		}
+
+		this.direction = this.nextDirection;
+		this.nextDirection = undefined;
 	};
 
 	private initBody = (head: Point, length: number): Point => {
