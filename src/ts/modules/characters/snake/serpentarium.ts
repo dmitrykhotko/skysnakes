@@ -1,6 +1,6 @@
 import { SEND_DIRECTION } from '../../../utils/constants';
 import { Direction, Player } from '../../../utils/enums';
-import { comparePoints, generateId } from '../../../utils/helpers';
+import { comparePoints } from '../../../utils/helpers';
 import { Point } from '../../../utils/types';
 import { SnakesStore, state } from '../../redux';
 import { Snake } from './snake';

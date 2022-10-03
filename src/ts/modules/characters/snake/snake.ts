@@ -1,6 +1,5 @@
 import { SEND_DIRECTION, SNAKE_LENGTH } from '../../../utils/constants';
 import { Direction, Player } from '../../../utils/enums';
-import { generateId } from '../../../utils/helpers';
 import { Point } from '../../../utils/types';
 import { Observer } from '../../observable/observer';
 import { SnakesActions, SnakesStore, state } from '../../redux';
