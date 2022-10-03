@@ -4,7 +4,7 @@ import { comparePoints } from '../../utils/helpers';
 import { Action, ArenaActions, ArenaStore, state } from '../redux';
 import { Point, Score, SnakeState } from '../../utils/types';
 import { Observer } from '../observable/observer';
-import { Serpentarium } from '../snake/serpentarium';
+import { Serpentarium } from '../characters/snake';
 
 export type ArenaState = {
 	inProgress: boolean;

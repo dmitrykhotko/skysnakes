@@ -1,8 +1,8 @@
-import { SEND_DIRECTION } from '../../utils/constants';
-import { Direction, Player } from '../../utils/enums';
-import { comparePoints } from '../../utils/helpers';
-import { Point } from '../../utils/types';
-import { SnakesStore, state } from '../redux';
+import { SEND_DIRECTION } from '../../../utils/constants';
+import { Direction, Player } from '../../../utils/enums';
+import { comparePoints, generateId } from '../../../utils/helpers';
+import { Point } from '../../../utils/types';
+import { SnakesStore, state } from '../../redux';
 import { Snake } from './snake';
 
 export type SnakeData = {
@@ -23,7 +23,7 @@ export class Serpentarium {
 
 		for (let i = 0; i < this.snakes.length; i++) {
 			const snake = this.snakes[i];
-			snakes[snake.snakeId] = snake.move();
+			snakes[snake.id] = snake.move();
 		}
 
 		return snakes;
@@ -64,7 +64,7 @@ export class Serpentarium {
 		return set;
 	};
 
-	getPlayers = (): Player[] => this.snakes.map(snake => snake.snakeId);
+	getPlayers = (): Player[] => this.snakes.map(snake => snake.id);
 
 	grow = (snakeId: Player): void => {
 		this.snakesDicto[snakeId].grow();
@@ -78,7 +78,7 @@ export class Serpentarium {
 		this.props.length > 1 && this.snakes.push(this.getSnake(Player.P2, this.props[1]));
 
 		this.snakesDicto = this.snakes.reduce((acc, snake) => {
-			acc[snake.snakeId] = snake;
+			acc[snake.id] = snake;
 			return acc;
 		}, {} as Record<Player, Snake>);
 	};

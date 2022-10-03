@@ -1,8 +1,10 @@
-import { SEND_DIRECTION, SNAKE_LENGTH } from '../../utils/constants';
-import { Direction, Player } from '../../utils/enums';
-import { Point } from '../../utils/types';
-import { Observer } from '../observable/observer';
-import { SnakesActions, SnakesStore, state } from '../redux';
+import { SEND_DIRECTION, SNAKE_LENGTH } from '../../../utils/constants';
+import { Direction, Player } from '../../../utils/enums';
+import { generateId } from '../../../utils/helpers';
+import { Point } from '../../../utils/types';
+import { Observer } from '../../observable/observer';
+import { SnakesActions, SnakesStore, state } from '../../redux';
+import { Character } from '../character';
 
 const directionWeights = {
 	[Direction.Up]: -1,
@@ -18,22 +20,22 @@ const headCalcs = {
 	[Direction.Right]: (point: Point): Point => ({ x: point.x + 1, y: point.y })
 };
 
-export class Snake {
+export class Snake implements Character {
 	private prevTail?: Point;
 	private nextDirection?: Direction;
 
-	constructor(private id = Player.P1, head: Point, private direction = Direction.Right, length = SNAKE_LENGTH) {
+	constructor(private snakeId = Player.P1, head: Point, private direction = Direction.Right, length = SNAKE_LENGTH) {
 		const tail = this.initBody(head, length);
 		state.dispatch(SnakesActions.setSnake({ head, tail }, this.snakeId));
 		this.subscribe();
 	}
 
-	get snakeId(): Player {
-		return this.id;
+	get id(): Player {
+		return this.snakeId;
 	}
 
 	move = (): Point => {
-		let { head, tail } = (state.get() as SnakesStore).snakes[this.id];
+		let { head, tail } = (state.get() as SnakesStore).snakes[this.snakeId];
 
 		this.applyDirection();
 
@@ -57,7 +59,7 @@ export class Snake {
 			return;
 		}
 
-		let { tail } = (state.get() as SnakesStore).snakes[this.id];
+		let { tail } = (state.get() as SnakesStore).snakes[this.snakeId];
 
 		this.prevTail.next = tail;
 		tail.prev = this.prevTail;
@@ -81,7 +83,7 @@ export class Snake {
 	};
 
 	private onSendDirection = (state: SnakesStore) => {
-		state.snakes[this.id] && this.sendDirection(state.snakes[this.id].newDirection);
+		state.snakes[this.snakeId] && this.sendDirection(state.snakes[this.snakeId].newDirection);
 	};
 
 	private applyDirection = () => {
