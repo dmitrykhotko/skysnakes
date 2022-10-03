@@ -1,5 +1,3 @@
-import { Point } from "../../utils/types";
-
 export interface Character {
-	move(): Point;
+	move(): void;
 }

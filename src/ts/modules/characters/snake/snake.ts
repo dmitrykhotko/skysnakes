@@ -33,7 +33,7 @@ export class Snake implements Character {
 		return this.snakeId;
 	}
 
-	move = (): Point => {
+	move = (): void => {
 		let { head, tail } = (state.get() as SnakesStore).snakes[this.snakeId];
 
 		this.applyDirection();
@@ -49,8 +49,6 @@ export class Snake implements Character {
 		tail.prev = undefined;
 
 		state.dispatch(SnakesActions.setSnake({ head, tail }, this.snakeId));
-
-		return head;
 	};
 
 	grow = (): void => {

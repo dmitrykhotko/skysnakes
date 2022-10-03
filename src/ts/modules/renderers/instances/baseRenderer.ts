@@ -26,7 +26,7 @@ export abstract class BaseRenderer extends Renderer {
 		super();
 	}
 
-	render = (state: ArenaState): void => {
+	render(state: ArenaState): void {
 		const { snakes, score, loosers } = state;
 		let lineNumber = 1;
 
@@ -69,7 +69,7 @@ export abstract class BaseRenderer extends Renderer {
 
 		this.renderCoin(state.coin, this.arenaPrevState);
 		this.arenaPrevState = state;
-	};
+	}
 
 	reset(drawGrid: DrawGrid): void {
 		this.drawGrid = drawGrid;

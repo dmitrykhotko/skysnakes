@@ -3,8 +3,9 @@
 export const WIDTH = 60;
 export const HEIGHT = 30;
 export const TEXT_AREA_WIDTH = 200;
+export const CELL_SIZE = 25;
 export const SNAKE_LENGTH = 3;
-export const GAME_SPEED = 10;
+export const GAME_SPEED = 15; // Valid values are 60,30,20,15,10...
 
 // DEV SETTINGS
 

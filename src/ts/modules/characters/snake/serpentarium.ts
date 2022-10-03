@@ -18,15 +18,10 @@ export class Serpentarium {
 		this.initSnakes();
 	}
 
-	move = (): Record<Player, Point> => {
-		const snakes = {} as Record<Player, Point>;
-
+	move = (): void => {
 		for (let i = 0; i < this.snakes.length; i++) {
-			const snake = this.snakes[i];
-			snakes[snake.id] = snake.move();
+			this.snakes[i].move();
 		}
-
-		return snakes;
 	};
 
 	faceBody = (newHead: Point): boolean => {

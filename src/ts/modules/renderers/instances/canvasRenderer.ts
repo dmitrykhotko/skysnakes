@@ -1,6 +1,7 @@
-import { HEIGHT, TEXT_AREA_WIDTH, WIDTH } from '../../../utils/constants';
+import { CELL_SIZE, HEIGHT, TEXT_AREA_WIDTH, WIDTH } from '../../../utils/constants';
 import { MoveInput, DrawGrid } from '../../../utils/enums';
 import { Point } from '../../../utils/types';
+import { ArenaState } from '../../arena/arena';
 import { BaseRenderer, DrawingObject } from './baseRenderer';
 
 const keyInputMapping: Record<string, MoveInput> = {
@@ -27,7 +28,8 @@ const defaultProps = {
 	textAreaWidth: TEXT_AREA_WIDTH,
 	drawGrid: DrawGrid.No,
 	width: WIDTH,
-	height: HEIGHT
+	height: HEIGHT,
+	cellSize: CELL_SIZE
 };
 
 export type CanvasRendererProps = {
@@ -36,6 +38,7 @@ export type CanvasRendererProps = {
 	drawGrid?: DrawGrid;
 	width?: number;
 	height?: number;
+	cellSize?: number;
 };
 
 export class CanvasRenderer extends BaseRenderer {
@@ -44,7 +47,7 @@ export class CanvasRenderer extends BaseRenderer {
 	private ctx!: CanvasRenderingContext2D;
 	private arenaWidth: number;
 	private arenaHeight: number;
-	private cellSize = 25;
+	private cellSize: number;
 
 	constructor(props: CanvasRendererProps) {
 		const cProps = { ...defaultProps, ...props };
@@ -52,12 +55,22 @@ export class CanvasRenderer extends BaseRenderer {
 
 		super(width, height);
 
-		({ element: this.element, textAreaWidth: this.textAreaWidth, drawGrid: this.drawGrid } = cProps);
+		({
+			element: this.element,
+			textAreaWidth: this.textAreaWidth,
+			drawGrid: this.drawGrid,
+			cellSize: this.cellSize
+		} = cProps);
 
 		this.arenaWidth = this.width * this.cellSize;
 		this.arenaHeight = this.height * this.cellSize;
 
 		this.init();
+	}
+
+	override render(state: ArenaState): void {
+		this.ctx.clearRect(this.arenaWidth + 1, 0, this.textAreaWidth, this.arenaHeight);
+		super.render(state);
 	}
 
 	override reset = (drawGrid: DrawGrid): void => {
@@ -89,13 +102,6 @@ export class CanvasRenderer extends BaseRenderer {
 	};
 
 	protected renderTextLine = (text: string, lineNumber: number): void => {
-		this.ctx.clearRect(
-			this.arenaWidth + 1,
-			this.cellSize * lineNumber - this.cellSize * 0.75,
-			this.textAreaWidth,
-			this.cellSize * 2
-		);
-
 		this.ctx.fillStyle = 'blue';
 		this.ctx.font = `${this.cellSize * 0.75}px serif`;
 		this.ctx.fillText(text, this.arenaWidth + this.cellSize, this.cellSize * lineNumber);

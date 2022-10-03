@@ -1,7 +1,7 @@
 import { HEIGHT, SET_IN_PROGRESS, WIDTH } from '../../utils/constants';
 import { Direction, Player } from '../../utils/enums';
 import { comparePoints } from '../../utils/helpers';
-import { Action, ArenaActions, ArenaStore, state } from '../redux';
+import { Action, ArenaActions, ArenaStore, SnakesStore, state } from '../redux';
 import { Point, Score, SnakeState } from '../../utils/types';
 import { Observer } from '../observable/observer';
 import { Serpentarium } from '../characters/snake';
@@ -52,27 +52,30 @@ export class Arena {
 	};
 
 	move = (): void => {
-		const states = Object.entries(this.snakes.move());
+		this.snakes.move();
+
+		const heads = (state.get() as SnakesStore).snakes;
+		const states = Object.entries(heads);
 		const actionsList = [] as Action[];
 
 		for (let i = 0; i < states.length; i++) {
-			const [snakeId, point] = states[i];
+			const [snakeId, { head }] = states[i];
 			const id = +snakeId;
 
-			if (this.snakes.faceBody(point)) {
+			if (this.snakes.faceBody(head)) {
 				actionsList.push(...this.finish(id));
 				continue;
 			}
 
 			const { strategy } = this.getStore();
-			const success = strategy.run(point, this.width, this.height, id);
+			const success = strategy.run(head, this.width, this.height, id);
 
 			if (!success) {
 				actionsList.push(...this.finish(id));
 				continue;
 			}
 
-			if (this.faceCoin(point)) {
+			if (this.faceCoin(head)) {
 				this.snakes.grow(id);
 				actionsList.push(ArenaActions.incCoins(id), this.setCoin());
 				continue;
