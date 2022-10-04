@@ -1,18 +1,19 @@
 import { CELL_SIZE, HEIGHT, LINE_HEIGHT, TEXT_AREA_WIDTH, WIDTH } from '../../../utils/constants';
-import { MoveInput, DrawGrid } from '../../../utils/enums';
-import { Point } from '../../../utils/types';
+import { MoveInput, DrawGrid, KeyCode, ActionInput } from '../../../utils/enums';
+import { PlayerInput, Point } from '../../../utils/types';
 import { ArenaState } from '../../arena/arena';
 import { BaseRenderer, DrawingObject } from './baseRenderer';
 
-const keyInputMapping: Record<string, MoveInput> = {
-	ArrowUp: MoveInput.RUp,
-	ArrowDown: MoveInput.RDown,
-	ArrowLeft: MoveInput.RLeft,
-	ArrowRight: MoveInput.RRight,
-	w: MoveInput.LUp,
-	s: MoveInput.LDown,
-	a: MoveInput.LLeft,
-	d: MoveInput.LRight
+const keyInputMapping: Record<KeyCode, PlayerInput> = {
+	[KeyCode.ArrowUp]: MoveInput.RUp,
+	[KeyCode.ArrowDown]: MoveInput.RDown,
+	[KeyCode.ArrowLeft]: MoveInput.RLeft,
+	[KeyCode.ArrowRight]: MoveInput.RRight,
+	[KeyCode.KeyW]: MoveInput.LUp,
+	[KeyCode.KeyS]: MoveInput.LDown,
+	[KeyCode.KeyA]: MoveInput.LLeft,
+	[KeyCode.KeyD]: MoveInput.LRight,
+	[KeyCode.Space]: ActionInput.RFire
 };
 
 const colors = {
@@ -127,9 +128,16 @@ export class CanvasRenderer extends BaseRenderer {
 		this.element.addEventListener('keydown', this.onKeyDown);
 	};
 
-	private onKeyDown = ({ key }: KeyboardEvent): void => {
-		const input = keyInputMapping[key];
-		input && this.input(input);
+	private onKeyDown = (event: KeyboardEvent): void => {
+		const keyCode = KeyCode[event.code as KeyCode];
+
+		if (!keyCode) {
+			return;
+		}
+
+		const playerInput = keyInputMapping[keyCode];
+
+		playerInput && this.input(playerInput);
 	};
 
 	private focus = (): void => {

@@ -3,7 +3,7 @@ import { ArenaType, DrawGrid, PlayerMode } from '../../../../utils/enums';
 import { Action } from '../..';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
-import { buildState } from '../utils';
+import { setValue } from '../utils';
 
 export type SettingsStore = {
 	settings: {
@@ -49,6 +49,6 @@ export abstract class SettingsReducer extends Reducer<SettingsStore> {
 				return state;
 		}
 
-		return buildState(userSettingsState, action, 'settings', propName);
+		return setValue(userSettingsState, action, 'settings', propName);
 	};
 }

@@ -89,8 +89,8 @@ export class Arena {
 		state.subscribe(this.onInProgressChanged as Observer, SET_IN_PROGRESS);
 	};
 
-	private onInProgressChanged = (newStore: ArenaStore): void => {
-		this.judge(newStore);
+	private onInProgressChanged = (store: ArenaStore): void => {
+		this.judge(store);
 	};
 
 	private setCoin = (): Action => {

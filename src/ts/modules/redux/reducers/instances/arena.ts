@@ -12,7 +12,7 @@ import { Point, Score } from '../../../../utils/types';
 import { Action, SetValueAction } from '../..';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
-import { buildState } from '../utils';
+import { setValue } from '../utils';
 import { ArenaStrategy } from '../../../arena/strategies/arenaStrategy';
 import { TransparentWallsStrategy } from '../../../arena/strategies';
 
@@ -67,19 +67,25 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 	static reduce = (state: Store, action: Action): Store => {
 		const { type } = action;
 		const arenaState = state as ArenaStore;
-		const buildArenaState = (pName: string) => buildState(arenaState, action, 'arena', pName);
+		const buildArenaState = (pName: string) => setValue(arenaState, action, 'arena', pName);
+		let propName: string;
 
 		switch (type) {
 			case SET_COIN:
-				return buildArenaState('coin');
+				propName = 'coin';
+				break;
 			case SET_IN_PROGRESS:
-				return buildArenaState('inProgress');
+				propName = 'inProgress';
+				break;
 			case SET_LOOSERS:
-				return buildArenaState('loosers');
+				propName = 'loosers';
+				break;
 			case SET_SCORE:
-				return buildArenaState('score');
+				propName = 'score';
+				break;
 			case SET_STRATEGY:
-				return buildArenaState('strategy');
+				propName = 'strategy';
+				break;
 			case INC_COINS:
 				return incScore(action, state, 'coins');
 			case INC_DEATHS:
@@ -87,5 +93,7 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 			default:
 				return state;
 		}
+
+		return setValue(arenaState, action, 'arena', propName);
 	};
 }

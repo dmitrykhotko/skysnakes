@@ -3,7 +3,7 @@ import { RELEASE_CONTROL_INPUT, SET_DIRECTION, SET_RESET, SET_START } from '../.
 import { ControlInput, MoveInput } from '../../../../utils/enums';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
-import { buildState } from '../utils';
+import { setValue } from '../utils';
 
 export type InputStore = {
 	input: {
@@ -34,7 +34,7 @@ export abstract class InputReducer extends Reducer<InputStore> {
 
 	static reduce = (state: Store, action: Action): Store => {
 		const { type } = action;
-		const buildPlayerInputState = (pName: string) => buildState(state as InputStore, action, 'input', pName);
+		const buildPlayerInputState = (pName: string) => setValue(state as InputStore, action, 'input', pName);
 
 		switch (type) {
 			case SET_DIRECTION:

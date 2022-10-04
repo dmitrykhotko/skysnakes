@@ -1,60 +1,31 @@
-import { HEIGHT, SET_DIRECTION, SET_RESET, SET_START, WIDTH } from '../../utils/constants';
-import { ArenaType, ControlInput, Direction, MoveInput, Player, PlayerMode } from '../../utils/enums';
+import { FIRE, SET_DIRECTION, SET_RESET, SET_START } from '../../utils/constants';
+import { ControlInput, Direction } from '../../utils/enums';
 import {
 	Action,
 	ArenaActions,
 	ArenaStore,
+	ShootingStore,
 	InputActions,
 	InputStore,
 	SettingsStore,
 	SnakesActions,
 	SnakesStore,
-	state
+	state,
+	ShootingActions
 } from '../redux';
 import { Arena, ArenaState } from '../arena/arena';
-import { NormalStrategy, SoftWallsStrategy, TransparentWallsStrategy } from '../arena/strategies';
 import { Observer } from '../observable/observer';
 import { Renderer } from '../renderers/renderer';
+import {
+	ActionInputToPlayer,
+	arenaStrategies,
+	ControllerProps,
+	defaultProps,
+	inputToIdDirection,
+	playerModeToDirections
+} from './utils';
+import { generateId } from '../../utils/helpers';
 
-const { Up, Down, Left, Right } = Direction;
-const { P1, P2 } = Player;
-
-const inputToIdDirection = {
-	[MoveInput.RUp]: { id: P1, direction: Up },
-	[MoveInput.RDown]: { id: P1, direction: Down },
-	[MoveInput.RLeft]: { id: P1, direction: Left },
-	[MoveInput.RRight]: { id: P1, direction: Right },
-	[MoveInput.LUp]: { id: P2, direction: Up },
-	[MoveInput.LDown]: { id: P2, direction: Down },
-	[MoveInput.LLeft]: { id: P2, direction: Left },
-	[MoveInput.LRight]: { id: P2, direction: Right }
-};
-
-const playerModeToDirections = {
-	[PlayerMode.SinglePlayer]: [Right],
-	[PlayerMode.Multiplayer]: [Left, Right]
-};
-
-const arenaStrategies = {
-	[ArenaType.Normal]: NormalStrategy,
-	[ArenaType.Soft]: SoftWallsStrategy,
-	[ArenaType.Transparent]: TransparentWallsStrategy
-};
-
-const defaultProps = {
-	width: WIDTH,
-	height: HEIGHT,
-	autostart: false
-};
-
-export type ControllerProps = {
-	renderer: Renderer;
-	width?: number;
-	height?: number;
-	autostart?: boolean;
-	onStart: () => void;
-	onFinish: () => void;
-};
 export class Controller {
 	private arena!: Arena;
 	private renderer: Renderer;
@@ -116,15 +87,16 @@ export class Controller {
 		state.subscribe(this.handleMoveInput as Observer, SET_DIRECTION);
 		state.subscribe(this.handleControlInput as Observer, SET_START);
 		state.subscribe(this.handleControlInput as Observer, SET_RESET);
+		state.subscribe(this.handleFire as Observer, FIRE);
 	};
 
-	private handleMoveInput = (newStore: InputStore): void => {
-		const { id, direction } = inputToIdDirection[newStore.input.moveInput];
+	private handleMoveInput = (store: InputStore): void => {
+		const { id, direction } = inputToIdDirection[store.input.moveInput];
 		state.dispatch(SnakesActions.sendDirection(direction, id));
 	};
 
-	private handleControlInput = (newStore: InputStore): void => {
-		switch (newStore.input.controlInput) {
+	private handleControlInput = (store: InputStore): void => {
+		switch (store.input.controlInput) {
 			case ControlInput.Start:
 				this.start(false, InputActions.releaseControlInput());
 				break;
@@ -133,6 +105,16 @@ export class Controller {
 				break;
 			default:
 				break;
+		}
+	};
+
+	private handleFire = (store: ShootingStore): void => {
+		console.log(':::: FIRE!!!!');
+
+		const { fire } = store.shooting;
+
+		if (!fire) {
+			return;
 		}
 	};
 }

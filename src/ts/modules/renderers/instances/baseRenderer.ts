@@ -1,6 +1,6 @@
-import { DrawGrid, MoveInput, Player } from '../../../utils/enums';
-import { InputActions as actions, state } from '../../redux';
-import { Point, SnakeState } from '../../../utils/types';
+import { ActionInput, DrawGrid, MoveInput, Player } from '../../../utils/enums';
+import { ShootingActions, InputActions, state } from '../../redux';
+import { PlayerInput, Point, SnakeState } from '../../../utils/types';
 import { ArenaState } from '../../arena/arena';
 import { Renderer } from '../renderer';
 
@@ -77,8 +77,14 @@ export abstract class BaseRenderer extends Renderer {
 		this.arenaPrevState = undefined;
 	}
 
-	protected input = (input: MoveInput): void => {
-		state.dispatch(actions.setMoveInput(input));
+	protected input = (input: PlayerInput): void => {
+		if (MoveInput[input]) {
+			state.dispatch(InputActions.setMoveInput(input as MoveInput));
+		}
+
+		if (ActionInput[input]) {
+			state.dispatch(ShootingActions.fire(input as ActionInput));
+		}
 	};
 
 	private renderMap = (): void => {

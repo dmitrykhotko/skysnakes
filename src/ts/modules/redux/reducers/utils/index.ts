@@ -1,5 +1,5 @@
 import { Action } from '../../actions/action';
-import { SetValueAction } from '../../actions/actionsCreators/setActions';
+import { SetValueAction, SetValueByIdAction } from '../../actions/actionsCreators/setActions';
 
 const defaultPredicate = (oldProp: unknown, newProp: unknown): boolean => oldProp !== newProp;
 
@@ -13,7 +13,7 @@ export const compareProps = <T = unknown>(
 	return predicate(oldVal ? oldVal[pName] : undefined, newVal[pName]) ? cb(newVal[pName] as T) : undefined;
 };
 
-export const buildState = <T>(state: T, action: Action, sectionName: string, pName: string): T => ({
+export const setValue = <T>(state: T, action: Action, sectionName: string, pName: string): T => ({
 	...state,
 	[sectionName]: {
 		...state[sectionName as keyof T],

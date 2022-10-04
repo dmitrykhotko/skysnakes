@@ -1,4 +1,4 @@
-import { ArenaType, PlayerMode, DrawGrid } from './enums';
+import { ArenaType, PlayerMode, DrawGrid, Direction, MoveInput, ActionInput } from './enums';
 
 export type Point = {
 	x: number;
@@ -23,3 +23,13 @@ export type Score = {
 	deaths: number;
 	coins: number;
 };
+
+export type Bullet = {
+	id: Id;
+	point: Point;
+	direction: Direction;
+};
+
+export type PlayerInput = ActionInput | MoveInput;
+
+export type Id = number;

@@ -40,7 +40,12 @@ export const RELEASE_CONTROL_INPUT = 'INPUT/RELEASE_CONTROL_INPUT';
 
 //// SNAKES ACTIONS
 
-export const SET_SNAKE = 'SNAKE/SET_SNAKE';
-export const SET_HEAD = 'SNAKE/SET_HEAD';
-export const SET_TAIL = 'SNAKE/SET_TAIL';
+export const SET_SNAKE = 'SNAKES/SET_SNAKE';
+export const SET_HEAD = 'SNAKES/SET_HEAD';
+export const SET_TAIL = 'SNAKES/SET_TAIL';
 export const SEND_DIRECTION = 'SNAKES/SEND_DIRECTION';
+
+//// BULLETS ACTIONS
+
+export const FIRE = 'BULLETS/FIRE';
+export const SET_BULLET = 'BULLETS/SET_BULLET';

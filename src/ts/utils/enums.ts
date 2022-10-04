@@ -5,6 +5,11 @@ export enum Direction {
 	Right = 4
 }
 
+export enum ActionInput {
+	RFire = 5,
+	LFire = 6
+}
+
 export enum MoveInput {
 	RUp = 1,
 	RDown = 2,
@@ -22,7 +27,17 @@ export enum ControlInput {
 	Empty = 11
 }
 
-export type Input = MoveInput | ControlInput;
+export enum KeyCode {
+	ArrowUp = 'ArrowUp',
+	ArrowDown = 'ArrowDown',
+	ArrowLeft = 'ArrowLeft',
+	ArrowRight = 'ArrowRight',
+	KeyW = 'KeyW',
+	KeyS = 'KeyS',
+	KeyA = 'KeyA',
+	KeyD = 'KeyD',
+	Space = 'Space'
+}
 
 export enum Player {
 	P1 = 1,

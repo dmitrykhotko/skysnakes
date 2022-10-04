@@ -59,6 +59,12 @@ export abstract class SnakesReducer extends Reducer<SnakesStore> {
 				propName = 'tail';
 				break;
 			case SEND_DIRECTION:
+				const { id } = action as SetValueByIdAction<Point, Player>;
+
+				if (!(state as SnakesStore).snakes[id]) {
+					return state;
+				}
+
 				propName = 'newDirection';
 				break;
 			default:
