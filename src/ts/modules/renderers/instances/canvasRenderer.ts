@@ -1,4 +1,4 @@
-import { CELL_SIZE, HEIGHT, TEXT_AREA_WIDTH, WIDTH } from '../../../utils/constants';
+import { CELL_SIZE, HEIGHT, LINE_HEIGHT, TEXT_AREA_WIDTH, WIDTH } from '../../../utils/constants';
 import { MoveInput, DrawGrid } from '../../../utils/enums';
 import { Point } from '../../../utils/types';
 import { ArenaState } from '../../arena/arena';
@@ -29,7 +29,8 @@ const defaultProps = {
 	drawGrid: DrawGrid.No,
 	width: WIDTH,
 	height: HEIGHT,
-	cellSize: CELL_SIZE
+	cellSize: CELL_SIZE,
+	lineHeight: LINE_HEIGHT
 };
 
 export type CanvasRendererProps = {
@@ -39,6 +40,7 @@ export type CanvasRendererProps = {
 	width?: number;
 	height?: number;
 	cellSize?: number;
+	lineHeight?: number;
 };
 
 export class CanvasRenderer extends BaseRenderer {
@@ -48,6 +50,7 @@ export class CanvasRenderer extends BaseRenderer {
 	private arenaWidth: number;
 	private arenaHeight: number;
 	private cellSize: number;
+	private lineHeight: number;
 
 	constructor(props: CanvasRendererProps) {
 		const cProps = { ...defaultProps, ...props };
@@ -59,7 +62,8 @@ export class CanvasRenderer extends BaseRenderer {
 			element: this.element,
 			textAreaWidth: this.textAreaWidth,
 			drawGrid: this.drawGrid,
-			cellSize: this.cellSize
+			cellSize: this.cellSize,
+			lineHeight: this.lineHeight
 		} = cProps);
 
 		this.arenaWidth = this.width * this.cellSize;
@@ -103,8 +107,8 @@ export class CanvasRenderer extends BaseRenderer {
 
 	protected renderTextLine = (text: string, lineNumber: number): void => {
 		this.ctx.fillStyle = 'blue';
-		this.ctx.font = `${this.cellSize * 0.75}px serif`;
-		this.ctx.fillText(text, this.arenaWidth + this.cellSize, this.cellSize * lineNumber);
+		this.ctx.font = `${this.lineHeight * 0.75}px serif`;
+		this.ctx.fillText(text, this.arenaWidth + this.cellSize, this.lineHeight * lineNumber);
 	};
 
 	private init = (): void => {

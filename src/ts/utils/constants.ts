@@ -1,10 +1,11 @@
 // GAME DEFAULTS
 
-export const WIDTH = 60;
-export const HEIGHT = 30;
+export const WIDTH = 120;
+export const HEIGHT = 60;
 export const TEXT_AREA_WIDTH = 200;
 export const CELL_SIZE = 25;
-export const SNAKE_LENGTH = 3;
+export const LINE_HEIGHT = 40;
+export const SNAKE_LENGTH = 300;
 export const GAME_SPEED = 15; // Valid values are 60,30,20,15,10...
 
 // DEV SETTINGS
