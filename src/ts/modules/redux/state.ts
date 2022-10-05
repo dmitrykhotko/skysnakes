@@ -20,7 +20,7 @@ class State implements Observable {
 	private observers = {} as Record<string, Observer[]>;
 
 	constructor(private reducer: Reducer<Store>) {
-		this.dispatch = TRACE_STATE ? this.traceDispatch : this.dispathcInternal;
+		this.dispatch = TRACE_STATE ? this.traceDispatch : this.dispatchInternal;
 		this.store = reducer.getInitialState();
 	}
 
@@ -53,7 +53,7 @@ class State implements Observable {
 		}
 	};
 
-	private dispathcInternal = (...actions: Action[]): void => {
+	private dispatchInternal = (...actions: Action[]): void => {
 		const oldStore = this.store;
 
 		for (let i = 0; i < actions.length; i++) {
@@ -73,7 +73,7 @@ class State implements Observable {
 		this.trace('dispatch: old state', this.store);
 		this.traceShift += '|   ';
 
-		this.dispathcInternal(...actions);
+		this.dispatchInternal(...actions);
 
 		this.traceShift = this.traceShift.substring(0, this.traceShift.length - 4);
 		this.trace('dispatch: new state', this.store);
