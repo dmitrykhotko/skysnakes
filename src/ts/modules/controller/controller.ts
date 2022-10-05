@@ -24,7 +24,7 @@ import {
 	inputToIdDirection,
 	playerModeToDirections
 } from './utils';
-import { generateId } from '../../utils/helpers';
+import { generateId, nextPointCreator } from '../../utils/helpers';
 import { GameState } from '../../utils/types';
 
 export class Controller {
@@ -52,6 +52,8 @@ export class Controller {
 	}
 
 	notify(): void {
+		this.arena.move();
+
 		const arenaState = this.getArenaData();
 
 		this.renderer.render(arenaState);
@@ -59,8 +61,6 @@ export class Controller {
 		if (!arenaState.inProgress) {
 			return this.onFinish();
 		}
-
-		this.arena.move();
 	}
 
 	private getArenaData = (): GameState => {
@@ -128,11 +128,10 @@ export class Controller {
 			return;
 		}
 
-		const {
-			head: { x, y },
-			direction
-		} = snake;
+		const { head, direction } = snake;
 
-		state.dispatch(ShootingActions.setBullet({ id: generateId(), point: { x, y }, direction }));
+		state.dispatch(
+			ShootingActions.setBullet({ id: generateId(), point: nextPointCreator[direction](head), direction })
+		);
 	};
 }

@@ -1,6 +1,6 @@
 import { SEND_DIRECTION, SNAKE_LENGTH } from '../../../utils/constants';
 import { Direction, Player } from '../../../utils/enums';
-import { nextPoint } from '../../../utils/helpers';
+import { comparePoints, nextPointCreator } from '../../../utils/helpers';
 import { Point, SnakeState } from '../../../utils/types';
 import { Observer } from '../../observable/observer';
 import { SnakesActions, SnakesStore, state } from '../../redux';
@@ -28,11 +28,11 @@ export class Snake implements Character {
 	}
 
 	move = (): void => {
-		let { head, tail, direction } = this.getData();
+		let { head, tail, direction } = this.getState();
 
 		direction = this.applyDirection(direction);
 
-		const nextHead = nextPoint[direction](head);
+		const nextHead = nextPointCreator[direction](head);
 
 		nextHead.prev = head;
 		head.next = nextHead;
@@ -50,7 +50,7 @@ export class Snake implements Character {
 			return;
 		}
 
-		let { tail } = this.getData();
+		let { tail } = this.getState();
 
 		this.prevTail.next = tail;
 		tail.prev = this.prevTail;
@@ -61,10 +61,28 @@ export class Snake implements Character {
 		state.dispatch(SnakesActions.setTail(tail, this.snakeId));
 	};
 
-	private getData = (): SnakeState => (state.get() as SnakesStore).snakes[this.snakeId];
+	faceObject = (object: Point, skipHead = true): Point | undefined => {
+		const { head } = this.getState();
+
+		let point: Point | undefined;
+
+		point = skipHead ? head.prev : head;
+
+		while (point) {
+			if (comparePoints(object, point)) {
+				break;
+			}
+
+			point = point.prev;
+		}
+
+		return point;
+	};
+
+	private getState = (): SnakeState => (state.get() as SnakesStore).snakes[this.snakeId];
 
 	private sendDirection = (newDirection: Direction): void => {
-		const { direction } = this.getData();
+		const { direction } = this.getState();
 
 		if (!(directionWeights[direction] + directionWeights[newDirection])) {
 			return;

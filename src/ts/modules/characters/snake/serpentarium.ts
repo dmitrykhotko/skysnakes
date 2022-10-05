@@ -1,6 +1,5 @@
 import { SEND_DIRECTION } from '../../../utils/constants';
 import { Direction, Player } from '../../../utils/enums';
-import { comparePoints } from '../../../utils/helpers';
 import { Point } from '../../../utils/types';
 import { SnakesStore, state } from '../../redux';
 import { Snake } from './snake';
@@ -24,23 +23,15 @@ export class Serpentarium {
 		}
 	};
 
-	faceBody = (newHead: Point): boolean => {
-		let isCrashed = false;
-		const snakes = Object.values((state.get() as SnakesStore).snakes);
+	faceObject = (object: Point, skipHead = true): { point: Point; id: Player } | undefined => {
+		for (let i = 0; i < this.snakes.length; i++) {
+			const snake = this.snakes[i];
+			const point = snake.faceObject(object, skipHead);
 
-		for (let i = 0; i < snakes.length; i++) {
-			let point: Point | undefined = snakes[i].head.prev;
-
-			while (point) {
-				if (comparePoints(newHead, point)) {
-					isCrashed = true;
-				}
-
-				point = point.prev;
+			if (point) {
+				return { point, id: snake.id };
 			}
 		}
-
-		return isCrashed;
 	};
 
 	getBodiesSet = (width: number): Set<number> => {

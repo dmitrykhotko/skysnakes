@@ -1,7 +1,7 @@
-import { HEIGHT, SET_IN_PROGRESS, WIDTH } from '../../utils/constants';
+import { BULLET_SPEED, HEIGHT, SET_IN_PROGRESS, SNAKE_SPEED, WIDTH } from '../../utils/constants';
 import { Direction, Player } from '../../utils/enums';
-import { comparePoints } from '../../utils/helpers';
-import { Action, ArenaActions, ArenaStore, SnakesStore, state } from '../redux';
+import { comparePoints, lcm } from '../../utils/helpers';
+import { Action, ArenaActions, ArenaStore, ShootingStore, SnakesActions, SnakesStore, state } from '../redux';
 import { Point, Score } from '../../utils/types';
 import { Observer } from '../observable/observer';
 import { Serpentarium } from '../characters/snake';
@@ -11,11 +11,15 @@ import { ArenaState } from '../redux/reducers/instances/arena';
 export type ArenaProps = {
 	width?: number;
 	height?: number;
+	snakeSpeed?: number;
+	bulletSpeed?: number;
 };
 
 const defaultProps = {
 	width: WIDTH,
-	height: HEIGHT
+	height: HEIGHT,
+	snakeSpeed: SNAKE_SPEED,
+	bulletSpeed: BULLET_SPEED
 };
 
 export class Arena {
@@ -23,11 +27,21 @@ export class Arena {
 	private deathsNum!: number;
 	private width: number;
 	private height: number;
+	private stepsNum: number;
+	private steps = 0;
+	private snakeStep: number;
+	private bulletStep: number;
 
 	constructor(props: ArenaProps) {
 		const aProps = { ...defaultProps, ...props };
 
 		({ width: this.width, height: this.height } = aProps);
+
+		const { snakeSpeed, bulletSpeed } = aProps;
+
+		this.stepsNum = lcm(snakeSpeed, bulletSpeed);
+		this.snakeStep = this.stepsNum / snakeSpeed;
+		this.bulletStep = this.stepsNum / bulletSpeed;
 
 		this.subscribe();
 	}
@@ -36,6 +50,7 @@ export class Arena {
 		const { score, loosers } = this.getState();
 		const resetScore = Object.keys(score).length !== directions.length || loosers.length || reset;
 
+		this.steps = 0;
 		this.deathsNum = deathsNum;
 		this.snakes = new Serpentarium(directions.map(d => ({ head: this.getStartPoint(d), direction: d })));
 
@@ -46,19 +61,59 @@ export class Arena {
 	};
 
 	move = (): void => {
-		this.snakes.move();
-		BulletsManager.move();
+		this.steps++;
 
+		const actions = [] as Action[];
+		const moveBullets = !(this.steps % this.bulletStep);
+		const moveSnakes = !(this.steps % this.snakeStep);
+
+		if (moveBullets) {
+			BulletsManager.move();
+		}
+
+		if (moveSnakes) {
+			// TODO: make Serpentarium an abstract class
+			this.snakes.move();
+		}
+
+		this.steps === this.stepsNum && (this.steps = 0);
+
+		moveBullets && actions.push(...this.handleMoveBullets());
+		moveSnakes && actions.push(...this.handleMoveSnakes());
+
+		actions.length && state.dispatch(...actions);
+	};
+
+	private handleMoveBullets = (): Action[] => {
+		const actions = [] as Action[];
+		const bullets = Object.values((state.get() as ShootingStore).shooting.bullets);
+
+		for (let i = 0; i < bullets.length; i++) {
+			const data = this.snakes.faceObject(bullets[i].point, false);
+
+			// TODO: apply strategy to a bullet;
+			// TODO: save only strategy Id in redux, not the object itself;
+
+			if (!data) {
+				continue;
+			}
+
+			actions.push(SnakesActions.setTail({ ...data.point, ...{ prev: undefined } }, data.id));
+		}
+
+		return actions;
+	};
+
+	private handleMoveSnakes = (): Action[] => {
+		const actions = [] as Action[];
 		const heads = (state.get() as SnakesStore).snakes;
 		const states = Object.entries(heads);
-		const actionsList = [] as Action[];
 
 		for (let i = 0; i < states.length; i++) {
 			const [snakeId, { head }] = states[i];
 			const id = +snakeId;
-
-			if (this.snakes.faceBody(head)) {
-				actionsList.push(...this.finish(id));
+			if (this.snakes.faceObject(head)) {
+				actions.push(...this.finish(id));
 				continue;
 			}
 
@@ -66,18 +121,17 @@ export class Arena {
 			const success = strategy.run(head, this.width, this.height, id);
 
 			if (!success) {
-				actionsList.push(...this.finish(id));
+				actions.push(...this.finish(id));
 				continue;
 			}
 
 			if (this.faceCoin(head)) {
 				this.snakes.grow(id);
-				actionsList.push(ArenaActions.incCoins(id), this.setCoin());
-				continue;
+				actions.push(ArenaActions.incCoins(id), this.setCoin());
 			}
 		}
 
-		actionsList.length && state.dispatch(...actionsList);
+		return actions;
 	};
 
 	private subscribe = (): void => {

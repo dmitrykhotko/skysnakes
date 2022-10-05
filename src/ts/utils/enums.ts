@@ -1,13 +1,10 @@
+// get rid of defining enum values
+
 export enum Direction {
 	Up = 1,
 	Down = 2,
 	Left = 3,
 	Right = 4
-}
-
-export enum ActionInput {
-	RFire = 5,
-	LFire = 6
 }
 
 export enum MoveInput {
@@ -21,10 +18,15 @@ export enum MoveInput {
 	LRight = 8
 }
 
+export enum ActionInput {
+	RFire = 9,
+	LFire = 10
+}
+
 export enum ControlInput {
-	Start = 9,
-	Reset = 10,
-	Empty = 11
+	Start = 11,
+	Reset = 12,
+	Empty = 13
 }
 
 export enum KeyCode {

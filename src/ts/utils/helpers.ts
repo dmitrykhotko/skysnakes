@@ -7,9 +7,23 @@ export const comparePoints = ({ x: x1, y: y1 }: Point, { x: x2, y: y2 }: Point):
 
 export const generateId = (): Id => ++id;
 
-export const nextPoint = {
-	[Direction.Up]: (point: Point): Point => ({ x: point.x, y: point.y - 1 }),
-	[Direction.Down]: (point: Point): Point => ({ x: point.x, y: point.y + 1 }),
-	[Direction.Left]: (point: Point): Point => ({ x: point.x - 1, y: point.y }),
-	[Direction.Right]: (point: Point): Point => ({ x: point.x + 1, y: point.y })
+export const nextPointCreator = {
+	[Direction.Up]: (point: Point, delta = 1): Point => ({ x: point.x, y: point.y - delta }),
+	[Direction.Down]: (point: Point, delta = 1): Point => ({ x: point.x, y: point.y + delta }),
+	[Direction.Left]: (point: Point, delta = 1): Point => ({ x: point.x - delta, y: point.y }),
+	[Direction.Right]: (point: Point, delta = 1): Point => ({ x: point.x + delta, y: point.y })
+};
+
+export const lcm = (...x: number[]): number => {
+	let j = Math.max(...x);
+
+	while (true) {
+		if (x.every(b => j % b === 0)) {
+			break;
+		} else {
+			j++;
+		}
+	}
+
+	return j;
 };

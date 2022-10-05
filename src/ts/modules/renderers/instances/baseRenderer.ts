@@ -17,7 +17,7 @@ export abstract class BaseRenderer extends Renderer {
 	protected drawGrid = DrawGrid.No;
 
 	private isInitialized = false;
-	private arenaPrevData?: GameState;
+	private gameStatePrev?: GameState;
 
 	protected abstract renderCell: (point: Point, type: DrawingObject) => void;
 	protected abstract renderTextLine: (string: string, lineNumber: number) => void;
@@ -27,7 +27,8 @@ export abstract class BaseRenderer extends Renderer {
 	}
 
 	render(state: GameState): void {
-		const { snakes, score, loosers } = state;
+		const { snakes, score, loosers, bullets } = state;
+		const bulletsArr = Object.entries(bullets);
 
 		if (!this.isInitialized) {
 			this.isInitialized = true;
@@ -36,15 +37,20 @@ export abstract class BaseRenderer extends Renderer {
 
 		this.renderSnakes(snakes);
 		this.renderPlayerInfo(score, loosers);
+		this.renderPoint(state.coin, DrawingObject.coin, this.gameStatePrev?.coin);
 
-		this.renderPoint(state.coin, this.arenaPrevData?.coin);
-		this.arenaPrevData = state;
+		for (let i = 0; i < bulletsArr.length; i++) {
+			const [id, { point }] = bulletsArr[i];
+			this.renderPoint(point, DrawingObject.bullet, this.gameStatePrev?.bullets[+id]?.point);
+		}
+
+		this.gameStatePrev = state;
 	}
 
 	reset(drawGrid: DrawGrid): void {
 		this.drawGrid = drawGrid;
 		this.isInitialized = false;
-		this.arenaPrevData = undefined;
+		this.gameStatePrev = undefined;
 	}
 
 	protected input = (input: PlayerInput): void => {
@@ -99,7 +105,7 @@ export abstract class BaseRenderer extends Renderer {
 		for (let i = 0; i < snakesArray.length; i++) {
 			const [player, { head, tail }] = snakesArray[i];
 			const id = +player as Player;
-			const prevState = this.arenaPrevData?.snakes[id];
+			const prevState = this.gameStatePrev?.snakes[id];
 
 			if (prevState) {
 				const { head: prevHead, tail: prevTail } = prevState;
@@ -121,15 +127,15 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	};
 
-	private renderPoint = (point: Point, prevPoint?: Point): void => {
+	private getHeadType = (id: Player): DrawingObject => (id === Player.P1 ? DrawingObject.head1 : DrawingObject.head2);
+
+	private renderPoint = (point: Point, drawingObject: DrawingObject, prevPoint?: Point): void => {
 		if (prevPoint) {
-			this.rerenderCell({ p1: prevPoint, p2: point, t2: DrawingObject.coin });
+			this.rerenderCell({ p1: prevPoint, p2: point, t1: DrawingObject.empty, t2: drawingObject });
 		} else {
-			this.renderCell(point, DrawingObject.coin);
+			this.renderCell(point, drawingObject);
 		}
 	};
-
-	private getHeadType = (id: Player): DrawingObject => (id === Player.P1 ? DrawingObject.head1 : DrawingObject.head2);
 
 	private rerenderCell({ p1, p2, t1, t2 }: { p1: Point; p2: Point; t1?: DrawingObject; t2?: DrawingObject }): void {
 		if (p1.x === p2.x && p1.y === p2.y) {
