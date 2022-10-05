@@ -1,7 +1,7 @@
 import { Action, InputActions, SettingsStore, state } from '../redux';
 import { SettingsActions } from '../redux/actions/actionsCreators/settingsActions';
 
-const initButton = (selector: string, controlPanel: HTMLElement, onClick: () => void) => {
+const initButton = (selector: string, controlPanel: HTMLElement, onClick: () => void): void => {
 	const button = controlPanel.querySelector(selector);
 	button?.addEventListener('click', onClick);
 };
@@ -11,7 +11,7 @@ const setRadioValue = (name: string, value: string, controlPanel: HTMLElement): 
 	control.checked = true;
 };
 
-const initRadioButton = <T>(name: string, controlPanel: HTMLElement, action: (value: T) => Action) => {
+const initRadioButton = <T>(name: string, controlPanel: HTMLElement, action: (value: T) => Action): void => {
 	[...controlPanel.querySelectorAll(`input[name="${name}"]`)].map(control =>
 		control.addEventListener('change', (e: Event) => {
 			const control = e.target as HTMLInputElement;

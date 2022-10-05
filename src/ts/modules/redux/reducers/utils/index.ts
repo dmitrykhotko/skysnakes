@@ -1,5 +1,5 @@
 import { Action } from '../../actions/action';
-import { SetValueAction, SetValueByIdAction } from '../../actions/actionsCreators/setActions';
+import { SetValueAction } from '../../actions/actionsCreators/setActions';
 
 const defaultPredicate = (oldProp: unknown, newProp: unknown): boolean => oldProp !== newProp;
 

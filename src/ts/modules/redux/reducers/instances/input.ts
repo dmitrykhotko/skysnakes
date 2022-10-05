@@ -5,11 +5,13 @@ import { Store } from '../../state';
 import { Reducer } from '../reducer';
 import { setValue } from '../utils';
 
+export type InputState = {
+	moveInput: MoveInput;
+	controlInput: ControlInput;
+};
+
 export type InputStore = {
-	input: {
-		moveInput: MoveInput;
-		controlInput: ControlInput;
-	};
+	input: InputState;
 };
 
 const initialState = {
@@ -19,7 +21,7 @@ const initialState = {
 	}
 } as InputStore;
 
-const startReset = (state: Store, action: Action) => {
+const startReset = (state: Store, action: Action): Store => {
 	return {
 		...state,
 		input: {
@@ -34,7 +36,7 @@ export abstract class InputReducer extends Reducer<InputStore> {
 
 	static reduce = (state: Store, action: Action): Store => {
 		const { type } = action;
-		const buildPlayerInputState = (pName: string) => setValue(state as InputStore, action, 'input', pName);
+		const buildPlayerInputState = (pName: string): Store => setValue(state as InputStore, action, 'input', pName);
 
 		switch (type) {
 			case SET_DIRECTION:

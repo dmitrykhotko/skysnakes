@@ -5,13 +5,15 @@ import { Store } from '../../state';
 import { Reducer } from '../reducer';
 import { setValue } from '../utils';
 
+export type SettingsState = {
+	playerMode: PlayerMode;
+	arenaType: ArenaType;
+	drawGrid: DrawGrid;
+	deathsNum: number;
+};
+
 export type SettingsStore = {
-	settings: {
-		playerMode: PlayerMode;
-		arenaType: ArenaType;
-		drawGrid: DrawGrid;
-		deathsNum: number;
-	};
+	settings: SettingsState;
 };
 
 const initialState = {

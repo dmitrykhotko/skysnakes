@@ -5,8 +5,10 @@ import { Store } from '../../state';
 import { Reducer } from '../reducer';
 import { Point, SnakeState } from '../../../../utils/types';
 
+export type SnakesState = Record<Player, SnakeState & { newDirection: Direction }>;
+
 export type SnakesStore = {
-	snakes: Record<Player, SnakeState & { newDirection: Direction }>;
+	snakes: SnakesState;
 };
 
 const initialState = {

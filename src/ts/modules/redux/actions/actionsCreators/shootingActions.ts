@@ -1,6 +1,6 @@
 import { FIRE, SET_BULLET } from '../../../../utils/constants';
 import { ActionInput } from '../../../../utils/enums';
-import { Bullet, Point } from '../../../../utils/types';
+import { Bullet } from '../../../../utils/types';
 import { SetActions } from './setActions';
 
 export abstract class ShootingActions extends SetActions {

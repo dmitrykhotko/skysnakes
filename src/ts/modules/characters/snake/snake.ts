@@ -1,6 +1,7 @@
 import { SEND_DIRECTION, SNAKE_LENGTH } from '../../../utils/constants';
 import { Direction, Player } from '../../../utils/enums';
-import { Point } from '../../../utils/types';
+import { nextPoint } from '../../../utils/helpers';
+import { Point, SnakeState } from '../../../utils/types';
 import { Observer } from '../../observable/observer';
 import { SnakesActions, SnakesStore, state } from '../../redux';
 import { Character } from '../character';
@@ -12,20 +13,13 @@ const directionWeights = {
 	[Direction.Right]: 2
 };
 
-const headCalcs = {
-	[Direction.Up]: (point: Point): Point => ({ x: point.x, y: point.y - 1 }),
-	[Direction.Down]: (point: Point): Point => ({ x: point.x, y: point.y + 1 }),
-	[Direction.Left]: (point: Point): Point => ({ x: point.x - 1, y: point.y }),
-	[Direction.Right]: (point: Point): Point => ({ x: point.x + 1, y: point.y })
-};
-
 export class Snake implements Character {
 	private prevTail?: Point;
 	private nextDirection?: Direction;
 
-	constructor(private snakeId = Player.P1, head: Point, private direction = Direction.Right, length = SNAKE_LENGTH) {
-		const tail = this.initBody(head, length);
-		state.dispatch(SnakesActions.setSnake({ head, tail }, this.snakeId));
+	constructor(private snakeId = Player.P1, head: Point, direction = Direction.Right, length = SNAKE_LENGTH) {
+		const tail = this.initBody(head, length, direction);
+		state.dispatch(SnakesActions.setSnake({ head, tail, direction }, this.snakeId));
 		this.subscribe();
 	}
 
@@ -34,11 +28,11 @@ export class Snake implements Character {
 	}
 
 	move = (): void => {
-		let { head, tail } = (state.get() as SnakesStore).snakes[this.snakeId];
+		let { head, tail, direction } = this.getData();
 
-		this.applyDirection();
+		direction = this.applyDirection(direction);
 
-		const nextHead = headCalcs[this.direction](head);
+		const nextHead = nextPoint[direction](head);
 
 		nextHead.prev = head;
 		head.next = nextHead;
@@ -48,7 +42,7 @@ export class Snake implements Character {
 		tail.next && (tail = tail.next);
 		tail.prev = undefined;
 
-		state.dispatch(SnakesActions.setSnake({ head, tail }, this.snakeId));
+		state.dispatch(SnakesActions.setSnake({ head, tail, direction }, this.snakeId));
 	};
 
 	grow = (): void => {
@@ -56,7 +50,7 @@ export class Snake implements Character {
 			return;
 		}
 
-		let { tail } = (state.get() as SnakesStore).snakes[this.snakeId];
+		let { tail } = this.getData();
 
 		this.prevTail.next = tail;
 		tail.prev = this.prevTail;
@@ -67,35 +61,41 @@ export class Snake implements Character {
 		state.dispatch(SnakesActions.setTail(tail, this.snakeId));
 	};
 
+	private getData = (): SnakeState => (state.get() as SnakesStore).snakes[this.snakeId];
+
 	private sendDirection = (newDirection: Direction): void => {
-		if (!(directionWeights[this.direction] + directionWeights[newDirection])) {
+		const { direction } = this.getData();
+
+		if (!(directionWeights[direction] + directionWeights[newDirection])) {
 			return;
 		}
 
 		this.nextDirection = newDirection;
 	};
 
-	private subscribe = () => {
+	private subscribe = (): void => {
 		state.subscribe(this.onSendDirection as Observer, SEND_DIRECTION);
 	};
 
-	private onSendDirection = (state: SnakesStore) => {
+	private onSendDirection = (state: SnakesStore): void => {
 		state.snakes[this.snakeId] && this.sendDirection(state.snakes[this.snakeId].newDirection);
 	};
 
-	private applyDirection = () => {
-		if (this.nextDirection === undefined || !~this.nextDirection) {
-			return;
+	private applyDirection = (direction: Direction): Direction => {
+		if (!this.nextDirection) {
+			return direction;
 		}
 
-		this.direction = this.nextDirection;
+		const nextDirection = this.nextDirection;
 		this.nextDirection = undefined;
+
+		return nextDirection;
 	};
 
-	private initBody = (head: Point, length: number): Point => {
+	private initBody = (head: Point, length: number, direction: Direction): Point => {
 		const D = Direction;
-		const xStep = this.direction === D.Left ? 1 : this.direction === D.Right ? -1 : 0;
-		const yStep = this.direction === D.Up ? 1 : this.direction === D.Down ? -1 : 0;
+		const xStep = direction === D.Left ? 1 : direction === D.Right ? -1 : 0;
+		const yStep = direction === D.Up ? 1 : direction === D.Down ? -1 : 0;
 
 		let point: Point = { x: head.x + xStep, y: head.y + yStep };
 

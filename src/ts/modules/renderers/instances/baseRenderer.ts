@@ -1,7 +1,6 @@
 import { ActionInput, DrawGrid, MoveInput, Player } from '../../../utils/enums';
 import { ShootingActions, InputActions, state } from '../../redux';
-import { PlayerInput, Point, SnakeState } from '../../../utils/types';
-import { ArenaState } from '../../arena/arena';
+import { GameState, PlayerInput, Point, Score, SnakeState } from '../../../utils/types';
 import { Renderer } from '../renderer';
 
 export enum DrawingObject {
@@ -10,14 +9,15 @@ export enum DrawingObject {
 	head2 = 3,
 	body = 4,
 	coin = 5,
-	grid = 6
+	grid = 6,
+	bullet = 7
 }
 
 export abstract class BaseRenderer extends Renderer {
 	protected drawGrid = DrawGrid.No;
 
 	private isInitialized = false;
-	private arenaPrevState?: ArenaState;
+	private arenaPrevData?: GameState;
 
 	protected abstract renderCell: (point: Point, type: DrawingObject) => void;
 	protected abstract renderTextLine: (string: string, lineNumber: number) => void;
@@ -26,55 +26,25 @@ export abstract class BaseRenderer extends Renderer {
 		super();
 	}
 
-	render(state: ArenaState): void {
+	render(state: GameState): void {
 		const { snakes, score, loosers } = state;
-		let lineNumber = 1;
 
 		if (!this.isInitialized) {
 			this.isInitialized = true;
 			this.renderMap();
 		}
 
-		if (loosers.length) {
-			this.renderTextLine(`LOOSER${loosers.length > 1 ? 'S' : ''}:`, lineNumber++);
+		this.renderSnakes(snakes);
+		this.renderPlayerInfo(score, loosers);
 
-			for (let i = 0; i < loosers.length; i++) {
-				this.renderTextLine(`${Player[loosers[i]]}`, lineNumber++);
-			}
-
-			lineNumber += 2;
-		}
-
-		this.renderTextLine('SCORE:', lineNumber++);
-
-		const scoreArray = Object.entries(score);
-		const snakesAray = Object.entries(snakes);
-
-		for (let i = 0; i < scoreArray.length; i++) {
-			const [player, { deaths, coins }] = scoreArray[i];
-
-			this.renderTextLine(`Player: ${Player[+player as Player]}`, lineNumber++);
-			this.renderTextLine(`Deaths: ${deaths}`, lineNumber++);
-			this.renderTextLine(`Coins: ${coins}`, lineNumber);
-
-			lineNumber += 2;
-		}
-
-		for (let i = 0; i < snakesAray.length; i++) {
-			const [player, snake] = snakesAray[i];
-
-			const id = +player as Player;
-			this.renderItems(id, snake, this.arenaPrevState?.snakes[id]);
-		}
-
-		this.renderCoin(state.coin, this.arenaPrevState);
-		this.arenaPrevState = state;
+		this.renderPoint(state.coin, this.arenaPrevData?.coin);
+		this.arenaPrevData = state;
 	}
 
 	reset(drawGrid: DrawGrid): void {
 		this.drawGrid = drawGrid;
 		this.isInitialized = false;
-		this.arenaPrevState = undefined;
+		this.arenaPrevData = undefined;
 	}
 
 	protected input = (input: PlayerInput): void => {
@@ -95,39 +65,67 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	};
 
-	private renderSnake = (id: Player, head: Point, tail: Point): void => {
-		let current = tail;
+	private renderPlayerInfo = (score: Record<Player, Score>, loosers: Player[]): void => {
+		let lineNumber = 1;
 
-		while (true) {
-			if (current === head) {
-				const headType = this.getHeadType(id);
-				return this.renderCell(current, headType);
+		if (loosers.length) {
+			this.renderTextLine(`LOOSER${loosers.length > 1 ? 'S' : ''}:`, lineNumber++);
+
+			for (let i = 0; i < loosers.length; i++) {
+				this.renderTextLine(`${Player[loosers[i]]}`, lineNumber++);
 			}
 
-			this.renderCell(current, DrawingObject.body);
-			current.next && (current = current.next);
+			lineNumber += 2;
+		}
+
+		this.renderTextLine('SCORE:', lineNumber++);
+
+		const scoreArray = Object.entries(score);
+
+		for (let i = 0; i < scoreArray.length; i++) {
+			const [player, { deaths, coins }] = scoreArray[i];
+
+			this.renderTextLine(`Player: ${Player[+player as Player]}`, lineNumber++);
+			this.renderTextLine(`Deaths: ${deaths}`, lineNumber++);
+			this.renderTextLine(`Coins: ${coins}`, lineNumber);
+
+			lineNumber += 2;
 		}
 	};
 
-	private renderItems(id: Player, state: SnakeState, prevState?: SnakeState): void {
-		const { head, tail } = state;
+	private renderSnakes = (snakes: Record<Player, SnakeState>): void => {
+		const snakesArray = Object.entries(snakes);
 
-		if (prevState) {
-			const { head: prevHead, tail: prevTail } = prevState;
-			const headType = this.getHeadType(id);
+		for (let i = 0; i < snakesArray.length; i++) {
+			const [player, { head, tail }] = snakesArray[i];
+			const id = +player as Player;
+			const prevState = this.arenaPrevData?.snakes[id];
 
-			this.rerenderCell({ p1: prevHead, p2: head, t1: DrawingObject.body, t2: headType });
-			this.rerenderCell({ p1: prevTail, p2: tail, t1: DrawingObject.empty });
-		} else {
-			this.renderSnake(id, head, tail);
+			if (prevState) {
+				const { head: prevHead, tail: prevTail } = prevState;
+				const headType = this.getHeadType(id);
+
+				this.rerenderCell({ p1: prevHead, p2: head, t1: DrawingObject.body, t2: headType });
+				this.rerenderCell({ p1: prevTail, p2: tail, t1: DrawingObject.empty });
+			} else {
+				let current = tail;
+
+				while (current === head) {
+					this.renderCell(current, DrawingObject.body);
+					current.next && (current = current.next);
+				}
+
+				const headType = this.getHeadType(id);
+				this.renderCell(current, headType);
+			}
 		}
-	}
+	};
 
-	private renderCoin = (coin: Point, prevState?: ArenaState): void => {
-		if (prevState) {
-			this.rerenderCell({ p1: prevState.coin, p2: coin, t2: DrawingObject.coin });
+	private renderPoint = (point: Point, prevPoint?: Point): void => {
+		if (prevPoint) {
+			this.rerenderCell({ p1: prevPoint, p2: point, t2: DrawingObject.coin });
 		} else {
-			this.renderCell(coin, DrawingObject.coin);
+			this.renderCell(point, DrawingObject.coin);
 		}
 	};
 

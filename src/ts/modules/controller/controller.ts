@@ -1,5 +1,5 @@
 import { FIRE, SET_DIRECTION, SET_RESET, SET_START } from '../../utils/constants';
-import { ControlInput, Direction } from '../../utils/enums';
+import { ControlInput } from '../../utils/enums';
 import {
 	Action,
 	ArenaActions,
@@ -13,7 +13,7 @@ import {
 	state,
 	ShootingActions
 } from '../redux';
-import { Arena, ArenaState } from '../arena/arena';
+import { Arena } from '../arena/arena';
 import { Observer } from '../observable/observer';
 import { Renderer } from '../renderers/renderer';
 import {
@@ -25,6 +25,7 @@ import {
 	playerModeToDirections
 } from './utils';
 import { generateId } from '../../utils/helpers';
+import { GameState } from '../../utils/types';
 
 export class Controller {
 	private arena!: Arena;
@@ -51,11 +52,7 @@ export class Controller {
 	}
 
 	notify(): void {
-		const store = state.get();
-		const arenaState = {
-			...(store as ArenaStore).arena,
-			snakes: (store as SnakesStore).snakes
-		} as ArenaState;
+		const arenaState = this.getArenaData();
 
 		this.renderer.render(arenaState);
 
@@ -65,6 +62,15 @@ export class Controller {
 
 		this.arena.move();
 	}
+
+	private getArenaData = (): GameState => {
+		const store = state.get();
+		return {
+			...(store as ArenaStore).arena,
+			snakes: (store as SnakesStore).snakes,
+			bullets: (store as ShootingStore).shooting.bullets
+		} as GameState;
+	};
 
 	private start = (reset = false, ...actions: Action[]): void => {
 		const { width, height } = this;
@@ -109,12 +115,24 @@ export class Controller {
 	};
 
 	private handleFire = (store: ShootingStore): void => {
-		console.log(':::: FIRE!!!!');
-
 		const { fire } = store.shooting;
 
 		if (!fire) {
 			return;
 		}
+
+		const player = ActionInputToPlayer[fire];
+		const snake = (store as unknown as SnakesStore).snakes[player];
+
+		if (!snake) {
+			return;
+		}
+
+		const {
+			head: { x, y },
+			direction
+		} = snake;
+
+		state.dispatch(ShootingActions.setBullet({ id: generateId(), point: { x, y }, direction }));
 	};
 }

@@ -80,7 +80,7 @@ class State implements Observable {
 		this.trace('-----------------------------');
 	};
 
-	private trace = (message = '', ...args: unknown[]) => {
+	private trace = (message = '', ...args: unknown[]): void => {
 		TRACE_STATE && console.log(`${this.traceShift}STATE ::: ${message}`, ...args);
 	};
 }

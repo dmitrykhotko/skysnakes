@@ -65,7 +65,7 @@ export class Serpentarium {
 		this.snakesDicto[snakeId].grow();
 	};
 
-	private initSnakes = () => {
+	private initSnakes = (): void => {
 		state.reset(SEND_DIRECTION);
 
 		this.snakes = [];

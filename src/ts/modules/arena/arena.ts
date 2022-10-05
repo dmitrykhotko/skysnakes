@@ -2,17 +2,11 @@ import { HEIGHT, SET_IN_PROGRESS, WIDTH } from '../../utils/constants';
 import { Direction, Player } from '../../utils/enums';
 import { comparePoints } from '../../utils/helpers';
 import { Action, ArenaActions, ArenaStore, SnakesStore, state } from '../redux';
-import { Point, Score, SnakeState } from '../../utils/types';
+import { Point, Score } from '../../utils/types';
 import { Observer } from '../observable/observer';
 import { Serpentarium } from '../characters/snake';
-
-export type ArenaState = {
-	inProgress: boolean;
-	coin: Point;
-	snakes: Record<Player, SnakeState>;
-	score: Record<Player, Score>;
-	loosers: Player[];
-};
+import { BulletsManager } from '../characters/bullets/bulletsManager';
+import { ArenaState } from '../redux/reducers/instances/arena';
 
 export type ArenaProps = {
 	width?: number;
@@ -39,7 +33,7 @@ export class Arena {
 	}
 
 	start = (directions: Direction[], deathsNum: number, reset = false): void => {
-		const { score, loosers } = this.getStore();
+		const { score, loosers } = this.getState();
 		const resetScore = Object.keys(score).length !== directions.length || loosers.length || reset;
 
 		this.deathsNum = deathsNum;
@@ -53,6 +47,7 @@ export class Arena {
 
 	move = (): void => {
 		this.snakes.move();
+		BulletsManager.move();
 
 		const heads = (state.get() as SnakesStore).snakes;
 		const states = Object.entries(heads);
@@ -67,7 +62,7 @@ export class Arena {
 				continue;
 			}
 
-			const { strategy } = this.getStore();
+			const { strategy } = this.getState();
 			const success = strategy.run(head, this.width, this.height, id);
 
 			if (!success) {
@@ -115,7 +110,7 @@ export class Arena {
 		);
 	};
 
-	private getStore = () => (state.get() as ArenaStore).arena;
+	private getState = (): ArenaState => (state.get() as ArenaStore).arena;
 
 	private finish = (id: Player): Action[] => [ArenaActions.incDeaths(id), ArenaActions.setInProgress(false)];
 
@@ -155,7 +150,7 @@ export class Arena {
 	};
 
 	private faceCoin = (head: Point): boolean => {
-		const { coin } = this.getStore();
+		const { coin } = this.getState();
 		return comparePoints(head, coin);
 	};
 

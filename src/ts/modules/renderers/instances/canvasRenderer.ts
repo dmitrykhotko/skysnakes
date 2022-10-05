@@ -1,7 +1,6 @@
 import { CELL_SIZE, HEIGHT, LINE_HEIGHT, TEXT_AREA_WIDTH, WIDTH } from '../../../utils/constants';
 import { MoveInput, DrawGrid, KeyCode, ActionInput } from '../../../utils/enums';
-import { PlayerInput, Point } from '../../../utils/types';
-import { ArenaState } from '../../arena/arena';
+import { GameState, PlayerInput, Point } from '../../../utils/types';
 import { BaseRenderer, DrawingObject } from './baseRenderer';
 
 const keyInputMapping: Record<KeyCode, PlayerInput> = {
@@ -22,7 +21,8 @@ const colors = {
 	[DrawingObject.head2]: '#229954',
 	[DrawingObject.body]: '#E67E22',
 	[DrawingObject.coin]: '#F1C40F',
-	[DrawingObject.grid]: '#758384'
+	[DrawingObject.grid]: '#758384',
+	[DrawingObject.bullet]: 'red'
 };
 
 const defaultProps = {
@@ -73,7 +73,7 @@ export class CanvasRenderer extends BaseRenderer {
 		this.init();
 	}
 
-	override render(state: ArenaState): void {
+	override render(state: GameState): void {
 		this.ctx.clearRect(this.arenaWidth + 1, 0, this.textAreaWidth, this.arenaHeight);
 		super.render(state);
 	}

@@ -4,7 +4,7 @@ import { SettingsProvider } from './modules/settingsProvider/settingsProvider';
 import { CanvasRenderer } from './modules/renderers/instances/canvasRenderer';
 import { Timer } from './modules/timer/timer';
 
-const run = () => {
+const run = (): void => {
 	const autostart = true;
 	const canvas = document.querySelector('.js-Snake__CanvasPresenter');
 	const controlPanel = document.querySelector('.js-Snake__Settings');

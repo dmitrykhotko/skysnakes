@@ -16,14 +16,16 @@ import { setValue } from '../utils';
 import { ArenaStrategy } from '../../../arena/strategies/arenaStrategy';
 import { TransparentWallsStrategy } from '../../../arena/strategies';
 
+export type ArenaState = {
+	inProgress: boolean;
+	coin: Point;
+	loosers: Player[];
+	score: Record<Player, Score>;
+	strategy: ArenaStrategy;
+};
+
 export type ArenaStore = {
-	arena: {
-		inProgress: boolean;
-		coin: Point;
-		loosers: Player[];
-		score: Record<Player, Score>;
-		strategy: ArenaStrategy;
-	};
+	arena: ArenaState;
 };
 
 const initialState = {
@@ -67,7 +69,6 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 	static reduce = (state: Store, action: Action): Store => {
 		const { type } = action;
 		const arenaState = state as ArenaStore;
-		const buildArenaState = (pName: string) => setValue(arenaState, action, 'arena', pName);
 		let propName: string;
 
 		switch (type) {

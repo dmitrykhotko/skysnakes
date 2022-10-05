@@ -108,7 +108,8 @@
         rules: {
             // Require a consistent member declaration order
             "@typescript-eslint/member-ordering": "error",
-            "@typescript-eslint/no-empty-function": "warn" 
+            "@typescript-eslint/no-empty-function": "warn",
+            "@typescript-eslint/explicit-function-return-type": "error"
         },
     }]
 }

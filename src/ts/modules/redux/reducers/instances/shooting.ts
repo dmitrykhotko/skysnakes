@@ -6,22 +6,24 @@ import { FIRE, SET_BULLET } from '../../../../utils/constants';
 import { ActionInput } from '../../../../utils/enums';
 import { setValue } from '../utils';
 
+export type ShootingState = {
+	bullets: Record<Id, Bullet>;
+	fire?: ActionInput;
+};
+
 export type ShootingStore = {
-	shooting: {
-		bullets: Record<Id, Bullet>;
-		fire?: ActionInput;
-	};
+	shooting: ShootingState;
 };
 
 const initialState = {
 	shooting: {
-		bullets: {}
+		bullets: []
 	}
 } as ShootingStore;
 
-const setBullet = <T extends Bullet>(state: Store, action: Action): ShootingStore => {
+const setBullet = (state: Store, action: Action): ShootingStore => {
 	const shootingState = state as ShootingStore;
-	const { value } = action as SetValueAction<T>;
+	const { value } = action as SetValueAction<Bullet>;
 
 	return {
 		...shootingState,
