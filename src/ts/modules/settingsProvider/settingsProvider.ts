@@ -1,4 +1,4 @@
-import { Action, InputActions, SettingsStore, state } from '../redux';
+import { Action, ArenaActions, InputActions, SettingsStore, state } from '../redux';
 import { SettingsActions } from '../redux/actions/actionsCreators/settingsActions';
 
 const initButton = (selector: string, controlPanel: HTMLElement, onClick: () => void): void => {
@@ -26,6 +26,7 @@ export abstract class SettingsProvider {
 
 		initButton('.js-Snake__Start', controlPanel, () => state.dispatch(InputActions.setStart()));
 		initButton('.js-Snake__Reset', controlPanel, () => state.dispatch(InputActions.setReset()));
+		initButton('.js-Snake__Stop', controlPanel, () => state.dispatch(ArenaActions.setInProgress(false)));
 
 		setRadioValue('playerMode', playerMode, controlPanel);
 		setRadioValue('arenaType', arenaType, controlPanel);
