@@ -51,7 +51,7 @@ export enum PlayerMode {
 	Multiplayer = 'multi'
 }
 
-export enum ArenaType {
+export enum Strategy {
 	Normal = 'normal',
 	Soft = 'soft',
 	Transparent = 'transparent'

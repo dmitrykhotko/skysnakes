@@ -1,5 +1,5 @@
 import { SET_ARENA_TYPE, SET_DEATHS_NUM, SET_DRAW_GRID, SET_PLAYER_MODE } from '../../../../utils/constants';
-import { ArenaType, DrawGrid, PlayerMode } from '../../../../utils/enums';
+import { Strategy, DrawGrid, PlayerMode } from '../../../../utils/enums';
 import { Action } from '../..';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
@@ -7,7 +7,7 @@ import { setValue } from '../utils';
 
 export type SettingsState = {
 	playerMode: PlayerMode;
-	arenaType: ArenaType;
+	arenaType: Strategy;
 	drawGrid: DrawGrid;
 	deathsNum: number;
 };
@@ -19,7 +19,7 @@ export type SettingsStore = {
 const initialState = {
 	settings: {
 		playerMode: PlayerMode.SinglePlayer,
-		arenaType: ArenaType.Transparent,
+		arenaType: Strategy.Transparent,
 		drawGrid: DrawGrid.No,
 		deathsNum: 2
 	}

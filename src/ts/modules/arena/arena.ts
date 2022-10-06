@@ -1,12 +1,22 @@
 import { BULLET_SPEED, HEIGHT, SET_IN_PROGRESS, SNAKE_SPEED, WIDTH } from '../../utils/constants';
 import { Direction, Player } from '../../utils/enums';
 import { comparePoints, lcm } from '../../utils/helpers';
-import { Action, ArenaActions, ArenaStore, ShootingStore, SnakesActions, SnakesStore, state } from '../redux';
+import {
+	Action,
+	ArenaActions,
+	ArenaStore,
+	ShootingActions,
+	ShootingStore,
+	SnakesActions,
+	SnakesStore,
+	state
+} from '../redux';
 import { Point, Score } from '../../utils/types';
 import { Observer } from '../observable/observer';
 import { Serpentarium } from '../characters/snake';
 import { BulletsManager } from '../characters/bullets/bulletsManager';
 import { ArenaState } from '../redux/reducers/instances/arena';
+import { ArenaStrategy } from './strategies';
 
 export type ArenaProps = {
 	width?: number;
@@ -31,6 +41,8 @@ export class Arena {
 	private steps = 0;
 	private snakeStep: number;
 	private bulletStep: number;
+	private arenaStrategy?: ArenaStrategy;
+	private bulletStrategy?: ArenaStrategy;
 
 	constructor(props: ArenaProps) {
 		const aProps = { ...defaultProps, ...props };
@@ -46,13 +58,22 @@ export class Arena {
 		this.subscribe();
 	}
 
-	start = (directions: Direction[], deathsNum: number, reset = false): void => {
+	start = (
+		directions: Direction[],
+		deathsNum: number,
+		reset: boolean,
+		arenaStrategy?: ArenaStrategy,
+		bulletStrategy?: ArenaStrategy
+	): void => {
 		const { score, loosers } = this.getState();
 		const resetScore = Object.keys(score).length !== directions.length || loosers.length || reset;
 
 		this.steps = 0;
 		this.deathsNum = deathsNum;
 		this.snakes = new Serpentarium(directions.map(d => ({ head: this.getStartPoint(d), direction: d })));
+
+		this.arenaStrategy = arenaStrategy;
+		this.bulletStrategy = bulletStrategy;
 
 		const actions = [this.setCoin(), ArenaActions.setInProgress(true)];
 		resetScore && this.resetScore();
@@ -89,16 +110,19 @@ export class Arena {
 		const bullets = Object.values((state.get() as ShootingStore).shooting.bullets);
 
 		for (let i = 0; i < bullets.length; i++) {
-			const data = this.snakes.faceObject(bullets[i].point, false);
+			const { id, point } = bullets[i];
+			const data = this.snakes.faceObject(point, false);
+			const facedCoin = this.faceCoin(point);
+			const success = this.runStrategy(point, id, this.bulletStrategy);
+			const removeBullet = facedCoin || !success || data;
 
-			// TODO: apply strategy to a bullet;
-			// TODO: save only strategy Id in redux, not the object itself;
+			facedCoin && actions.push(this.setCoin());
+			removeBullet && actions.push(ShootingActions.removeBullet(id));
 
-			if (!data) {
-				continue;
+			if (data) {
+				// fix when tail becomes equal to head
+				actions.push(SnakesActions.setTail({ ...data.point, ...{ prev: undefined } }, data.id));
 			}
-
-			actions.push(SnakesActions.setTail({ ...data.point, ...{ prev: undefined } }, data.id));
 		}
 
 		return actions;
@@ -112,13 +136,13 @@ export class Arena {
 		for (let i = 0; i < states.length; i++) {
 			const [snakeId, { head }] = states[i];
 			const id = +snakeId;
+
 			if (this.snakes.faceObject(head)) {
 				actions.push(...this.finish(id));
 				continue;
 			}
 
-			const { strategy } = this.getState();
-			const success = strategy.run(head, this.width, this.height, id);
+			const success = this.runStrategy(head, id, this.arenaStrategy);
 
 			if (!success) {
 				actions.push(...this.finish(id));
@@ -133,6 +157,9 @@ export class Arena {
 
 		return actions;
 	};
+
+	private runStrategy = (point: Point, id: number, strategy?: ArenaStrategy): boolean =>
+		strategy ? strategy.run(point, this.width, this.height, id) : true;
 
 	private subscribe = (): void => {
 		state.subscribe(this.onInProgressChanged as Observer, SET_IN_PROGRESS);
@@ -203,9 +230,9 @@ export class Arena {
 		return cells;
 	};
 
-	private faceCoin = (head: Point): boolean => {
+	private faceCoin = (object: Point): boolean => {
 		const { coin } = this.getState();
-		return comparePoints(head, coin);
+		return comparePoints(object, coin);
 	};
 
 	private getRandomInt = (max: number): number => Math.floor(Math.random() * max);

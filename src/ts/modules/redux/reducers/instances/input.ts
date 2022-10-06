@@ -1,5 +1,5 @@
 import { Action, SetValueAction } from '../..';
-import { RELEASE_CONTROL_INPUT, SET_DIRECTION, SET_RESET, SET_START } from '../../../../utils/constants';
+import { SET_DIRECTION, SET_RESET, SET_START } from '../../../../utils/constants';
 import { ControlInput, MoveInput } from '../../../../utils/enums';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
@@ -44,8 +44,6 @@ export abstract class InputReducer extends Reducer<InputStore> {
 			case SET_START:
 			case SET_RESET:
 				return startReset(state, action);
-			case RELEASE_CONTROL_INPUT:
-				return buildPlayerInputState('controlInput');
 			default:
 				return state;
 		}

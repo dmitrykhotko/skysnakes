@@ -1,11 +1,8 @@
 import { FIRE, SET_DIRECTION, SET_RESET, SET_START } from '../../utils/constants';
 import { ControlInput } from '../../utils/enums';
 import {
-	Action,
-	ArenaActions,
 	ArenaStore,
 	ShootingStore,
-	InputActions,
 	InputStore,
 	SettingsStore,
 	SnakesActions,
@@ -26,6 +23,7 @@ import {
 } from './utils';
 import { generateId, nextPointCreator } from '../../utils/helpers';
 import { GameState } from '../../utils/types';
+import { NormalStrategy } from '../arena/strategies';
 
 export class Controller {
 	private arena!: Arena;
@@ -47,7 +45,9 @@ export class Controller {
 			onFinish: this.onFinish
 		} = cProps);
 
+		this.arena = new Arena({ width: this.width, height: this.height });
 		this.subscribe();
+
 		autostart && this.start(true);
 	}
 
@@ -72,21 +72,18 @@ export class Controller {
 		} as GameState;
 	};
 
-	private start = (reset = false, ...actions: Action[]): void => {
-		const { width, height } = this;
+	private start = (reset = false): void => {
 		const { playerMode, arenaType, drawGrid, deathsNum } = (state.get() as SettingsStore).settings;
 		const directions = playerModeToDirections[playerMode];
-		this.renderer.reset(drawGrid);
 
-		!this.arena && (this.arena = new Arena({ width, height }));
-		this.arena.start(directions, deathsNum, reset);
+		this.renderer.reset(drawGrid);
+		this.arena.start(directions, deathsNum, reset, new arenaStrategies[arenaType](), new NormalStrategy());
 
 		this.onStart();
-		state.dispatch(ArenaActions.setStrategy(new arenaStrategies[arenaType]()), ...actions);
 	};
 
 	private reset = (): void => {
-		this.start(true, InputActions.releaseControlInput());
+		this.start(true);
 	};
 
 	private subscribe = (): void => {
@@ -104,7 +101,7 @@ export class Controller {
 	private handleControlInput = (store: InputStore): void => {
 		switch (store.input.controlInput) {
 			case ControlInput.Start:
-				this.start(false, InputActions.releaseControlInput());
+				this.start(false);
 				break;
 			case ControlInput.Reset:
 				this.reset();

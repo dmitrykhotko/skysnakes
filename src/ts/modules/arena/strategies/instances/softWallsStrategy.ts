@@ -13,19 +13,20 @@ const directionSwitchers = {
 	[Position.Right]: fateLeftRight
 };
 
-export class SoftWallsStrategy extends BaseWallsStrategy {
-	private headCalcs = {
-		[Position.Top]: (head: Point): number => head.y++,
-		[Position.Left]: (head: Point): number => head.x++,
-		[Position.Bottom]: (head: Point): number => head.y--,
-		[Position.Right]: (head: Point): number => head.x--
-	};
+const headCalcs = {
+	[Position.Top]: (head: Point): number => head.y++,
+	[Position.Left]: (head: Point): number => head.x++,
+	[Position.Bottom]: (head: Point): number => head.y--,
+	[Position.Right]: (head: Point): number => head.x--
+};
 
-	protected applyPosition = (id: Player, position: Position, head: Point): void => {
-		this.headCalcs[position](head);
+export class SoftWallsStrategy extends BaseWallsStrategy {
+	protected applyPosition = (point: Point, _: number, __: number, id: Player, position: Position): void => {
+		// the next line changes point object that does not fit the redux paradigm. fix.
+		headCalcs[position](point);
 		state.dispatch(
-			SnakesActions.sendDirection(directionSwitchers[position](head), id),
-			SnakesActions.setHead(head, id)
+			SnakesActions.sendDirection(directionSwitchers[position](point), id),
+			SnakesActions.setHead(point, id)
 		);
 	};
 }

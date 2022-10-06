@@ -1,5 +1,5 @@
 import { HEIGHT, WIDTH } from '../../utils/constants';
-import { ActionInput, ArenaType, Direction, MoveInput, Player, PlayerMode } from '../../utils/enums';
+import { ActionInput, Strategy, Direction, MoveInput, Player, PlayerMode } from '../../utils/enums';
 import { NormalStrategy, SoftWallsStrategy, TransparentWallsStrategy } from '../arena/strategies';
 import { Renderer } from '../renderers/renderer';
 
@@ -32,9 +32,9 @@ export const playerModeToDirections = {
 };
 
 export const arenaStrategies = {
-	[ArenaType.Normal]: NormalStrategy,
-	[ArenaType.Soft]: SoftWallsStrategy,
-	[ArenaType.Transparent]: TransparentWallsStrategy
+	[Strategy.Normal]: NormalStrategy,
+	[Strategy.Soft]: SoftWallsStrategy,
+	[Strategy.Transparent]: TransparentWallsStrategy
 };
 
 export const defaultProps = {

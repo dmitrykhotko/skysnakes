@@ -19,7 +19,7 @@ export class Snake implements Character {
 
 	constructor(private snakeId = Player.P1, head: Point, direction = Direction.Right, length = SNAKE_LENGTH) {
 		const tail = this.initBody(head, length, direction);
-		state.dispatch(SnakesActions.setSnake({ head, tail, direction }, this.snakeId));
+		state.dispatch(SnakesActions.setSnake({ id: this.snakeId, head, tail, direction }));
 		this.subscribe();
 	}
 
@@ -42,7 +42,7 @@ export class Snake implements Character {
 		tail.next && (tail = tail.next);
 		tail.prev = undefined;
 
-		state.dispatch(SnakesActions.setSnake({ head, tail, direction }, this.snakeId));
+		state.dispatch(SnakesActions.setSnake({ id: this.snakeId, head, tail, direction }));
 	};
 
 	grow = (): void => {

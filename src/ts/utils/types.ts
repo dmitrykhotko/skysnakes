@@ -1,4 +1,4 @@
-import { ArenaType, PlayerMode, DrawGrid, Direction, MoveInput, ActionInput, Player } from './enums';
+import { Strategy, PlayerMode, DrawGrid, Direction, MoveInput, ActionInput, Player } from './enums';
 
 export type GameState = {
 	inProgress: boolean;
@@ -18,12 +18,13 @@ export type Point = {
 
 export type UserSettings = {
 	playerMode: PlayerMode;
-	arenaType: ArenaType;
+	arenaType: Strategy;
 	drawGrid: DrawGrid;
 	deathsNum: number;
 };
 
 export type SnakeState = {
+	id: Player;
 	head: Point;
 	tail: Point;
 	direction: Direction;

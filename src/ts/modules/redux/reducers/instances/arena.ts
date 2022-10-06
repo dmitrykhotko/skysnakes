@@ -1,12 +1,4 @@
-import {
-	INC_COINS,
-	INC_DEATHS,
-	SET_COIN,
-	SET_IN_PROGRESS,
-	SET_LOOSERS,
-	SET_SCORE,
-	SET_STRATEGY
-} from '../../../../utils/constants';
+import { INC_COINS, INC_DEATHS, SET_COIN, SET_IN_PROGRESS, SET_LOOSERS, SET_SCORE } from '../../../../utils/constants';
 import { Player } from '../../../../utils/enums';
 import { Point, Score } from '../../../../utils/types';
 import { Action, SetValueAction } from '../..';
@@ -83,9 +75,6 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 				break;
 			case SET_SCORE:
 				propName = 'score';
-				break;
-			case SET_STRATEGY:
-				propName = 'strategy';
 				break;
 			case INC_COINS:
 				return incScore(action, state, 'coins');

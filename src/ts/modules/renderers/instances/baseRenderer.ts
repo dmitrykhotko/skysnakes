@@ -1,6 +1,6 @@
 import { ActionInput, DrawGrid, MoveInput, Player } from '../../../utils/enums';
 import { ShootingActions, InputActions, state } from '../../redux';
-import { GameState, PlayerInput, Point, Score, SnakeState } from '../../../utils/types';
+import { Bullet, GameState, PlayerInput, Point, Score, SnakeState } from '../../../utils/types';
 import { Renderer } from '../renderer';
 
 export enum DrawingObject {
@@ -28,7 +28,6 @@ export abstract class BaseRenderer extends Renderer {
 
 	render(state: GameState): void {
 		const { snakes, score, loosers, bullets } = state;
-		const bulletsArr = Object.entries(bullets);
 
 		if (!this.isInitialized) {
 			this.isInitialized = true;
@@ -38,11 +37,7 @@ export abstract class BaseRenderer extends Renderer {
 		this.renderSnakes(snakes);
 		this.renderPlayerInfo(score, loosers);
 		this.renderPoint(state.coin, DrawingObject.coin, this.gameStatePrev?.coin);
-
-		for (let i = 0; i < bulletsArr.length; i++) {
-			const [id, { point }] = bulletsArr[i];
-			this.renderPoint(point, DrawingObject.bullet, this.gameStatePrev?.bullets[+id]?.point);
-		}
+		this.renderBullets(Object.values(bullets));
 
 		this.gameStatePrev = state;
 	}
@@ -100,11 +95,10 @@ export abstract class BaseRenderer extends Renderer {
 	};
 
 	private renderSnakes = (snakes: Record<Player, SnakeState>): void => {
-		const snakesArray = Object.entries(snakes);
+		const snakesArray = Object.values(snakes);
 
 		for (let i = 0; i < snakesArray.length; i++) {
-			const [player, { head, tail }] = snakesArray[i];
-			const id = +player as Player;
+			const { id, head, tail } = snakesArray[i];
 			const prevState = this.gameStatePrev?.snakes[id];
 
 			if (prevState) {
@@ -124,6 +118,14 @@ export abstract class BaseRenderer extends Renderer {
 				const headType = this.getHeadType(id);
 				this.renderCell(current, headType);
 			}
+		}
+	};
+
+	private renderBullets = (bullets: Bullet[]): void => {
+		for (let i = 0; i < bullets.length; i++) {
+			const { id, point } = bullets[i];
+			// const prevPoint = clear bullet from arena when it's removed
+			this.renderPoint(point, DrawingObject.bullet, this.gameStatePrev?.bullets[+id]?.point);
 		}
 	};
 

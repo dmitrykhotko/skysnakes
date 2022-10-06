@@ -1,4 +1,3 @@
-import { Player } from '../../../../utils/enums';
 import { Point } from '../../../../utils/types';
 import { ArenaStrategy } from '../arenaStrategy';
 
@@ -10,15 +9,15 @@ export enum Position {
 }
 
 export abstract class BaseWallsStrategy extends ArenaStrategy {
-	run = (head: Point, width: number, height: number, snakeId: number): boolean => {
-		const position = this.getPosition(head, width, height);
-		position !== undefined && this.applyPosition(snakeId, position, head, width, height);
+	run = (point: Point, width: number, height: number, id?: number): boolean => {
+		const position = this.getPosition(point, width, height);
+		id && position !== undefined && this.applyPosition(point, width, height, id, position);
 
 		return true;
 	};
 
-	private getPosition = (head: Point, width: number, height: number): Position | undefined => {
-		const { x, y } = head;
+	private getPosition = (point: Point, width: number, height: number): Position | undefined => {
+		const { x, y } = point;
 
 		let pos: Position;
 
@@ -39,5 +38,5 @@ export abstract class BaseWallsStrategy extends ArenaStrategy {
 		return pos;
 	};
 
-	protected abstract applyPosition(id: Player, position: Position, head: Point, width: number, height: number): void;
+	protected abstract applyPosition(point: Point, width: number, height: number, id: number, position: Position): void;
 }

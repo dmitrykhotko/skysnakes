@@ -1,6 +1,6 @@
 import { SEND_DIRECTION, SET_HEAD, SET_SNAKE, SET_TAIL } from '../../../../utils/constants';
 import { Direction, Player } from '../../../../utils/enums';
-import { Action, SetValueByIdAction } from '../..';
+import { Action, SetValueAction, SetValueByIdAction } from '../..';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
 import { Point, SnakeState } from '../../../../utils/types';
@@ -33,13 +33,13 @@ const setData = <T extends Point | Direction>(state: Store, action: Action, pNam
 
 const setSnake = (state: Store, action: Action): SnakesStore => {
 	const snakesState = state as SnakesStore;
-	const { id, value } = action as SetValueByIdAction<Point, Player>;
+	const { value } = action as SetValueAction<SnakeState>;
 
 	return {
 		...snakesState,
 		snakes: {
 			...snakesState.snakes,
-			[id]: value
+			[value.id]: value
 		}
 	};
 };

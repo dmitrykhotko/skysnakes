@@ -2,7 +2,7 @@ import { Action, SetValueAction } from '../..';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
 import { Bullet, Id } from '../../../../utils/types';
-import { FIRE, SET_BULLET } from '../../../../utils/constants';
+import { FIRE, REMOVE_BULLET, SET_BULLET } from '../../../../utils/constants';
 import { ActionInput } from '../../../../utils/enums';
 import { setValue } from '../utils';
 
@@ -17,7 +17,7 @@ export type ShootingStore = {
 
 const initialState = {
 	shooting: {
-		bullets: []
+		bullets: {}
 	}
 } as ShootingStore;
 
@@ -37,6 +37,26 @@ const setBullet = (state: Store, action: Action): ShootingStore => {
 	};
 };
 
+const removeBullet = (state: Store, action: Action): ShootingStore => {
+	const shootingState = state as ShootingStore;
+	const { value } = action as SetValueAction<Id>;
+
+	const bullets = Object.values(shootingState.shooting.bullets)
+		.filter(bullet => bullet.id !== value)
+		.reduce((acc, bullet) => {
+			acc[bullet.id] = bullet;
+			return acc;
+		}, {} as Record<Id, Bullet>);
+
+	return {
+		...shootingState,
+		shooting: {
+			...shootingState.shooting,
+			bullets
+		}
+	};
+};
+
 export abstract class ShootingReducer extends Reducer<ShootingStore> {
 	static getInitialState = (): ShootingStore => initialState;
 
@@ -48,6 +68,8 @@ export abstract class ShootingReducer extends Reducer<ShootingStore> {
 				return setValue(state as ShootingStore, action, 'shooting', 'fire');
 			case SET_BULLET:
 				return setBullet(state, action);
+			case REMOVE_BULLET:
+				return removeBullet(state, action);
 			default:
 				return state;
 		}
