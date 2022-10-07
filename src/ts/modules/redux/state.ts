@@ -20,11 +20,13 @@ class State implements Observable {
 	private observers = {} as Record<string, Observer[]>;
 
 	constructor(private reducer: Reducer<Store>) {
-		this.dispatch = TRACE_STATE ? this.traceDispatch : this.dispatchInternal;
+		const dispatch = TRACE_STATE ? this.traceDispatch : this.dispatchInternal;
+
 		this.store = reducer.getInitialState();
+		this.dispatch = (...actions: Action[]): void => (actions.length && dispatch(...actions)) as void;
 	}
 
-	get = (): Store => this.store;
+	get = <T extends Store>(): T => this.store as T;
 
 	subscribe = (observer: Observer, type: string): void => {
 		!this.observers[type] && (this.observers[type] = []);

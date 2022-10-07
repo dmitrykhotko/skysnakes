@@ -1,6 +1,6 @@
 import { SEND_DIRECTION } from '../../../utils/constants';
 import { Direction, Player } from '../../../utils/enums';
-import { Point } from '../../../utils/types';
+import { PointWithId, Point } from '../../../utils/types';
 import { SnakesStore, state } from '../../redux';
 import { Snake } from './snake';
 
@@ -23,7 +23,7 @@ export class Serpentarium {
 		}
 	};
 
-	faceObject = (object: Point, skipHead = true): { point: Point; id: Player } | undefined => {
+	faceObject = (object: Point, skipHead = true): PointWithId | undefined => {
 		for (let i = 0; i < this.snakes.length; i++) {
 			const snake = this.snakes[i];
 			const point = snake.faceObject(object, skipHead);
@@ -36,7 +36,7 @@ export class Serpentarium {
 
 	getBodiesSet = (width: number): Set<number> => {
 		const set: Set<number> = new Set<number>();
-		const snakes = Object.values((state.get() as SnakesStore).snakes);
+		const snakes = Object.values(state.get<SnakesStore>().snakes);
 
 		snakes.forEach(({ head }) => {
 			let point: Point | undefined = head;

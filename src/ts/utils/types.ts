@@ -1,3 +1,4 @@
+import { Action } from '../modules/redux';
 import { Strategy, PlayerMode, DrawGrid, Direction, MoveInput, ActionInput, Player } from './enums';
 
 export type GameState = {
@@ -7,6 +8,7 @@ export type GameState = {
 	bullets: Record<Id, Bullet>;
 	score: Record<Player, Score>;
 	loosers: Player[];
+	bin: Point[];
 };
 
 export type Point = {
@@ -44,3 +46,10 @@ export type Bullet = {
 export type PlayerInput = ActionInput | MoveInput;
 
 export type Id = number;
+
+export type PointWithId = { point: Point; id: number };
+
+export type ResultWitActions<T = boolean> = {
+	result: T;
+	actions: Action[];
+};

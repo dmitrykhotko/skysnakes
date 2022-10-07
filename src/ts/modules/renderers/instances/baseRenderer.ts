@@ -1,5 +1,5 @@
 import { ActionInput, DrawGrid, MoveInput, Player } from '../../../utils/enums';
-import { ShootingActions, InputActions, state } from '../../redux';
+import { ShootingActions, InputActions, state, ArenaActions } from '../../redux';
 import { Bullet, GameState, PlayerInput, Point, Score, SnakeState } from '../../../utils/types';
 import { Renderer } from '../renderer';
 
@@ -27,13 +27,14 @@ export abstract class BaseRenderer extends Renderer {
 	}
 
 	render(state: GameState): void {
-		const { snakes, score, loosers, bullets } = state;
+		const { snakes, score, loosers, bullets, bin } = state;
 
 		if (!this.isInitialized) {
 			this.isInitialized = true;
 			this.renderMap();
 		}
 
+		bin.length && this.emptyBin(bin);
 		this.renderSnakes(snakes);
 		this.renderPlayerInfo(score, loosers);
 		this.renderPoint(state.coin, DrawingObject.coin, this.gameStatePrev?.coin);
@@ -122,20 +123,19 @@ export abstract class BaseRenderer extends Renderer {
 	};
 
 	private renderBullets = (bulletsArr: Bullet[]): void => {
-		const ids = bulletsArr.map(({ id }) => id);
-		const prevBullets = this.gameStatePrev?.bullets ?? {};
-		const idsToClear = Object.values(prevBullets)
-			.map(({ id }) => id)
-			.filter(value => !ids.includes(value));
-
+		// TODO: render bullet tail
 		for (let i = 0; i < bulletsArr.length; i++) {
 			const { id, point } = bulletsArr[i];
 			this.renderPoint(point, DrawingObject.bullet, this.gameStatePrev?.bullets[+id]?.point);
 		}
+	};
 
-		for (let i = 0; i < idsToClear.length; i++) {
-			this.renderCell(prevBullets[idsToClear[i]].point, DrawingObject.empty);
+	private emptyBin = (bin: Point[]): void => {
+		for (let i = 0; i < bin.length; i++) {
+			this.renderCell(bin[i], DrawingObject.empty);
 		}
+
+		state.dispatch(ArenaActions.emptyBin());
 	};
 
 	private getHeadType = (id: Player): DrawingObject => (id === Player.P1 ? DrawingObject.head1 : DrawingObject.head2);

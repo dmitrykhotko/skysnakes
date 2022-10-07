@@ -64,16 +64,16 @@ export class Controller {
 	}
 
 	private getArenaData = (): GameState => {
-		const store = state.get();
+		const store = state.get<ArenaStore & SnakesStore & ShootingStore>();
 		return {
-			...(store as ArenaStore).arena,
-			snakes: (store as SnakesStore).snakes,
-			bullets: (store as ShootingStore).shooting.bullets
+			...store.arena,
+			snakes: store.snakes,
+			bullets: store.shooting.bullets
 		} as GameState;
 	};
 
 	private start = (reset = false): void => {
-		const { playerMode, arenaType, drawGrid, deathsNum } = (state.get() as SettingsStore).settings;
+		const { playerMode, arenaType, drawGrid, deathsNum } = state.get<SettingsStore>().settings;
 		const directions = playerModeToDirections[playerMode];
 
 		this.renderer.reset(drawGrid);

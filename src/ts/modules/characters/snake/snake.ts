@@ -79,7 +79,7 @@ export class Snake implements Character {
 		return point;
 	};
 
-	private getState = (): SnakeState => (state.get() as SnakesStore).snakes[this.snakeId];
+	private getState = (): SnakeState => state.get<SnakesStore>().snakes[this.snakeId];
 
 	private sendDirection = (newDirection: Direction): void => {
 		const { direction } = this.getState();

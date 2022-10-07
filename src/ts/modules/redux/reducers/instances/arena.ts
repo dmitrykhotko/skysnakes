@@ -1,11 +1,13 @@
 import {
+	MOVE_TO_BIN,
 	INC_COINS,
 	INC_DEATHS,
 	RESET_GAME,
 	SET_COIN,
 	SET_IN_PROGRESS,
 	SET_LOOSERS,
-	SET_SCORE
+	SET_SCORE,
+	EMPTY_BIN
 } from '../../../../utils/constants';
 import { Player } from '../../../../utils/enums';
 import { Point, Score } from '../../../../utils/types';
@@ -22,6 +24,7 @@ export type ArenaState = {
 	loosers: Player[];
 	score: Record<Player, Score>;
 	strategy: ArenaStrategy;
+	bin: Point[];
 };
 
 export type ArenaStore = {
@@ -34,13 +37,14 @@ const initialState = {
 		coin: { x: 0, y: 0 },
 		loosers: [],
 		score: {} as Record<Player, Score>,
-		strategy: new TransparentWallsStrategy()
+		strategy: new TransparentWallsStrategy(),
+		bin: []
 	}
 } as ArenaStore;
 
-const incScore = (action: Action, store: Store, propName: string): Store => {
+const incScore = (action: Action, store: ArenaStore, propName: string): Store => {
 	const { value: id } = action as SetValueAction<Player>;
-	const { arena } = store as ArenaStore;
+	const { arena } = store;
 	const { score } = arena;
 
 	const playerScore = score[id];
@@ -63,12 +67,22 @@ const incScore = (action: Action, store: Store, propName: string): Store => {
 	};
 };
 
+const setBin = (store: ArenaStore, bin = [] as Point[]): Store => ({
+	...store,
+	...{
+		arena: {
+			...store.arena,
+			...{ bin }
+		}
+	}
+});
+
 export abstract class ArenaReducer extends Reducer<ArenaStore> {
 	static getInitialState = (): ArenaStore => initialState;
 
 	static reduce = (state: Store, action: Action): Store => {
 		const { type } = action;
-		const arenaState = state as ArenaStore;
+		const arenaStore = state as ArenaStore;
 		let propName: string;
 
 		switch (type) {
@@ -85,15 +99,19 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 				propName = 'score';
 				break;
 			case INC_COINS:
-				return incScore(action, state, 'coins');
+				return incScore(action, arenaStore, 'coins');
 			case INC_DEATHS:
-				return incScore(action, state, 'deaths');
+				return incScore(action, arenaStore, 'deaths');
+			case MOVE_TO_BIN:
+				return setBin(arenaStore, [...arenaStore.arena.bin, ...(action as SetValueAction<Point[]>).value]);
+			case EMPTY_BIN:
+				return setBin(arenaStore, []);
 			case RESET_GAME:
 				return { ...state, ...initialState };
 			default:
 				return state;
 		}
 
-		return setValue(arenaState, action, 'arena', propName);
+		return setValue(arenaStore, action, 'arena', propName);
 	};
 }

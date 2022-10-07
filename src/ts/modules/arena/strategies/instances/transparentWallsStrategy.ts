@@ -1,5 +1,5 @@
 import { Point } from '../../../../utils/types';
-import { Action, SnakesActions, state } from '../../../redux';
+import { Action, SnakesActions } from '../../../redux';
 import { BaseWallsStrategy, Position } from './baseWallsStrategy';
 
 export class TransparentWallsStrategy extends BaseWallsStrategy {

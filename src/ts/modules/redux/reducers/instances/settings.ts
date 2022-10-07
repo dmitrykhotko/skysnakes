@@ -18,7 +18,7 @@ export type SettingsStore = {
 
 const initialState = {
 	settings: {
-		playerMode: PlayerMode.SinglePlayer,
+		playerMode: PlayerMode.Multiplayer,
 		arenaType: Strategy.Transparent,
 		drawGrid: DrawGrid.No,
 		deathsNum: 2

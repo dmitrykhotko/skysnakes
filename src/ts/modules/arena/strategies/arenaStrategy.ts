@@ -1,11 +1,5 @@
-import { Point } from '../../../utils/types';
-import { Action } from '../../redux';
-
-export type StrategyResult = {
-	success: boolean;
-	actions?: Action[];
-};
+import { Point, ResultWitActions } from '../../../utils/types';
 
 export abstract class ArenaStrategy {
-	abstract run(point: Point, width: number, height: number, id?: number): StrategyResult;
+	abstract run(point: Point, width: number, height: number, id?: number): ResultWitActions;
 }

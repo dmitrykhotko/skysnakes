@@ -9,7 +9,7 @@ export interface SetValueByIdAction<T, K> extends SetValueAction<T> {
 }
 
 export abstract class SetActions {
-	static setEmpty =
+	static set =
 		(type: string): (() => Action) =>
 		(): { type: string } => ({
 			type
