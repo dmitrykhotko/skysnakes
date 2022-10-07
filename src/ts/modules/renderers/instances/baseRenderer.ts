@@ -121,11 +121,20 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	};
 
-	private renderBullets = (bullets: Bullet[]): void => {
-		for (let i = 0; i < bullets.length; i++) {
-			const { id, point } = bullets[i];
-			// const prevPoint = clear bullet from arena when it's removed
+	private renderBullets = (bulletsArr: Bullet[]): void => {
+		const ids = bulletsArr.map(({ id }) => id);
+		const prevBullets = this.gameStatePrev?.bullets ?? {};
+		const idsToClear = Object.values(prevBullets)
+			.map(({ id }) => id)
+			.filter(value => !ids.includes(value));
+
+		for (let i = 0; i < bulletsArr.length; i++) {
+			const { id, point } = bulletsArr[i];
 			this.renderPoint(point, DrawingObject.bullet, this.gameStatePrev?.bullets[+id]?.point);
+		}
+
+		for (let i = 0; i < idsToClear.length; i++) {
+			this.renderCell(prevBullets[idsToClear[i]].point, DrawingObject.empty);
 		}
 	};
 
