@@ -1,5 +1,6 @@
 import { Point } from '../../../../utils/types';
-import { ArenaStrategy } from '../arenaStrategy';
+import { Action } from '../../../redux';
+import { ArenaStrategy, StrategyResult } from '../arenaStrategy';
 
 export enum Position {
 	Top,
@@ -9,11 +10,13 @@ export enum Position {
 }
 
 export abstract class BaseWallsStrategy extends ArenaStrategy {
-	run = (point: Point, width: number, height: number, id?: number): boolean => {
+	run = (point: Point, width: number, height: number, id?: number): StrategyResult => {
 		const position = this.getPosition(point, width, height);
-		id && position !== undefined && this.applyPosition(point, width, height, id, position);
 
-		return true;
+		return {
+			success: true,
+			actions: id && position !== undefined ? this.applyPosition(point, width, height, id, position) : []
+		};
 	};
 
 	private getPosition = (point: Point, width: number, height: number): Position | undefined => {
@@ -38,5 +41,11 @@ export abstract class BaseWallsStrategy extends ArenaStrategy {
 		return pos;
 	};
 
-	protected abstract applyPosition(point: Point, width: number, height: number, id: number, position: Position): void;
+	protected abstract applyPosition(
+		point: Point,
+		width: number,
+		height: number,
+		id: number,
+		position: Position
+	): Action[];
 }

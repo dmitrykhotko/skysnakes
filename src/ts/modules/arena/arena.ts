@@ -5,6 +5,7 @@ import {
 	Action,
 	ArenaActions,
 	ArenaStore,
+	ArenaState,
 	ShootingActions,
 	ShootingStore,
 	SnakesActions,
@@ -15,8 +16,7 @@ import { Point, Score } from '../../utils/types';
 import { Observer } from '../observable/observer';
 import { Serpentarium } from '../characters/snake';
 import { BulletsManager } from '../characters/bullets/bulletsManager';
-import { ArenaState } from '../redux/reducers/instances/arena';
-import { ArenaStrategy } from './strategies';
+import { ArenaStrategy, StrategyResult } from './strategies';
 
 export type ArenaProps = {
 	width?: number;
@@ -113,14 +113,16 @@ export class Arena {
 			const { id, point } = bullets[i];
 			const data = this.snakes.faceObject(point, false);
 			const facedCoin = this.faceCoin(point);
-			const success = this.runStrategy(point, id, this.bulletStrategy);
+			const { success, actions: strategyActions = [] } = this.runStrategy(point, id, this.bulletStrategy);
 			const removeBullet = facedCoin || !success || data;
 
+			actions.push(...strategyActions);
 			facedCoin && actions.push(this.setCoin());
 			removeBullet && actions.push(ShootingActions.removeBullet(id));
 
 			if (data) {
-				// fix when tail becomes equal to head
+				// TODO: fix when tail becomes equal to head
+				// TODO: clear rest when body was cut
 				actions.push(SnakesActions.setTail({ ...data.point, ...{ prev: undefined } }, data.id));
 			}
 		}
@@ -142,7 +144,8 @@ export class Arena {
 				continue;
 			}
 
-			const success = this.runStrategy(head, id, this.arenaStrategy);
+			const { success, actions: strategyActions = [] } = this.runStrategy(head, id, this.arenaStrategy);
+			actions.push(...strategyActions);
 
 			if (!success) {
 				actions.push(...this.finish(id));
@@ -158,8 +161,8 @@ export class Arena {
 		return actions;
 	};
 
-	private runStrategy = (point: Point, id: number, strategy?: ArenaStrategy): boolean =>
-		strategy ? strategy.run(point, this.width, this.height, id) : true;
+	private runStrategy = (point: Point, id: number, strategy?: ArenaStrategy): StrategyResult =>
+		strategy ? strategy.run(point, this.width, this.height, id) : { success: true };
 
 	private subscribe = (): void => {
 		state.subscribe(this.onInProgressChanged as Observer, SET_IN_PROGRESS);

@@ -1,5 +1,5 @@
 import { Point } from '../../../../utils/types';
-import { SnakesActions, state } from '../../../redux';
+import { Action, SnakesActions, state } from '../../../redux';
 import { BaseWallsStrategy, Position } from './baseWallsStrategy';
 
 export class TransparentWallsStrategy extends BaseWallsStrategy {
@@ -10,8 +10,14 @@ export class TransparentWallsStrategy extends BaseWallsStrategy {
 		[Position.Right]: (head: Point): number => (head.x = 0)
 	};
 
-	protected applyPosition = (head: Point, width: number, height: number, id: number, position: Position): void => {
+	protected applyPosition = (
+		head: Point,
+		width: number,
+		height: number,
+		id: number,
+		position: Position
+	): Action[] => {
 		this.headCalcs[position](head, width, height);
-		state.dispatch(SnakesActions.setHead(head, id));
+		return [SnakesActions.setHead(head, id)];
 	};
 }
