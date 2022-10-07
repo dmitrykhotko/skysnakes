@@ -7,5 +7,5 @@ export interface Observable {
 
 	notify(...params: unknown[]): void;
 
-	reset(): void;
+	unsubscribeByType(): void;
 }

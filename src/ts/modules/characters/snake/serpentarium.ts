@@ -57,7 +57,7 @@ export class Serpentarium {
 	};
 
 	private initSnakes = (): void => {
-		state.reset(SEND_DIRECTION);
+		state.unsubscribeByType(SEND_DIRECTION);
 
 		this.snakes = [];
 		this.props.length && this.snakes.push(this.getSnake(Player.P1, this.props[0]));

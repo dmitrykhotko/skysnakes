@@ -10,6 +10,7 @@ export { ReducerCollection } from './reducers/reducerCollection';
 
 export { Action } from './actions/action';
 export { SetValueAction, SetActions, SetValueByIdAction } from './actions/actionsCreators/setActions';
+export { CommonActions } from './actions/actionsCreators/commonActions';
 export { ArenaActions } from './actions/actionsCreators/arenaActions';
 export { InputActions } from './actions/actionsCreators/inputActions';
 export { SnakesActions } from './actions/actionsCreators/snakesActions';

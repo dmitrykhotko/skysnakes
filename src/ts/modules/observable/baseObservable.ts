@@ -14,7 +14,7 @@ export abstract class BaseObservable implements Observable {
 
 	notify = (...params: unknown[]): void => this.observers.forEach(observer => observer(...params));
 
-	reset = (): void => {
+	unsubscribeByType = (): void => {
 		this.observers = new Set<Observer>();
 	};
 }

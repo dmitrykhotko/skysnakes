@@ -10,7 +10,8 @@ import {
 	ShootingStore,
 	SnakesActions,
 	SnakesStore,
-	state
+	state,
+	CommonActions
 } from '../redux';
 import { Point, Score } from '../../utils/types';
 import { Observer } from '../observable/observer';
@@ -66,7 +67,9 @@ export class Arena {
 		bulletStrategy?: ArenaStrategy
 	): void => {
 		const { score, loosers } = this.getState();
-		const resetScore = Object.keys(score).length !== directions.length || loosers.length || reset;
+		const resetArena = Object.keys(score).length !== directions.length || loosers.length || reset;
+
+		resetArena && state.dispatch(CommonActions.resetGame());
 
 		this.steps = 0;
 		this.deathsNum = deathsNum;
@@ -75,10 +78,8 @@ export class Arena {
 		this.arenaStrategy = arenaStrategy;
 		this.bulletStrategy = bulletStrategy;
 
-		const actions = [this.setCoin(), ArenaActions.setInProgress(true)];
-		resetScore && this.resetScore();
-
-		state.dispatch(...actions);
+		resetArena && this.resetScore();
+		state.dispatch(this.setCoin(), ArenaActions.setInProgress(true));
 	};
 
 	move = (): void => {
@@ -111,19 +112,25 @@ export class Arena {
 
 		for (let i = 0; i < bullets.length; i++) {
 			const { id, point } = bullets[i];
-			const data = this.snakes.faceObject(point, false);
+			const faceSnakeResult = this.snakes.faceObject(point, false);
 			const facedCoin = this.faceCoin(point);
 			const { success, actions: strategyActions = [] } = this.runStrategy(point, id, this.bulletStrategy);
-			const removeBullet = facedCoin || !success || data;
+			const removeBullet = facedCoin || !success || faceSnakeResult;
 
 			actions.push(...strategyActions);
 			facedCoin && actions.push(this.setCoin());
 			removeBullet && actions.push(ShootingActions.removeBullet(id));
 
-			if (data) {
-				// TODO: fix when tail becomes equal to head
+			if (faceSnakeResult) {
 				// TODO: clear rest when body was cut
-				actions.push(SnakesActions.setTail({ ...data.point, ...{ prev: undefined } }, data.id));
+
+				const { id: snakeId, point: snakePoint } = faceSnakeResult;
+
+				if (snakePoint.next) {
+					actions.push(SnakesActions.setTail({ ...snakePoint.next, ...{ prev: undefined } }, snakeId));
+				} else {
+					actions.push(...this.finish(snakeId));
+				}
 			}
 		}
 

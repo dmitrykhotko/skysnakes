@@ -16,6 +16,10 @@ export const TRACE_STATE = false;
 
 // ACTIONS
 
+//// COMMON_ACTIONS
+
+export const RESET_GAME = 'COMMON_ACTIONS/RESET_GAME';
+
 //// ARENA ACTIONS
 export const SET_COIN = 'ARENA/SET_COIN';
 export const INC_COINS = 'ARENA/INC_COINS';

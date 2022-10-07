@@ -37,19 +37,19 @@ class State implements Observable {
 		!!~index && observers.splice(index, 1);
 	};
 
+	unsubscribeByType = (type = ''): void => {
+		if (type === '') {
+			this.observers = {} as Record<string, Observer[]>;
+		} else {
+			this.observers[type] = [];
+		}
+	};
+
 	notify = (type: string, newStore: Store, oldStore: Store): void => {
 		const observers = this.observers[type] || [];
 
 		for (let i = 0; i < observers.length; i++) {
 			observers[i](newStore, oldStore);
-		}
-	};
-
-	reset = (type = ''): void => {
-		if (type === '') {
-			this.observers = {} as Record<string, Observer[]>;
-		} else {
-			this.observers[type] = [];
 		}
 	};
 

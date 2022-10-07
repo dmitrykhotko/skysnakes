@@ -2,7 +2,7 @@ import { Action, SetValueAction } from '../..';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
 import { Bullet, Id } from '../../../../utils/types';
-import { FIRE, REMOVE_BULLET, SET_BULLET } from '../../../../utils/constants';
+import { FIRE, REMOVE_BULLET, RESET_GAME, SET_BULLET } from '../../../../utils/constants';
 import { ActionInput } from '../../../../utils/enums';
 import { setValue } from '../utils';
 
@@ -70,6 +70,8 @@ export abstract class ShootingReducer extends Reducer<ShootingStore> {
 				return setBullet(state, action);
 			case REMOVE_BULLET:
 				return removeBullet(state, action);
+			case RESET_GAME:
+				return { ...state, ...initialState };
 			default:
 				return state;
 		}

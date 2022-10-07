@@ -12,7 +12,8 @@ const keyInputMapping: Record<KeyCode, PlayerInput> = {
 	[KeyCode.KeyS]: MoveInput.LDown,
 	[KeyCode.KeyA]: MoveInput.LLeft,
 	[KeyCode.KeyD]: MoveInput.LRight,
-	[KeyCode.Space]: ActionInput.RFire
+	[KeyCode.Space]: ActionInput.RFire,
+	[KeyCode.KeyT]: ActionInput.LFire
 };
 
 const colors = {
