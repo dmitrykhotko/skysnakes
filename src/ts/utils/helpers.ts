@@ -27,3 +27,5 @@ export const lcm = (...x: number[]): number => {
 
 	return j;
 };
+
+export const getRandomInt = (max: number): number => Math.floor(Math.random() * max);

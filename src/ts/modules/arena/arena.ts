@@ -1,6 +1,6 @@
 import { BULLET_SPEED, HEIGHT, SET_IN_PROGRESS, SNAKE_SPEED, WIDTH } from '../../utils/constants';
 import { Direction, Player } from '../../utils/enums';
-import { comparePoints, lcm } from '../../utils/helpers';
+import { comparePoints, getRandomInt, lcm } from '../../utils/helpers';
 import {
 	Action,
 	ArenaActions,
@@ -12,7 +12,7 @@ import {
 	state,
 	CommonActions
 } from '../redux';
-import { Bullet, Point, ResultWitActions, Score } from '../../utils/types';
+import { Point, ResultWitActions, Score } from '../../utils/types';
 import { Observer } from '../observable/observer';
 import { Serpentarium } from '../characters/snake';
 import { BulletsManager } from '../characters/bullets/bulletsManager';
@@ -38,7 +38,7 @@ export class Arena {
 	private width: number;
 	private height: number;
 	private stepsNum: number;
-	private steps = 0;
+	private steps!: number;
 	private snakeStep: number;
 	private bulletStep: number;
 	private arenaStrategy?: ArenaStrategy;
@@ -55,7 +55,7 @@ export class Arena {
 		this.snakeStep = this.stepsNum / snakeSpeed;
 		this.bulletStep = this.stepsNum / bulletSpeed;
 
-		this.subscribe();
+		state.subscribe(this.judge as Observer, SET_IN_PROGRESS);
 	}
 
 	start = (
@@ -99,49 +99,29 @@ export class Arena {
 			this.snakes.move();
 			this.handleMoveSnakes();
 
-			const actions = [] as Action[];
-			const bullets = Object.values(state.get<ShootingStore>().shooting.bullets);
-
-			for (let i = 0; i < bullets.length; i++) {
-				const { result: snakeShotSuccess, actions: snakeShotActions } = this.checkHit(bullets[i]);
-
-				if (snakeShotSuccess) {
-					snakeShotActions && actions.push(...snakeShotActions);
-					continue;
-				}
-			}
-
-			state.dispatch(...actions);
+			state.dispatch(...this.checkHits());
 		}
 
 		this.steps === this.stepsNum && (this.steps = 0);
 	};
 
 	private handleMoveBullets = (): void => {
-		const actions = [] as Action[];
+		const actions = [...this.checkHits()];
 		const bullets = Object.values(state.get<ShootingStore>().shooting.bullets);
 
 		for (let i = 0; i < bullets.length; i++) {
 			const bullet = bullets[i];
 			const { id, point } = bullet;
-			const { result: snakeShotSuccess, actions: snakeShotActions } = this.checkHit(bullet);
 
-			if (snakeShotSuccess) {
-				snakeShotActions && actions.push(...snakeShotActions);
-				continue;
-			}
-
-			const facedCoin = this.faceCoin(point);
+			const { result: faceCoinSuccess, actions: faceCoinActions } = this.faceCoin(point);
 			const { result: strategySuccess, actions: strategyActions = [] } = this.runStrategy(
 				point,
 				id,
 				this.bulletStrategy
 			);
-			const removeBullet = facedCoin || !strategySuccess || snakeShotSuccess;
 
-			facedCoin && actions.push(this.setCoin());
-			actions.push(...strategyActions);
-			removeBullet && actions.push(...BulletsManager.removeBullet(bullet));
+			actions.push(...strategyActions, ...faceCoinActions);
+			(faceCoinSuccess || !strategySuccess) && actions.push(...BulletsManager.removeBullet(bullet));
 		}
 
 		state.dispatch(...actions);
@@ -161,7 +141,7 @@ export class Arena {
 				continue;
 			}
 
-			const { result: success, actions: strategyActions = [] } = this.runStrategy(head, id, this.arenaStrategy);
+			const { result: success, actions: strategyActions } = this.runStrategy(head, id, this.arenaStrategy);
 			actions.push(...strategyActions);
 
 			if (!success) {
@@ -169,48 +149,47 @@ export class Arena {
 				continue;
 			}
 
-			if (this.faceCoin(head)) {
+			const { result: faceCoinSuccess, actions: faceCoinActions } = this.faceCoin(head);
+
+			if (faceCoinSuccess) {
 				this.snakes.grow(id);
-				actions.push(ArenaActions.incCoins(id), this.setCoin());
+				actions.push(ArenaActions.incCoins(id), ...faceCoinActions);
 			}
 		}
 
 		state.dispatch(...actions);
 	};
 
-	private checkHit = (bullet: Bullet): ResultWitActions => {
-		const { point } = bullet;
-		const snakeShotResult = this.snakes.faceObject(point, false);
+	private checkHits = (): Action[] => {
+		const actions = [] as Action[];
+		const bullets = Object.values(state.get<ShootingStore>().shooting.bullets);
 
-		if (!snakeShotResult) {
-			return {
-				result: false,
-				actions: []
-			};
+		for (let i = 0; i < bullets.length; i++) {
+			const bullet = bullets[i];
+			const { point } = bullet;
+			const snakeShotResult = this.snakes.faceObject(point, false);
+
+			if (!snakeShotResult) {
+				continue;
+			}
+
+			const { result, actions: hitActions } = BulletsManager.hit(bullet, snakeShotResult);
+			actions.push(...hitActions);
+
+			result && actions.push(...this.finish(snakeShotResult.id));
+
+			actions.push(...actions);
 		}
 
-		const { result, actions: hitActions } = BulletsManager.hit(bullet, snakeShotResult);
-		const actions = [...hitActions] as Action[];
-
-		result && actions.push(...this.finish(snakeShotResult.id));
-
-		return { result: true, actions };
+		return actions;
 	};
 
 	private runStrategy = (point: Point, id: number, strategy?: ArenaStrategy): ResultWitActions =>
 		strategy ? strategy.run(point, this.width, this.height, id) : { result: true, actions: [] };
 
-	private subscribe = (): void => {
-		state.subscribe(this.onInProgressChanged as Observer, SET_IN_PROGRESS);
-	};
-
-	private onInProgressChanged = (store: ArenaStore): void => {
-		this.judge(store);
-	};
-
 	private setCoin = (): Action => {
 		const freeCells = this.getFreeCells();
-		const coinCellIndex = this.getRandomInt(freeCells.length);
+		const coinCellIndex = getRandomInt(freeCells.length);
 		const coinCellValue = freeCells[coinCellIndex];
 		const x = coinCellValue % this.width;
 		const y = (coinCellValue - x) / this.width;
@@ -244,7 +223,7 @@ export class Arena {
 		const loosers = [] as Player[];
 
 		Object.entries(score).forEach(([id, score]) => {
-			const player = +id as Player;
+			const player = +id;
 
 			if (score.deaths === this.deathsNum) {
 				loosers.push(player);
@@ -269,15 +248,20 @@ export class Arena {
 		return cells;
 	};
 
-	private faceCoin = (object: Point): boolean => {
-		const { coin } = this.getState();
-		return comparePoints(object, coin);
-	};
-
-	private getRandomInt = (max: number): number => Math.floor(Math.random() * max);
+	private faceCoin = (object: Point): ResultWitActions =>
+		comparePoints(object, this.getState().coin)
+			? {
+					result: true,
+					actions: [this.setCoin()]
+			  }
+			: {
+					result: false,
+					actions: []
+			  };
 
 	private getStartPoint = (direction: Direction): Point => {
 		let head: Point;
+
 		switch (direction) {
 			case Direction.Right:
 				head = { x: 0, y: this.height / 2 };
