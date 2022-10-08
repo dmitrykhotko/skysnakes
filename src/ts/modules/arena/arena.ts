@@ -177,8 +177,6 @@ export class Arena {
 			actions.push(...hitActions);
 
 			result && actions.push(...this.finish(snakeShotResult.id));
-
-			actions.push(...actions);
 		}
 
 		return actions;
