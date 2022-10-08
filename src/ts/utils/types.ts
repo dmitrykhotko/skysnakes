@@ -6,7 +6,7 @@ export type GameState = {
 	coin: Point;
 	snakes: Record<Player, SnakeState>;
 	bullets: Record<Id, Bullet>;
-	score: Record<Player, Score>;
+	score: WeightedScore[];
 	loosers: Player[];
 	bin: Point[];
 };
@@ -35,6 +35,12 @@ export type SnakeState = {
 export type Score = {
 	deaths: number;
 	coins: number;
+};
+
+export type WeightedScore = {
+	deaths: number;
+	score: number;
+	id: Player;
 };
 
 export type Bullet = {

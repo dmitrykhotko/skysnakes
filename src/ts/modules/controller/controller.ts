@@ -1,5 +1,5 @@
-import { FIRE, SET_DIRECTION, SET_RESET, SET_START } from '../../utils/constants';
-import { ControlInput } from '../../utils/enums';
+import { COIN_WEIGHT, FIRE, SET_DIRECTION, SET_RESET, SET_START } from '../../utils/constants';
+import { ControlInput, Player } from '../../utils/enums';
 import {
 	ArenaStore,
 	ShootingStore,
@@ -22,7 +22,7 @@ import {
 	playerModeToDirections
 } from './utils';
 import { generateId, nextPointCreator } from '../../utils/helpers';
-import { GameState } from '../../utils/types';
+import { GameState, Score, WeightedScore } from '../../utils/types';
 import { NormalStrategy } from '../arena/strategies';
 
 export class Controller {
@@ -68,7 +68,8 @@ export class Controller {
 		return {
 			...store.arena,
 			snakes: store.snakes,
-			bullets: store.shooting.bullets
+			bullets: store.shooting.bullets,
+			score: this.getScore(store.arena.score)
 		} as GameState;
 	};
 
@@ -130,5 +131,17 @@ export class Controller {
 		state.dispatch(
 			ShootingActions.setBullet({ id: generateId(), point: nextPointCreator[direction](head), direction })
 		);
+	};
+
+	private getScore = (score: Record<Player, Score>): WeightedScore[] => {
+		const wScore = [] as WeightedScore[];
+		const scoreArr = Object.entries(score);
+
+		for (let i = 0; i < scoreArr.length; i++) {
+			const [id, { deaths, coins }] = scoreArr[i];
+			wScore.push({ id: +id, deaths, score: coins * COIN_WEIGHT });
+		}
+
+		return wScore;
 	};
 }

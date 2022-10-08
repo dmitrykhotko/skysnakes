@@ -1,6 +1,6 @@
 import { ActionInput, DrawGrid, MoveInput, Player } from '../../../utils/enums';
 import { ShootingActions, InputActions, state, ArenaActions } from '../../redux';
-import { Bullet, GameState, PlayerInput, Point, Score, SnakeState } from '../../../utils/types';
+import { Bullet, GameState, PlayerInput, Point, Score, SnakeState, WeightedScore } from '../../../utils/types';
 import { Renderer } from '../renderer';
 
 export enum DrawingObject {
@@ -17,9 +17,9 @@ export abstract class BaseRenderer extends Renderer {
 	protected drawGrid = DrawGrid.No;
 
 	private isInitialized = false;
-	private gameStatePrev?: GameState;
 
 	protected abstract renderCell: (point: Point, type: DrawingObject) => void;
+
 	protected abstract renderTextLine: (string: string, lineNumber: number) => void;
 
 	constructor(protected width: number, protected height: number) {
@@ -34,19 +34,16 @@ export abstract class BaseRenderer extends Renderer {
 			this.renderMap();
 		}
 
-		bin.length && this.emptyBin(bin);
 		this.renderSnakes(snakes);
 		this.renderPlayerInfo(score, loosers);
-		this.renderPoint(state.coin, DrawingObject.coin, this.gameStatePrev?.coin);
+		this.renderCell(state.coin, DrawingObject.coin);
 		this.renderBullets(Object.values(bullets));
-
-		this.gameStatePrev = state;
+		this.emptyBin(bin);
 	}
 
 	reset(drawGrid: DrawGrid): void {
 		this.drawGrid = drawGrid;
 		this.isInitialized = false;
-		this.gameStatePrev = undefined;
 	}
 
 	protected input = (input: PlayerInput): void => {
@@ -67,7 +64,7 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	};
 
-	private renderPlayerInfo = (score: Record<Player, Score>, loosers: Player[]): void => {
+	private renderPlayerInfo = (wScore: WeightedScore[], loosers: Player[]): void => {
 		let lineNumber = 1;
 
 		if (loosers.length) {
@@ -80,16 +77,12 @@ export abstract class BaseRenderer extends Renderer {
 			lineNumber += 2;
 		}
 
-		this.renderTextLine('SCORE:', lineNumber++);
+		for (let i = 0; i < wScore.length; i++) {
+			const { id, deaths, score } = wScore[i];
 
-		const scoreArray = Object.entries(score);
-
-		for (let i = 0; i < scoreArray.length; i++) {
-			const [player, { deaths, coins }] = scoreArray[i];
-
-			this.renderTextLine(`Player: ${Player[+player as Player]}`, lineNumber++);
+			this.renderTextLine(`Player: ${Player[id]}`, lineNumber++);
 			this.renderTextLine(`Deaths: ${deaths}`, lineNumber++);
-			this.renderTextLine(`Coins: ${coins}`, lineNumber);
+			this.renderTextLine(`Score: ${score}`, lineNumber);
 
 			lineNumber += 2;
 		}
@@ -100,25 +93,16 @@ export abstract class BaseRenderer extends Renderer {
 
 		for (let i = 0; i < snakesArray.length; i++) {
 			const { id, head, tail } = snakesArray[i];
-			const prevState = this.gameStatePrev?.snakes[id];
 
-			if (prevState) {
-				const { head: prevHead, tail: prevTail } = prevState;
-				const headType = this.getHeadType(id);
+			let current = tail;
 
-				this.rerenderCell({ p1: prevHead, p2: head, t1: DrawingObject.body, t2: headType });
-				this.rerenderCell({ p1: prevTail, p2: tail, t1: DrawingObject.empty });
-			} else {
-				let current = tail;
-
-				while (current === head) {
-					this.renderCell(current, DrawingObject.body);
-					current.next && (current = current.next);
-				}
-
-				const headType = this.getHeadType(id);
-				this.renderCell(current, headType);
+			while (current !== head) {
+				this.renderCell(current, DrawingObject.body);
+				current.next && (current = current.next);
 			}
+
+			const headType = this.getHeadType(id);
+			this.renderCell(current, headType);
 		}
 	};
 
@@ -126,11 +110,15 @@ export abstract class BaseRenderer extends Renderer {
 		// TODO: render bullet tail
 		for (let i = 0; i < bulletsArr.length; i++) {
 			const { id, point } = bulletsArr[i];
-			this.renderPoint(point, DrawingObject.bullet, this.gameStatePrev?.bullets[+id]?.point);
+			this.renderCell(point, DrawingObject.bullet);
 		}
 	};
 
 	private emptyBin = (bin: Point[]): void => {
+		if (!bin.length) {
+			return;
+		}
+
 		for (let i = 0; i < bin.length; i++) {
 			this.renderCell(bin[i], DrawingObject.empty);
 		}
@@ -139,21 +127,4 @@ export abstract class BaseRenderer extends Renderer {
 	};
 
 	private getHeadType = (id: Player): DrawingObject => (id === Player.P1 ? DrawingObject.head1 : DrawingObject.head2);
-
-	private renderPoint = (point: Point, drawingObject: DrawingObject, prevPoint?: Point): void => {
-		if (prevPoint) {
-			this.rerenderCell({ p1: prevPoint, p2: point, t1: DrawingObject.empty, t2: drawingObject });
-		} else {
-			this.renderCell(point, drawingObject);
-		}
-	};
-
-	private rerenderCell({ p1, p2, t1, t2 }: { p1: Point; p2: Point; t1?: DrawingObject; t2?: DrawingObject }): void {
-		if (p1.x === p2.x && p1.y === p2.y) {
-			return;
-		}
-
-		t1 && this.renderCell(p1, t1);
-		t2 && this.renderCell(p2, t2);
-	}
 }

@@ -7,11 +7,12 @@ import {
 	SET_IN_PROGRESS,
 	SET_LOOSERS,
 	SET_SCORE,
-	EMPTY_BIN
+	EMPTY_BIN,
+	SET_COINS
 } from '../../../../utils/constants';
 import { Player } from '../../../../utils/enums';
 import { Point, Score } from '../../../../utils/types';
-import { Action, SetValueAction } from '../..';
+import { Action, SetValueAction, SetValueByIdAction } from '../..';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
 import { setValue } from '../utils';
@@ -42,8 +43,7 @@ const initialState = {
 	}
 } as ArenaStore;
 
-const incScore = (action: Action, store: ArenaStore, propName: string): Store => {
-	const { value: id } = action as SetValueAction<Player>;
+const changeScore = (id: Player, store: ArenaStore, propName: string, value = 1): Store => {
 	const { arena } = store;
 	const { score } = arena;
 
@@ -60,7 +60,7 @@ const incScore = (action: Action, store: ArenaStore, propName: string): Store =>
 			...{
 				score: {
 					...score,
-					...{ [id]: { ...playerScore, ...{ [propName]: +playerScore[propName as keyof Score] + 1 } } }
+					...{ [id]: { ...playerScore, ...{ [propName]: +playerScore[propName as keyof Score] + value } } }
 				}
 			}
 		}
@@ -99,9 +99,12 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 				propName = 'score';
 				break;
 			case INC_COINS:
-				return incScore(action, arenaStore, 'coins');
+				return changeScore((action as SetValueAction<Player>).value, arenaStore, 'coins');
+			case SET_COINS:
+				const { id, value } = action as SetValueByIdAction<number, Player>;
+				return changeScore(id, arenaStore, 'coins', value);
 			case INC_DEATHS:
-				return incScore(action, arenaStore, 'deaths');
+				return changeScore((action as SetValueAction<Player>).value, arenaStore, 'deaths');
 			case MOVE_TO_BIN:
 				return setBin(arenaStore, [...arenaStore.arena.bin, ...(action as SetValueAction<Point[]>).value]);
 			case EMPTY_BIN:

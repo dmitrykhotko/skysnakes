@@ -1,3 +1,4 @@
+import { BODY_PART_WEIGHT, HEAD_SHOT_WEIGHT } from '../../../utils/constants';
 import { nextPointCreator } from '../../../utils/helpers';
 import { Bullet, PointWithId, Point, ResultWitActions } from '../../../utils/types';
 import { Action, ArenaActions, ShootingActions, ShootingStore, SnakesActions, state } from '../../redux';
@@ -14,7 +15,10 @@ export abstract class BulletsManager {
 			point.prev = undefined;
 			nextPoint.prev = point;
 
-			actions.push(ShootingActions.setBullet({ id, point: nextPoint, direction }));
+			actions.push(
+				ShootingActions.setBullet({ id, point: nextPoint, direction }),
+				ArenaActions.moveToBin([point])
+			);
 		}
 
 		state.dispatch(...actions);
@@ -31,32 +35,30 @@ export abstract class BulletsManager {
 
 	static hit = (bullet: Bullet, snakeShotResult: PointWithId): ResultWitActions => {
 		const { id: snakeId, point: snakePoint } = snakeShotResult;
-		const nextTail = snakePoint.next;
-		const isDead = !(nextTail && nextTail.next); // it's either head shot or shot the last body piece
-
-		if (isDead) {
-			return {
-				result: true,
-				actions: []
-			};
-		}
-
 		const bin = [] as Point[];
 		const actions = [...BulletsManager.removeBullet(bullet)] as Action[];
+		const nextPoint = snakePoint.next;
+		const isHeadShot = !nextPoint;
+		const isDead = isHeadShot || !nextPoint.next; // it's either head shot or shot the last body piece
+		const nextTail = nextPoint || snakePoint;
 
-		let trashPoint: Point | undefined = nextTail;
-
-		actions.push(SnakesActions.setTail({ ...nextTail, ...{ prev: undefined } }, snakeId));
+		let trashPoint: Point | undefined = snakePoint;
 
 		while (trashPoint) {
 			bin.push(trashPoint);
 			trashPoint = trashPoint.prev;
 		}
 
-		actions.push(ArenaActions.moveToBin(bin));
+		nextTail.prev = undefined;
+		actions.push(SnakesActions.setTail(nextTail, snakeId));
+		isDead && actions.push(SnakesActions.setHead(nextTail, snakeId));
+
+		const coinValue = isHeadShot ? HEAD_SHOT_WEIGHT : bin.length * BODY_PART_WEIGHT;
+
+		actions.push(ArenaActions.setCoins(-coinValue, snakeId), ArenaActions.moveToBin(bin));
 
 		return {
-			result: false,
+			result: isDead,
 			actions
 		};
 	};
