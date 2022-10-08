@@ -119,15 +119,15 @@ export class Arena {
 			const bullet = bullets[i];
 			const { id, point } = bullet;
 
-			const { result: faceCoinSuccess, actions: faceCoinActions } = this.faceCoin(point);
-			const { result: strategySuccess, actions: strategyActions = [] } = this.runStrategy(
+			const { result: facedCoin, actions: faceCoinActions } = this.faceCoin(point);
+			const { result: bulletIsOk, actions: adjustBulletActions } = this.runStrategy(
 				point,
 				id,
 				this.bulletStrategy
 			);
 
-			actions.push(...strategyActions, ...faceCoinActions);
-			(faceCoinSuccess || !strategySuccess) && actions.push(...BulletsManager.removeBullet(bullet));
+			actions.push(...adjustBulletActions, ...faceCoinActions);
+			(facedCoin || !bulletIsOk) && actions.push(...BulletsManager.removeBullet(bullet));
 		}
 
 		state.dispatch(...actions);
@@ -147,10 +147,10 @@ export class Arena {
 				continue;
 			}
 
-			const { result: success, actions: strategyActions } = this.runStrategy(head, id, this.arenaStrategy);
-			actions.push(...strategyActions);
+			const { result: snakeIsOk, actions: adjustSnakeActions } = this.runStrategy(head, id, this.arenaStrategy);
+			actions.push(...adjustSnakeActions);
 
-			if (!success) {
+			if (!snakeIsOk) {
 				actions.push(...this.finish(id));
 				continue;
 			}
@@ -179,14 +179,14 @@ export class Arena {
 				continue;
 			}
 
-			const { result, actions: hitActions } = BulletsManager.hit(bullet, snakeShotResult);
+			const { result: isHit, actions: hitActions } = BulletsManager.hit(bullet, snakeShotResult);
 			actions.push(...hitActions);
 
-			if (result) {
+			if (isHit) {
 				actions.push(...this.finish(snakeShotResult.id));
 
 				return {
-					result,
+					result: isHit,
 					actions
 				};
 			}
