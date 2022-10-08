@@ -99,14 +99,20 @@ export class Arena {
 			this.snakes.move();
 			this.handleMoveSnakes();
 
-			state.dispatch(...this.checkHits());
+			state.dispatch(...this.checkHits().actions);
 		}
 
 		this.steps === this.stepsNum && (this.steps = 0);
 	};
 
 	private handleMoveBullets = (): void => {
-		const actions = [...this.checkHits()];
+		const { result: isHit, actions: hitActions } = this.checkHits();
+		const actions = [...hitActions];
+
+		if (isHit) {
+			return state.dispatch(...actions);
+		}
+
 		const bullets = Object.values(state.get<ShootingStore>().shooting.bullets);
 
 		for (let i = 0; i < bullets.length; i++) {
@@ -160,7 +166,7 @@ export class Arena {
 		state.dispatch(...actions);
 	};
 
-	private checkHits = (): Action[] => {
+	private checkHits = (): ResultWitActions => {
 		const actions = [] as Action[];
 		const bullets = Object.values(state.get<ShootingStore>().shooting.bullets);
 
@@ -176,10 +182,20 @@ export class Arena {
 			const { result, actions: hitActions } = BulletsManager.hit(bullet, snakeShotResult);
 			actions.push(...hitActions);
 
-			result && actions.push(...this.finish(snakeShotResult.id));
+			if (result) {
+				actions.push(...this.finish(snakeShotResult.id));
+
+				return {
+					result,
+					actions
+				};
+			}
 		}
 
-		return actions;
+		return {
+			result: false,
+			actions
+		};
 	};
 
 	private runStrategy = (point: Point, id: number, strategy?: ArenaStrategy): ResultWitActions =>
