@@ -113,7 +113,7 @@ export class Arena {
 			return state.dispatch(...actions);
 		}
 
-		const bullets = Object.values(state.get<BulletsStore>().bullets);
+		const bullets = state.get<BulletsStore>().bullets;
 
 		for (let i = 0; i < bullets.length; i++) {
 			const bullet = bullets[i];
@@ -168,7 +168,7 @@ export class Arena {
 
 	private checkHits = (): ResultWitActions => {
 		const actions = [] as Action[];
-		const bullets = Object.values(state.get<BulletsStore>().bullets);
+		const bullets = state.get<BulletsStore>().bullets;
 
 		for (let i = 0; i < bullets.length; i++) {
 			const bullet = bullets[i];

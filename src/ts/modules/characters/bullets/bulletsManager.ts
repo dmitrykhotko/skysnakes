@@ -5,7 +5,7 @@ import { Action, ArenaActions, BulletsActions, BulletsStore, SnakesActions, stat
 
 export abstract class BulletsManager {
 	static move = (): void => {
-		const bullets = Object.values(state.get<BulletsStore>().bullets);
+		const bullets = state.get<BulletsStore>().bullets;
 		const actions = [] as Action[];
 
 		for (let i = 0; i < bullets.length; i++) {

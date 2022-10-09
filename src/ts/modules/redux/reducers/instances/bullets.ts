@@ -4,14 +4,14 @@ import { Reducer } from '../reducer';
 import { Bullet, Id } from '../../../../utils/types';
 import { REMOVE_BULLET, RESET_GAME, RESET_BULLETS, SET_BULLET } from '../../../../utils/constants';
 
-export type BulletsState = Record<Id, Bullet>;
+export type BulletsState = Bullet[];
 
 export type BulletsStore = {
 	bullets: BulletsState;
 };
 
 const initialState = {
-	bullets: {}
+	bullets: []
 } as BulletsStore;
 
 const setBullet = (state: Store, action: Action): BulletsStore => {
@@ -20,10 +20,7 @@ const setBullet = (state: Store, action: Action): BulletsStore => {
 
 	return {
 		...bulletsState,
-		bullets: {
-			...bulletsState.bullets,
-			[value.id]: value
-		}
+		bullets: [...bulletsState.bullets.filter(({ id }) => id !== value.id), value]
 	};
 };
 
@@ -31,12 +28,7 @@ const removeBullet = (state: Store, action: Action): BulletsStore => {
 	const bulletsState = state as BulletsStore;
 	const { value } = action as SetValueAction<Id>;
 
-	const bullets = Object.values(bulletsState.bullets)
-		.filter(bullet => bullet.id !== value)
-		.reduce((acc, bullet) => {
-			acc[bullet.id] = bullet;
-			return acc;
-		}, {} as Record<Id, Bullet>);
+	const bullets = bulletsState.bullets.filter(bullet => bullet.id !== value);
 
 	return {
 		...bulletsState,

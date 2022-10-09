@@ -5,7 +5,7 @@ export type GameState = {
 	inProgress: boolean;
 	coin: Point;
 	snakes: Record<Player, SnakeState>;
-	bullets: Record<Id, Bullet>;
+	bullets: Bullet[];
 	score: WeightedScore[];
 	loosers: Player[];
 	bin: Point[];

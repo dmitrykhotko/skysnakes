@@ -37,7 +37,7 @@ export abstract class BaseRenderer extends Renderer {
 		this.renderSnakes(snakes);
 		this.renderPlayerInfo(score, loosers);
 		this.renderCell(state.coin, DrawingObject.coin);
-		this.renderBullets(Object.values(bullets));
+		this.renderBullets(bullets);
 		this.emptyBin(bin);
 	}
 
