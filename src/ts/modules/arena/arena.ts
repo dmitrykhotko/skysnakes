@@ -14,7 +14,7 @@ import {
 } from '../redux';
 import { Point, ResultWitActions, PlayersStat, DirectionWithId } from '../../utils/types';
 import { Observer } from '../observable/observer';
-import { SnakesManager } from '../characters/snakes';
+import { SnakesManager } from '../characters/snakes/snakesManager';
 import { BulletsManager } from '../characters/bullets/bulletsManager';
 import { ArenaStrategy } from './strategies';
 
