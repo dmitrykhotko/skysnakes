@@ -1,5 +1,5 @@
 import { DrawGrid, Player } from '../../../utils/enums';
-import { InputActions, state, ArenaActions } from '../../redux';
+import { InputActions, state, BinActions } from '../../redux';
 import { Bullet, GameState, PlayerInput, Point, SnakeState, WeightedScore } from '../../../utils/types';
 import { Renderer } from '../renderer';
 
@@ -116,6 +116,6 @@ export abstract class BaseRenderer extends Renderer {
 			this.renderCell(bin[i], DrawingObject.empty);
 		}
 
-		state.dispatch(ArenaActions.emptyBin());
+		state.dispatch(BinActions.emptyBin());
 	};
 }

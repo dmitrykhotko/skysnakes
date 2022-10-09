@@ -1,7 +1,7 @@
 import { BODY_PART_WEIGHT, FRIENDLY_FIRE_WEIGHT, HEAD_SHOT_WEIGHT } from '../../../utils/constants';
 import { nextPointCreator } from '../../../utils/helpers';
 import { Bullet, PointWithId, Point, ResultWitActions } from '../../../utils/types';
-import { Action, ArenaActions, BulletsActions, BulletsStore, SnakesActions, state } from '../../redux';
+import { Action, ArenaActions, BinActions, BulletsActions, BulletsStore, SnakesActions, state } from '../../redux';
 
 export abstract class BulletsManager {
 	static move = (): void => {
@@ -17,7 +17,7 @@ export abstract class BulletsManager {
 
 			actions.push(
 				BulletsActions.setBullet({ id, player, point: nextPoint, direction }),
-				ArenaActions.moveToBin([point])
+				BinActions.moveToBin([point])
 			);
 		}
 
@@ -30,7 +30,7 @@ export abstract class BulletsManager {
 
 		point.prev && bin.push(point.prev);
 
-		return [BulletsActions.removeBullet(id), ArenaActions.moveToBin(bin)];
+		return [BulletsActions.removeBullet(id), BinActions.moveToBin(bin)];
 	};
 
 	static hit = (bullet: Bullet, snakeShotResult: PointWithId): ResultWitActions => {
@@ -57,7 +57,7 @@ export abstract class BulletsManager {
 		const friendlyFactor = victim === shooter ? -FRIENDLY_FIRE_WEIGHT : 1;
 		const scoreDelta = Math.ceil(isHeadShot ? HEAD_SHOT_WEIGHT : bin.length * BODY_PART_WEIGHT * friendlyFactor);
 
-		actions.push(ArenaActions.addCoins(scoreDelta, shooter), ArenaActions.moveToBin(bin));
+		actions.push(ArenaActions.addCoins(scoreDelta, shooter), BinActions.moveToBin(bin));
 
 		return {
 			result: isDead,

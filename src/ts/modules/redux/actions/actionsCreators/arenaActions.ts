@@ -1,12 +1,10 @@
 import {
-	MOVE_TO_BIN,
 	INC_COINS,
 	INC_DEATHS,
 	SET_COIN,
 	SET_IN_PROGRESS,
 	SET_LOOSERS,
 	SET_SCORE,
-	EMPTY_BIN,
 	ADD_COINS
 } from '../../../../utils/constants';
 import { Player } from '../../../../utils/enums';
@@ -21,6 +19,4 @@ export abstract class ArenaActions extends SetActions {
 	static setLoosers = super.setValue<Player[]>(SET_LOOSERS);
 	static setScore = super.setValue<Record<Player, Score>>(SET_SCORE);
 	static incDeaths = super.setValue<Player>(INC_DEATHS);
-	static moveToBin = super.setValue<Point[]>(MOVE_TO_BIN);
-	static emptyBin = super.set(EMPTY_BIN);
 }

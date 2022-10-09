@@ -3,7 +3,7 @@ import { Direction, Player } from '../../../utils/enums';
 import { comparePoints, nextPointCreator } from '../../../utils/helpers';
 import { Point, SnakeState } from '../../../utils/types';
 import { Observer } from '../../observable/observer';
-import { ArenaActions, SnakesActions, SnakesStore, state } from '../../redux';
+import { BinActions, SnakesActions, SnakesStore, state } from '../../redux';
 import { Character } from '../character';
 
 const directionWeights = {
@@ -44,7 +44,7 @@ export class Snake implements Character {
 
 		state.dispatch(
 			SnakesActions.setSnake({ id: this.player, head, tail, direction }),
-			ArenaActions.moveToBin([this.prevTail])
+			BinActions.moveToBin([this.prevTail])
 		);
 	};
 

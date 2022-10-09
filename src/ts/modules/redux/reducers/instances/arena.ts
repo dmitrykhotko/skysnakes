@@ -1,5 +1,4 @@
 import {
-	MOVE_TO_BIN,
 	INC_COINS,
 	INC_DEATHS,
 	RESET_GAME,
@@ -7,7 +6,6 @@ import {
 	SET_IN_PROGRESS,
 	SET_LOOSERS,
 	SET_SCORE,
-	EMPTY_BIN,
 	ADD_COINS
 } from '../../../../utils/constants';
 import { Player } from '../../../../utils/enums';
@@ -25,7 +23,6 @@ export type ArenaState = {
 	loosers: Player[];
 	score: Record<Player, Score>;
 	strategy: ArenaStrategy;
-	bin: Point[];
 };
 
 export type ArenaStore = {
@@ -38,8 +35,7 @@ const initialState = {
 		coin: { x: 0, y: 0 },
 		loosers: [],
 		score: {} as Record<Player, Score>,
-		strategy: new TransparentWallsStrategy(),
-		bin: []
+		strategy: new TransparentWallsStrategy()
 	}
 } as ArenaStore;
 
@@ -66,16 +62,6 @@ const changeScore = (id: Player, store: ArenaStore, propName: string, value = 1)
 		}
 	};
 };
-
-const setBin = (store: ArenaStore, bin = [] as Point[]): Store => ({
-	...store,
-	...{
-		arena: {
-			...store.arena,
-			...{ bin }
-		}
-	}
-});
 
 export abstract class ArenaReducer extends Reducer<ArenaStore> {
 	static getInitialState = (): ArenaStore => initialState;
@@ -105,10 +91,6 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 				return changeScore(id, arenaStore, 'coins', value);
 			case INC_DEATHS:
 				return changeScore((action as SetValueAction<Player>).value, arenaStore, 'deaths');
-			case MOVE_TO_BIN:
-				return setBin(arenaStore, [...arenaStore.arena.bin, ...(action as SetValueAction<Point[]>).value]);
-			case EMPTY_BIN:
-				return setBin(arenaStore, []);
 			case RESET_GAME:
 				return { ...state, ...initialState };
 			default:

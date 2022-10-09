@@ -37,8 +37,6 @@ export const SET_LOOSERS = 'ARENA/SET_LOOSERS';
 export const SET_SCORE = 'ARENA/SET_SCORE';
 export const INC_DEATHS = 'ARENA/INC_DEATHS';
 export const SET_DEATHS = 'ARENA/SET_DEATHS';
-export const MOVE_TO_BIN = 'ARENA/MOVE_TO_BIN';
-export const EMPTY_BIN = 'ARENA/EMPTY_BIN';
 
 //// USER SETTINGS ACTIONS
 
@@ -66,3 +64,8 @@ export const SEND_DIRECTION = 'SNAKES/SEND_DIRECTION';
 export const SET_BULLET = 'BULLETS/SET_BULLET';
 export const REMOVE_BULLET = 'BULLETS/REMOVE_BULLET';
 export const RESET_BULLETS = 'BULLETS/RESET_BULLETS';
+
+//// BIN ACTIONS
+
+export const MOVE_TO_BIN = 'BIN/MOVE_TO_BIN';
+export const EMPTY_BIN = 'BIN/EMPTY_BIN';

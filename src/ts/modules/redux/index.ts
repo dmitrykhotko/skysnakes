@@ -6,6 +6,7 @@ export { ArenaReducer, ArenaStore, ArenaState } from './reducers/instances/arena
 export { InputReducer, InputStore, InputState } from './reducers/instances/input';
 export { SnakesReducer, SnakesStore, SnakesState } from './reducers/instances/snakes';
 export { BulletsReducer, BulletsStore, BulletsState } from './reducers/instances/bullets';
+export { BinReducer, BinStore, BinState } from './reducers/instances/bin';
 export { ReducerCollection } from './reducers/reducerCollection';
 
 export { Action } from './actions/action';
@@ -15,5 +16,6 @@ export { ArenaActions } from './actions/actionsCreators/arenaActions';
 export { InputActions } from './actions/actionsCreators/inputActions';
 export { SnakesActions } from './actions/actionsCreators/snakesActions';
 export { BulletsActions } from './actions/actionsCreators/bulletsActions';
+export { BinActions } from './actions/actionsCreators/binActions';
 
 export { compareProps } from './reducers/utils';

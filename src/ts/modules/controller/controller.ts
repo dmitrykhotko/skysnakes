@@ -9,7 +9,8 @@ import {
 	SnakesStore,
 	state,
 	BulletsActions,
-	Store
+	Store,
+	BinStore
 } from '../redux';
 import { Arena } from '../arena/arena';
 import { Observer } from '../observable/observer';
@@ -65,11 +66,12 @@ export class Controller {
 	}
 
 	private getArenaData = (): GameState => {
-		const { arena, snakes, bullets } = state.get<ArenaStore & SnakesStore & BulletsStore>();
+		const { arena, snakes, bullets, bin } = state.get<ArenaStore & SnakesStore & BulletsStore & BinStore>();
 		return {
 			...arena,
 			snakes,
 			bullets,
+			bin,
 			score: this.getScore(arena.score)
 		} as GameState;
 	};
