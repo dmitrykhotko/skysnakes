@@ -15,7 +15,7 @@ const initRadioButton = <T>(name: string, controlPanel: HTMLElement, action: (va
 	[...controlPanel.querySelectorAll(`input[name="${name}"]`)].map(control =>
 		control.addEventListener('change', (e: Event) => {
 			const control = e.target as HTMLInputElement;
-			control.checked && state.dispatch(action(control.value as unknown as T));
+			control.checked && state.dispatch(action(control.value as T));
 		})
 	);
 };
