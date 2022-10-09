@@ -1,6 +1,6 @@
 import { ActionInput, DrawGrid, MoveInput, Player } from '../../../utils/enums';
 import { ShootingActions, InputActions, state, ArenaActions } from '../../redux';
-import { Bullet, GameState, PlayerInput, Point, Score, SnakeState, WeightedScore } from '../../../utils/types';
+import { Bullet, GameState, PlayerInput, Point, SnakeState, WeightedScore } from '../../../utils/types';
 import { Renderer } from '../renderer';
 
 export enum DrawingObject {
@@ -109,7 +109,7 @@ export abstract class BaseRenderer extends Renderer {
 	private renderBullets = (bulletsArr: Bullet[]): void => {
 		// TODO: render bullet tail
 		for (let i = 0; i < bulletsArr.length; i++) {
-			const { id, point } = bulletsArr[i];
+			const { point } = bulletsArr[i];
 			this.renderCell(point, DrawingObject.bullet);
 		}
 	};

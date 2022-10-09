@@ -139,8 +139,8 @@ export class Arena {
 		const states = Object.entries(heads);
 
 		for (let i = 0; i < states.length; i++) {
-			const [snakeId, { head }] = states[i];
-			const id = +snakeId;
+			const [player, { head }] = states[i];
+			const id = +player;
 
 			if (this.snakes.faceObject(head)) {
 				actions.push(...this.finish(id));

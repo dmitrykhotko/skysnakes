@@ -17,14 +17,14 @@ export class Snake implements Character {
 	private prevTail?: Point;
 	private nextDirection?: Direction;
 
-	constructor(private snakeId = Player.P1, head: Point, direction = Direction.Right, length = SNAKE_LENGTH) {
+	constructor(private player = Player.P1, head: Point, direction = Direction.Right, length = SNAKE_LENGTH) {
 		const tail = this.initBody(head, length, direction);
-		state.dispatch(SnakesActions.setSnake({ id: this.snakeId, head, tail, direction }));
+		state.dispatch(SnakesActions.setSnake({ id: this.player, head, tail, direction }));
 		this.subscribe();
 	}
 
 	get id(): Player {
-		return this.snakeId;
+		return this.player;
 	}
 
 	move = (): void => {
@@ -43,7 +43,7 @@ export class Snake implements Character {
 		tail.prev = undefined;
 
 		state.dispatch(
-			SnakesActions.setSnake({ id: this.snakeId, head, tail, direction }),
+			SnakesActions.setSnake({ id: this.player, head, tail, direction }),
 			ArenaActions.moveToBin([this.prevTail])
 		);
 	};
@@ -61,7 +61,7 @@ export class Snake implements Character {
 
 		this.prevTail = undefined;
 
-		state.dispatch(SnakesActions.setTail(tail, this.snakeId));
+		state.dispatch(SnakesActions.setTail(tail, this.player));
 	};
 
 	faceObject = (object: Point, skipHead = true): Point | undefined => {
@@ -82,7 +82,7 @@ export class Snake implements Character {
 		return point;
 	};
 
-	private getState = (): SnakeState => state.get<SnakesStore>().snakes[this.snakeId];
+	private getState = (): SnakeState => state.get<SnakesStore>().snakes[this.player];
 
 	private sendDirection = (newDirection: Direction): void => {
 		const { direction } = this.getState();
@@ -99,7 +99,7 @@ export class Snake implements Character {
 	};
 
 	private onSendDirection = (state: SnakesStore): void => {
-		state.snakes[this.snakeId] && this.sendDirection(state.snakes[this.snakeId].newDirection);
+		state.snakes[this.player] && this.sendDirection(state.snakes[this.player].newDirection);
 	};
 
 	private applyDirection = (direction: Direction): Direction => {

@@ -7,7 +7,7 @@ import {
 	SET_LOOSERS,
 	SET_SCORE,
 	EMPTY_BIN,
-	SET_COINS
+	ADD_COINS
 } from '../../../../utils/constants';
 import { Player } from '../../../../utils/enums';
 import { Point, Score } from '../../../../utils/types';
@@ -16,7 +16,7 @@ import { SetActions } from './setActions';
 export abstract class ArenaActions extends SetActions {
 	static setCoin = super.setValue<Point>(SET_COIN);
 	static incCoins = super.setValue<Player>(INC_COINS);
-	static setCoins = super.setValueById<number, Player>(SET_COINS);
+	static addCoins = super.setValueById<number, Player>(ADD_COINS);
 	static setInProgress = super.setValue<boolean>(SET_IN_PROGRESS);
 	static setLoosers = super.setValue<Player[]>(SET_LOOSERS);
 	static setScore = super.setValue<Record<Player, Score>>(SET_SCORE);

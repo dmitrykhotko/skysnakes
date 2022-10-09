@@ -45,6 +45,7 @@ export type WeightedScore = {
 
 export type Bullet = {
 	id: Id;
+	player: Player;
 	point: Point;
 	direction: Direction;
 };

@@ -52,8 +52,8 @@ export class Serpentarium {
 
 	getPlayers = (): Player[] => this.snakes.map(snake => snake.id);
 
-	grow = (snakeId: Player): void => {
-		this.snakesDicto[snakeId].grow();
+	grow = (player: Player): void => {
+		this.snakesDicto[player].grow();
 	};
 
 	private initSnakes = (): void => {

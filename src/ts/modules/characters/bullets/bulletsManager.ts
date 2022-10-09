@@ -1,4 +1,4 @@
-import { BODY_PART_WEIGHT, HEAD_SHOT_WEIGHT } from '../../../utils/constants';
+import { BODY_PART_WEIGHT, FRIENDLY_FIRE_WEIGHT, HEAD_SHOT_WEIGHT } from '../../../utils/constants';
 import { nextPointCreator } from '../../../utils/helpers';
 import { Bullet, PointWithId, Point, ResultWitActions } from '../../../utils/types';
 import { Action, ArenaActions, ShootingActions, ShootingStore, SnakesActions, state } from '../../redux';
@@ -9,14 +9,14 @@ export abstract class BulletsManager {
 		const actions = [] as Action[];
 
 		for (let i = 0; i < bullets.length; i++) {
-			const { id, point, direction } = bullets[i];
+			const { id, player, point, direction } = bullets[i];
 			const nextPoint = nextPointCreator[direction](point);
 
 			point.prev = undefined;
 			nextPoint.prev = point;
 
 			actions.push(
-				ShootingActions.setBullet({ id, point: nextPoint, direction }),
+				ShootingActions.setBullet({ id, player, point: nextPoint, direction }),
 				ArenaActions.moveToBin([point])
 			);
 		}
@@ -34,7 +34,8 @@ export abstract class BulletsManager {
 	};
 
 	static hit = (bullet: Bullet, snakeShotResult: PointWithId): ResultWitActions => {
-		const { id: snakeId, point: snakePoint } = snakeShotResult;
+		const { id: victim, point: snakePoint } = snakeShotResult;
+		const { player: shooter } = bullet;
 		const bin = [] as Point[];
 		const actions = [...BulletsManager.removeBullet(bullet)] as Action[];
 		const nextPoint = snakePoint.next;
@@ -50,12 +51,13 @@ export abstract class BulletsManager {
 		}
 
 		nextTail.prev = undefined;
-		actions.push(SnakesActions.setTail(nextTail, snakeId));
-		isDead && actions.push(SnakesActions.setHead(nextTail, snakeId));
+		actions.push(SnakesActions.setTail(nextTail, victim));
+		isDead && actions.push(SnakesActions.setHead(nextTail, victim));
 
-		const coinValue = isHeadShot ? HEAD_SHOT_WEIGHT : bin.length * BODY_PART_WEIGHT;
+		const friendlyFactor = victim === shooter ? -FRIENDLY_FIRE_WEIGHT : 1;
+		const scoreDelta = Math.ceil(isHeadShot ? HEAD_SHOT_WEIGHT : bin.length * BODY_PART_WEIGHT * friendlyFactor);
 
-		actions.push(ArenaActions.setCoins(-coinValue, snakeId), ArenaActions.moveToBin(bin));
+		actions.push(ArenaActions.addCoins(scoreDelta, shooter), ArenaActions.moveToBin(bin));
 
 		return {
 			result: isDead,

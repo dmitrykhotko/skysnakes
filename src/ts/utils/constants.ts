@@ -13,9 +13,10 @@ export const GAME_SPEED = 30; // Valid values are 60,30,20,15,10...
 export const SNAKE_SPEED = 1;
 export const BULLET_SPEED = 2;
 
-export const COIN_WEIGHT = 2;
-export const HEAD_SHOT_WEIGHT = 5;
+export const COIN_WEIGHT = 1;
+export const HEAD_SHOT_WEIGHT = 10;
 export const BODY_PART_WEIGHT = 1;
+export const FRIENDLY_FIRE_WEIGHT = 0.5;
 
 // DEV SETTINGS
 
@@ -30,7 +31,7 @@ export const RESET_GAME = 'COMMON_ACTIONS/RESET_GAME';
 //// ARENA ACTIONS
 export const SET_COIN = 'ARENA/SET_COIN';
 export const INC_COINS = 'ARENA/INC_COINS';
-export const SET_COINS = 'ARENA/SET_COINS';
+export const ADD_COINS = 'ARENA/ADD_COINS';
 export const SET_IN_PROGRESS = 'ARENA/SET_IN_PROGRESS';
 export const SET_LOOSERS = 'ARENA/SET_LOOSERS';
 export const SET_SCORE = 'ARENA/SET_SCORE';

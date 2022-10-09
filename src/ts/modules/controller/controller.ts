@@ -129,7 +129,7 @@ export class Controller {
 		const { head, direction } = snake;
 
 		state.dispatch(
-			ShootingActions.setBullet({ id: generateId(), point: nextPointCreator[direction](head), direction })
+			ShootingActions.setBullet({ id: generateId(), player, point: nextPointCreator[direction](head), direction })
 		);
 	};
 

@@ -8,7 +8,7 @@ import {
 	SET_LOOSERS,
 	SET_SCORE,
 	EMPTY_BIN,
-	SET_COINS
+	ADD_COINS
 } from '../../../../utils/constants';
 import { Player } from '../../../../utils/enums';
 import { Point, Score } from '../../../../utils/types';
@@ -100,7 +100,7 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 				break;
 			case INC_COINS:
 				return changeScore((action as SetValueAction<Player>).value, arenaStore, 'coins');
-			case SET_COINS:
+			case ADD_COINS:
 				const { id, value } = action as SetValueByIdAction<number, Player>;
 				return changeScore(id, arenaStore, 'coins', value);
 			case INC_DEATHS:
