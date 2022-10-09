@@ -4,18 +4,8 @@ import { PointWithId, Point } from '../../../utils/types';
 import { SnakesActions, SnakesStore, state } from '../../redux';
 import { Snake } from './snake';
 
-export type SnakeData = {
-	id: Player;
-	head: Point;
-	direction: Direction;
-};
-
-export class Serpentarium {
-	constructor(private props: SnakeData[]) {
-		this.initSnakes();
-	}
-
-	move = (shouldMoveTail: (id: Player, head: Point) => boolean): void => {
+export abstract class SnakesManager {
+	static move = (shouldMoveTail: (id: Player, head: Point) => boolean): void => {
 		const snakes = Object.values(state.get<SnakesStore>().snakes);
 
 		for (let i = 0; i < snakes.length; i++) {
@@ -23,7 +13,7 @@ export class Serpentarium {
 		}
 	};
 
-	faceObject = (object: Point, skipHead = true): PointWithId | undefined => {
+	static faceObject = (object: Point, skipHead = true): PointWithId | undefined => {
 		const snakes = Object.values(state.get<SnakesStore>().snakes);
 
 		for (let i = 0; i < snakes.length; i++) {
@@ -36,7 +26,7 @@ export class Serpentarium {
 		}
 	};
 
-	getBodiesSet = (width: number): Set<number> => {
+	static getBodiesSet = (width: number): Set<number> => {
 		const set: Set<number> = new Set<number>();
 		const snakes = Object.values(state.get<SnakesStore>().snakes);
 
@@ -52,17 +42,17 @@ export class Serpentarium {
 		return set;
 	};
 
-	private initSnakes = (): void => {
+	static initSnakes = (snakesInitial: { id: Player; head: Point; direction: Direction }[]): void => {
 		state.unsubscribeByType(NEW_DIRECTION);
 
-		const [snake1, snake2] = this.props;
+		const [snake1, snake2] = snakesInitial;
 
 		snake1 && this.initSnake(snake1);
 		snake2 && this.initSnake(snake2);
 	};
 
-	private initSnake = (data: SnakeData): void => {
-		const { id, head, direction } = data;
+	private static initSnake = (snakeInitial: { id: Player; head: Point; direction: Direction }): void => {
+		const { id, head, direction } = snakeInitial;
 		const tail = Snake.initBody(head, SNAKE_LENGTH, direction);
 
 		state.dispatch(SnakesActions.setSnake({ id, head, tail, direction }));

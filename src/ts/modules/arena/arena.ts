@@ -14,7 +14,7 @@ import {
 } from '../redux';
 import { Point, ResultWitActions, PlayersStat, DirectionWithId } from '../../utils/types';
 import { Observer } from '../observable/observer';
-import { Serpentarium } from '../characters/snakes';
+import { SnakesManager } from '../characters/snakes';
 import { BulletsManager } from '../characters/bullets/bulletsManager';
 import { ArenaStrategy } from './strategies';
 
@@ -33,7 +33,6 @@ const defaultProps = {
 };
 
 export class Arena {
-	private snakes!: Serpentarium;
 	private deathsNum!: number;
 	private width: number;
 	private height: number;
@@ -72,9 +71,8 @@ export class Arena {
 
 		this.steps = 0;
 		this.deathsNum = deathsNum;
-		this.snakes = new Serpentarium(
-			snakesInitial.map(({ id, direction }) => ({ id, head: this.getStartPoint(direction), direction }))
-		);
+
+		SnakesManager.initSnakes(snakesInitial.map(item => ({ ...item, head: this.getStartPoint(item.direction) })));
 
 		this.arenaStrategy = arenaStrategy;
 		this.bulletStrategy = bulletStrategy;
@@ -97,8 +95,7 @@ export class Arena {
 		const moveSnakes = inProgress && !(this.steps % this.snakeStep);
 
 		if (moveSnakes) {
-			// TODO: make Serpentarium an abstract class
-			this.snakes.move((id: Player, head: Point) => {
+			SnakesManager.move((id: Player, head: Point) => {
 				const success = this.faceCoin(head);
 				success && state.dispatch(ArenaActions.incCoins(id));
 
@@ -149,7 +146,7 @@ export class Arena {
 			const [player, { head }] = states[i];
 			const id = +player;
 
-			if (this.snakes.faceObject(head)) {
+			if (SnakesManager.faceObject(head)) {
 				actions.push(...this.finish(id));
 				continue;
 			}
@@ -173,7 +170,7 @@ export class Arena {
 		for (let i = 0; i < bullets.length; i++) {
 			const bullet = bullets[i];
 			const { point } = bullet;
-			const snakeShotResult = this.snakes.faceObject(point, false);
+			const snakeShotResult = SnakesManager.faceObject(point, false);
 
 			if (!snakeShotResult) {
 				continue;
@@ -251,7 +248,7 @@ export class Arena {
 
 	private getFreeCells = (): number[] => {
 		const cells: number[] = [];
-		const bodiesSet = this.snakes.getBodiesSet(this.width);
+		const bodiesSet = SnakesManager.getBodiesSet(this.width);
 
 		for (let i = 0; i < this.width * this.height; i++) {
 			if (bodiesSet.has(i)) {
