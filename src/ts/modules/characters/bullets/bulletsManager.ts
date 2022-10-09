@@ -5,8 +5,8 @@ import { Action, ArenaActions, BinActions, BulletsActions, BulletsStore, SnakesA
 
 export abstract class BulletsManager {
 	static move = (): void => {
+		const collisionActions = [] as Action[];
 		const bullets = state.get<BulletsStore>().bullets;
-		const actions = [] as Action[];
 
 		for (let i = 0; i < bullets.length; i++) {
 			const { id, player, point, direction } = bullets[i];
@@ -15,13 +15,13 @@ export abstract class BulletsManager {
 			point.prev = undefined;
 			nextPoint.prev = point;
 
-			actions.push(
-				BulletsActions.setBullet({ id, player, point: nextPoint, direction }),
-				BinActions.moveToBin([point])
-			);
+			const newBullet = { id, player, point: nextPoint, direction };
+
+			state.dispatch(BulletsActions.setBullet(newBullet), BinActions.moveToBin([point]));
+			collisionActions.push(...BulletsManager.checkCollision(newBullet));
 		}
 
-		state.dispatch(...actions);
+		state.dispatch(...collisionActions);
 	};
 
 	static removeBullet = (bullet: Bullet): Action[] => {
@@ -63,5 +63,36 @@ export abstract class BulletsManager {
 			result: isDead,
 			actions
 		};
+	};
+
+	private static checkCollision = (bullet: Bullet): Action[] => {
+		const {
+			id,
+			point: { x, y }
+		} = bullet;
+		const actions = [] as Action[];
+		const bullets = state.get<BulletsStore>().bullets;
+		let result = false;
+
+		for (let i = 0; i < bullets.length; i++) {
+			const currBullet = bullets[i];
+			const {
+				id: currId,
+				point: { x: currX, y: currY }
+			} = bullets[i];
+
+			if (id === currId || !(x === currX && y === currY)) {
+				continue;
+			}
+
+			if (!result) {
+				actions.push(...BulletsManager.removeBullet(bullet));
+				result = true;
+			}
+
+			actions.push(...BulletsManager.removeBullet(currBullet));
+		}
+
+		return actions;
 	};
 }
