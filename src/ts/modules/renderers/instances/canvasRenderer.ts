@@ -1,6 +1,6 @@
 import { CELL_SIZE, HEIGHT, LINE_HEIGHT, TEXT_AREA_WIDTH, WIDTH } from '../../../utils/constants';
 import { DrawGrid, KeyCode } from '../../../utils/enums';
-import { GameState, PlayerInput, Point } from '../../../utils/types';
+import { GameState, Point } from '../../../utils/types';
 import { BaseRenderer, DrawingObject } from './baseRenderer';
 
 const colors = {
@@ -117,14 +117,14 @@ export class CanvasRenderer extends BaseRenderer {
 	};
 
 	private onKeyDown = (event: KeyboardEvent): void => {
-		const playerInput = KeyCode[event.code as unknown as KeyCode];
+		const playerInput = +KeyCode[event.code as unknown as KeyCode];
 
 		if (!playerInput) {
 			return;
 		}
 
 		event.preventDefault();
-		this.input(playerInput as unknown as PlayerInput);
+		this.input(playerInput);
 	};
 
 	private focus = (): void => {

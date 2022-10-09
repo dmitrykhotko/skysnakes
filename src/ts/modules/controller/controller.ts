@@ -114,7 +114,7 @@ export class Controller {
 		}
 	};
 
-	private handleDirectionChange = (store: InputStore) => {
+	private handleDirectionChange = (store: InputStore): void => {
 		const { playerInput } = store.input;
 		const { id, direction } = inputToIdDirection[playerInput as MoveInput];
 
