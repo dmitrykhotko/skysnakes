@@ -49,7 +49,7 @@ const changeStat = (id: Player, store: ArenaStore, propName: string, value = 1):
 		return store;
 	}
 
-	const stateVal = {
+	return {
 		...store,
 		arena: {
 			...arena,
@@ -66,10 +66,6 @@ const changeStat = (id: Player, store: ArenaStore, propName: string, value = 1):
 			}
 		}
 	};
-
-	console.log('stateVal: ', stateVal);
-
-	return stateVal;
 };
 
 export abstract class ArenaReducer extends Reducer<ArenaStore> {

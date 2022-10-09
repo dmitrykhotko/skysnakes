@@ -29,7 +29,7 @@ export class SoftWallsStrategy extends BaseWallsStrategy {
 		}
 
 		return [
-			SnakesActions.sendDirection(directionSwitchers[position](newPoint), id),
+			SnakesActions.newDirection(directionSwitchers[position](newPoint), id),
 			SnakesActions.setHead(newPoint, id)
 		];
 	};

@@ -1,35 +1,37 @@
-import { SEND_DIRECTION } from '../../../utils/constants';
+import { NEW_DIRECTION, SNAKE_LENGTH } from '../../../utils/constants';
 import { Direction, Player } from '../../../utils/enums';
 import { PointWithId, Point } from '../../../utils/types';
-import { SnakesStore, state } from '../../redux';
+import { SnakesActions, SnakesStore, state } from '../../redux';
 import { Snake } from './snake';
 
 export type SnakeData = {
+	id: Player;
 	head: Point;
 	direction: Direction;
 };
 
 export class Serpentarium {
-	private snakesDicto = {} as Record<Player, Snake>;
-	private snakes!: Snake[];
-
 	constructor(private props: SnakeData[]) {
 		this.initSnakes();
 	}
 
-	move = (): void => {
-		for (let i = 0; i < this.snakes.length; i++) {
-			this.snakes[i].move();
+	move = (shouldMoveTail: (id: Player, head: Point) => boolean): void => {
+		const snakes = Object.values(state.get<SnakesStore>().snakes);
+
+		for (let i = 0; i < snakes.length; i++) {
+			Snake.move(snakes[i].id, shouldMoveTail);
 		}
 	};
 
 	faceObject = (object: Point, skipHead = true): PointWithId | undefined => {
-		for (let i = 0; i < this.snakes.length; i++) {
-			const snake = this.snakes[i];
-			const point = snake.faceObject(object, skipHead);
+		const snakes = Object.values(state.get<SnakesStore>().snakes);
+
+		for (let i = 0; i < snakes.length; i++) {
+			const { id } = snakes[i];
+			const point = Snake.faceObject(id, object, skipHead);
 
 			if (point) {
-				return { point, id: snake.id };
+				return { point, id };
 			}
 		}
 	};
@@ -50,26 +52,19 @@ export class Serpentarium {
 		return set;
 	};
 
-	getPlayers = (): Player[] => this.snakes.map(snake => snake.id);
-
-	grow = (player: Player): void => {
-		this.snakesDicto[player].grow();
-	};
-
 	private initSnakes = (): void => {
-		state.unsubscribeByType(SEND_DIRECTION);
+		state.unsubscribeByType(NEW_DIRECTION);
 
-		this.snakes = [];
-		this.props.length && this.snakes.push(this.getSnake(Player.P1, this.props[0]));
-		this.props.length > 1 && this.snakes.push(this.getSnake(Player.P2, this.props[1]));
+		const [snake1, snake2] = this.props;
 
-		this.snakesDicto = this.snakes.reduce((acc, snake) => {
-			acc[snake.id] = snake;
-			return acc;
-		}, {} as Record<Player, Snake>);
+		snake1 && this.initSnake(snake1);
+		snake2 && this.initSnake(snake2);
 	};
 
-	private getSnake = (player: Player, { head, direction }: SnakeData): Snake => {
-		return new Snake(player, head, direction);
+	private initSnake = (data: SnakeData): void => {
+		const { id, head, direction } = data;
+		const tail = Snake.initBody(head, SNAKE_LENGTH, direction);
+
+		state.dispatch(SnakesActions.setSnake({ id, head, tail, direction }));
 	};
 }

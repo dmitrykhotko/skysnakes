@@ -26,9 +26,12 @@ export const inputToIdDirection = {
 	[MoveInput.LRight]: { id: P2, direction: Right }
 };
 
-export const playerModeToDirections = {
-	[PlayerMode.SinglePlayer]: [Right],
-	[PlayerMode.Multiplayer]: [Left, Right]
+export const toDirectionsAndPlayers = {
+	[PlayerMode.SinglePlayer]: [{ direction: Right, id: Player.P1 }],
+	[PlayerMode.Multiplayer]: [
+		{ direction: Left, id: Player.P1 },
+		{ direction: Right, id: Player.P2 }
+	]
 };
 
 export const arenaStrategies = {
@@ -43,7 +46,7 @@ export const defaultProps = {
 	autostart: false
 };
 
-export const ActionInputToPlayer = {
+export const fireInputToPlayer = {
 	[FireInput.RFire]: Player.P1,
 	[FireInput.LFire]: Player.P2
 };

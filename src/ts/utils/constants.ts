@@ -1,3 +1,7 @@
+// DEV SETTINGS
+
+export const TRACE_STATE = false;
+
 // GAME DEFAULTS
 
 export const WIDTH = 120;
@@ -18,10 +22,6 @@ export const KILL_AWARD = 10;
 export const COIN_WEIGHT = 1;
 export const BODY_PART_WEIGHT = 1;
 export const FRIENDLY_FIRE_WEIGHT = 0.5;
-
-// DEV SETTINGS
-
-export const TRACE_STATE = false;
 
 // ACTIONS
 
@@ -58,7 +58,7 @@ export const SET_RESET = 'INPUT/SET_RESET';
 export const SET_SNAKE = 'SNAKES/SET_SNAKE';
 export const SET_HEAD = 'SNAKES/SET_HEAD';
 export const SET_TAIL = 'SNAKES/SET_TAIL';
-export const SEND_DIRECTION = 'SNAKES/SEND_DIRECTION';
+export const NEW_DIRECTION = 'SNAKES/NEW_DIRECTION';
 
 //// BULLETS ACTIONS
 

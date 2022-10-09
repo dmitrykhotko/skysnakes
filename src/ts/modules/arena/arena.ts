@@ -12,7 +12,7 @@ import {
 	state,
 	CommonActions
 } from '../redux';
-import { Point, ResultWitActions, PlayersStat } from '../../utils/types';
+import { Point, ResultWitActions, PlayersStat, DirectionWithId } from '../../utils/types';
 import { Observer } from '../observable/observer';
 import { Serpentarium } from '../characters/snakes';
 import { BulletsManager } from '../characters/bullets/bulletsManager';
@@ -59,20 +59,22 @@ export class Arena {
 	}
 
 	start = (
-		directions: Direction[],
+		snakesInitial: DirectionWithId[],
 		deathsNum: number,
 		reset: boolean,
 		arenaStrategy?: ArenaStrategy,
 		bulletStrategy?: ArenaStrategy
 	): void => {
 		const { playersStat, loosers } = this.getState();
-		const resetArena = Object.keys(playersStat).length !== directions.length || loosers.length || reset;
+		const resetArena = Object.keys(playersStat).length !== snakesInitial.length || loosers.length || reset;
 
 		state.dispatch(resetArena ? CommonActions.resetGame() : BulletsActions.reset());
 
 		this.steps = 0;
 		this.deathsNum = deathsNum;
-		this.snakes = new Serpentarium(directions.map(d => ({ head: this.getStartPoint(d), direction: d })));
+		this.snakes = new Serpentarium(
+			snakesInitial.map(({ id, direction }) => ({ id, head: this.getStartPoint(direction), direction }))
+		);
 
 		this.arenaStrategy = arenaStrategy;
 		this.bulletStrategy = bulletStrategy;
@@ -96,9 +98,14 @@ export class Arena {
 
 		if (moveSnakes) {
 			// TODO: make Serpentarium an abstract class
-			this.snakes.move();
-			this.handleMoveSnakes();
+			this.snakes.move((id: Player, head: Point) => {
+				const success = this.faceCoin(head);
+				success && state.dispatch(ArenaActions.incCoins(id));
 
+				return !success;
+			});
+
+			this.handleMoveSnakes();
 			state.dispatch(...this.checkHits().actions);
 		}
 
@@ -119,14 +126,14 @@ export class Arena {
 			const bullet = bullets[i];
 			const { id, point } = bullet;
 
-			const { result: facedCoin, actions: faceCoinActions } = this.faceCoin(point);
+			const facedCoin = this.faceCoin(point);
 			const { result: bulletIsOk, actions: adjustBulletActions } = this.runStrategy(
 				point,
 				id,
 				this.bulletStrategy
 			);
 
-			actions.push(...adjustBulletActions, ...faceCoinActions);
+			actions.push(...adjustBulletActions);
 			(facedCoin || !bulletIsOk) && actions.push(...BulletsManager.removeBullet(bullet));
 		}
 
@@ -153,13 +160,6 @@ export class Arena {
 			if (!snakeIsOk) {
 				actions.push(...this.finish(id));
 				continue;
-			}
-
-			const { result: faceCoinSuccess, actions: faceCoinActions } = this.faceCoin(head);
-
-			if (faceCoinSuccess) {
-				this.snakes.grow(id);
-				actions.push(ArenaActions.incCoins(id), ...faceCoinActions);
 			}
 		}
 
@@ -212,9 +212,11 @@ export class Arena {
 	};
 
 	private initScore = (): void => {
+		const players = Object.values(state.get<SnakesStore>().snakes).map(({ id }) => id);
+
 		state.dispatch(
 			ArenaActions.setScore(
-				this.snakes.getPlayers().reduce((acc, player) => {
+				players.reduce((acc, player) => {
 					acc[player] = { deaths: 0, score: 0 };
 					return acc;
 				}, {} as Record<Player, PlayersStat>)
@@ -262,16 +264,12 @@ export class Arena {
 		return cells;
 	};
 
-	private faceCoin = (object: Point): ResultWitActions =>
-		comparePoints(object, this.getState().coin)
-			? {
-					result: true,
-					actions: [this.setCoin()]
-			  }
-			: {
-					result: false,
-					actions: []
-			  };
+	private faceCoin = (object: Point): boolean => {
+		const success = comparePoints(object, this.getState().coin);
+		success && state.dispatch(this.setCoin());
+
+		return success;
+	};
 
 	private getStartPoint = (direction: Direction): Point => {
 		let head: Point;

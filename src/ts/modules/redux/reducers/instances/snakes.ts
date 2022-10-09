@@ -1,11 +1,12 @@
-import { RESET_GAME, SEND_DIRECTION, SET_HEAD, SET_SNAKE, SET_TAIL } from '../../../../utils/constants';
+import { RESET_GAME, NEW_DIRECTION, SET_HEAD, SET_SNAKE, SET_TAIL } from '../../../../utils/constants';
 import { Direction, Player } from '../../../../utils/enums';
 import { Action, SetValueAction, SetValueByIdAction } from '../..';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
-import { Point, SnakeState } from '../../../../utils/types';
+import { Point, SnakeData } from '../../../../utils/types';
 
-export type SnakesState = Record<Player, SnakeState & { newDirection: Direction }>;
+export type SnakeState = SnakeData & { newDirection?: Direction; nextDirection?: Direction };
+export type SnakesState = Record<Player, SnakeState>;
 
 export type SnakesStore = {
 	snakes: SnakesState;
@@ -15,7 +16,7 @@ const initialState = {
 	snakes: {}
 } as SnakesStore;
 
-const setData = <T extends Point | Direction>(state: Store, action: Action, pName: string): SnakesStore => {
+const setData = <T extends Point | Direction>(state: Store, action: Action, pName: keyof SnakeState): SnakesStore => {
 	const snakesState = state as SnakesStore;
 	const { id, value } = action as SetValueByIdAction<T, Player>;
 
@@ -33,7 +34,7 @@ const setData = <T extends Point | Direction>(state: Store, action: Action, pNam
 
 const setSnake = (state: Store, action: Action): SnakesStore => {
 	const snakesState = state as SnakesStore;
-	const { value } = action as SetValueAction<SnakeState>;
+	const { value } = action as SetValueAction<SnakeData>;
 
 	return {
 		...snakesState,
@@ -60,13 +61,7 @@ export abstract class SnakesReducer extends Reducer<SnakesStore> {
 			case SET_TAIL:
 				propName = 'tail';
 				break;
-			case SEND_DIRECTION:
-				const { id } = action as SetValueByIdAction<Point, Player>;
-
-				if (!(state as SnakesStore).snakes[id]) {
-					return state;
-				}
-
+			case NEW_DIRECTION:
 				propName = 'newDirection';
 				break;
 			case RESET_GAME:
@@ -75,6 +70,6 @@ export abstract class SnakesReducer extends Reducer<SnakesStore> {
 				return state;
 		}
 
-		return setData(state, action, propName);
+		return setData(state, action, propName as keyof SnakeState);
 	};
 }

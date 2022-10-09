@@ -1,10 +1,8 @@
-import { SEND_DIRECTION, SNAKE_LENGTH } from '../../../utils/constants';
 import { Direction, Player } from '../../../utils/enums';
 import { comparePoints, nextPointCreator } from '../../../utils/helpers';
-import { Point, SnakeState } from '../../../utils/types';
-import { Observer } from '../../observable/observer';
-import { BinActions, SnakesActions, SnakesStore, state } from '../../redux';
-import { Character } from '../character';
+import { Point } from '../../../utils/types';
+import { Action, BinActions, SnakesActions, SnakesStore, state } from '../../redux';
+import { SnakeState } from '../../redux/reducers/instances/snakes';
 
 const directionWeights = {
 	[Direction.Up]: -1,
@@ -13,24 +11,13 @@ const directionWeights = {
 	[Direction.Right]: 2
 };
 
-export class Snake implements Character {
-	private prevTail?: Point;
-	private nextDirection?: Direction;
+export abstract class Snake {
+	static move = (id: Player, shouldMoveTail: (id: Player, head: Point) => boolean): void => {
+		const data = this.getState(id);
+		const actions = [] as Action[];
+		let { head, tail, direction } = data;
 
-	constructor(private player = Player.P1, head: Point, direction = Direction.Right, length = SNAKE_LENGTH) {
-		const tail = this.initBody(head, length, direction);
-		state.dispatch(SnakesActions.setSnake({ id: this.player, head, tail, direction }));
-		this.subscribe();
-	}
-
-	get id(): Player {
-		return this.player;
-	}
-
-	move = (): void => {
-		let { head, tail, direction } = this.getState();
-
-		direction = this.applyDirection(direction);
+		direction = this.applyDirection(data);
 
 		const nextHead = nextPointCreator[direction](head);
 
@@ -38,34 +25,18 @@ export class Snake implements Character {
 		head.next = nextHead;
 		head = nextHead;
 
-		this.prevTail = tail;
-		tail.next && (tail = tail.next);
-		tail.prev = undefined;
+		if (shouldMoveTail(id, head)) {
+			actions.push(BinActions.moveToBin([tail]));
 
-		state.dispatch(
-			SnakesActions.setSnake({ id: this.player, head, tail, direction }),
-			BinActions.moveToBin([this.prevTail])
-		);
-	};
-
-	grow = (): void => {
-		if (!this.prevTail) {
-			return;
+			tail.next && (tail = tail.next);
+			tail.prev = undefined;
 		}
 
-		let { tail } = this.getState();
-
-		this.prevTail.next = tail;
-		tail.prev = this.prevTail;
-		tail = this.prevTail;
-
-		this.prevTail = undefined;
-
-		state.dispatch(SnakesActions.setTail(tail, this.player));
+		state.dispatch(SnakesActions.setSnake({ id, head, tail, direction }), ...actions);
 	};
 
-	faceObject = (object: Point, skipHead = true): Point | undefined => {
-		const { head } = this.getState();
+	static faceObject = (id: Player, object: Point, skipHead = true): Point | undefined => {
+		const { head } = this.getState(id);
 
 		let point: Point | undefined;
 
@@ -82,38 +53,7 @@ export class Snake implements Character {
 		return point;
 	};
 
-	private getState = (): SnakeState => state.get<SnakesStore>().snakes[this.player];
-
-	private sendDirection = (newDirection: Direction): void => {
-		const { direction } = this.getState();
-
-		if (!(directionWeights[direction] + directionWeights[newDirection])) {
-			return;
-		}
-
-		this.nextDirection = newDirection;
-	};
-
-	private subscribe = (): void => {
-		state.subscribe(this.onSendDirection as Observer, SEND_DIRECTION);
-	};
-
-	private onSendDirection = (state: SnakesStore): void => {
-		state.snakes[this.player] && this.sendDirection(state.snakes[this.player].newDirection);
-	};
-
-	private applyDirection = (direction: Direction): Direction => {
-		if (!this.nextDirection) {
-			return direction;
-		}
-
-		const nextDirection = this.nextDirection;
-		this.nextDirection = undefined;
-
-		return nextDirection;
-	};
-
-	private initBody = (head: Point, length: number, direction: Direction): Point => {
+	static initBody = (head: Point, length: number, direction: Direction): Point => {
 		const D = Direction;
 		const xStep = direction === D.Left ? 1 : direction === D.Right ? -1 : 0;
 		const yStep = direction === D.Up ? 1 : direction === D.Down ? -1 : 0;
@@ -134,5 +74,19 @@ export class Snake implements Character {
 		const tail = point;
 
 		return tail;
+	};
+
+	private static getState = (id: Player): SnakeState => state.get<SnakesStore>().snakes[id];
+
+	private static applyDirection = (data: SnakeState): Direction => {
+		const { id, direction, newDirection } = data;
+
+		if (!(newDirection && directionWeights[direction] + directionWeights[newDirection])) {
+			return direction;
+		}
+
+		state.dispatch(SnakesActions.newDirection(undefined, id));
+
+		return newDirection;
 	};
 }

@@ -16,12 +16,12 @@ import { Arena } from '../arena/arena';
 import { Observer } from '../observable/observer';
 import { Renderer } from '../renderers/renderer';
 import {
-	ActionInputToPlayer,
+	fireInputToPlayer,
 	arenaStrategies,
 	ControllerProps,
 	defaultProps,
 	inputToIdDirection,
-	playerModeToDirections
+	toDirectionsAndPlayers
 } from './utils';
 import { generateId, nextPointCreator } from '../../utils/helpers';
 import { GameState, PlayersStat, WeightedScore } from '../../utils/types';
@@ -78,10 +78,10 @@ export class Controller {
 
 	private start = (reset = false): void => {
 		const { playerMode, arenaType, drawGrid, deathsNum } = state.get<SettingsStore>().settings;
-		const directions = playerModeToDirections[playerMode];
+		const snakesInitial = toDirectionsAndPlayers[playerMode];
 
 		this.renderer.reset(drawGrid);
-		this.arena.start(directions, deathsNum, reset, new arenaStrategies[arenaType](), new NormalStrategy());
+		this.arena.start(snakesInitial, deathsNum, reset, new arenaStrategies[arenaType](), new NormalStrategy());
 
 		this.onStart();
 	};
@@ -116,16 +116,17 @@ export class Controller {
 		}
 	};
 
-	private handleDirectionChange = (store: InputStore): void => {
-		const { playerInput } = store.input;
+	private handleDirectionChange = (store: Store): void => {
+		const { playerInput } = (store as InputStore).input;
 		const { id, direction } = inputToIdDirection[playerInput as MoveInput];
+		const snake = (store as SnakesStore).snakes[id];
 
-		state.dispatch(SnakesActions.sendDirection(direction, id));
+		snake && state.dispatch(SnakesActions.newDirection(direction, id));
 	};
 
 	private handleFire = (store: Store): void => {
 		const { playerInput } = (store as InputStore).input;
-		const player = ActionInputToPlayer[playerInput as FireInput];
+		const player = fireInputToPlayer[playerInput as FireInput];
 		const snake = (store as SnakesStore).snakes[player];
 
 		if (!snake) {

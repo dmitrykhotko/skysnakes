@@ -1,6 +1,6 @@
 import { DrawGrid, Player } from '../../../utils/enums';
 import { InputActions, state, BinActions } from '../../redux';
-import { Bullet, GameState, PlayerInput, Point, SnakeState, WeightedScore } from '../../../utils/types';
+import { Bullet, GameState, PlayerInput, Point, SnakeData, WeightedScore } from '../../../utils/types';
 import { Renderer } from '../renderer';
 
 export enum DrawingObject {
@@ -82,7 +82,7 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	};
 
-	private renderSnakes = (snakes: Record<Player, SnakeState>): void => {
+	private renderSnakes = (snakes: Record<Player, SnakeData>): void => {
 		const snakesArray = Object.values(snakes);
 
 		for (let i = 0; i < snakesArray.length; i++) {

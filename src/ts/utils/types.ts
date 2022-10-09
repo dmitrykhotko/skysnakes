@@ -4,7 +4,7 @@ import { Strategy, PlayerMode, DrawGrid, Direction, MoveInput, FireInput, Player
 export type GameState = {
 	inProgress: boolean;
 	coin: Point;
-	snakes: Record<Player, SnakeState>;
+	snakes: Record<Player, SnakeData>;
 	bullets: Bullet[];
 	score: WeightedScore[];
 	loosers: Player[];
@@ -25,7 +25,7 @@ export type UserSettings = {
 	deathsNum: number;
 };
 
-export type SnakeState = {
+export type SnakeData = {
 	id: Player;
 	head: Point;
 	tail: Point;
@@ -55,6 +55,8 @@ export type PlayerInput = FireInput | MoveInput;
 export type Id = number;
 
 export type PointWithId = { point: Point; id: number };
+
+export type DirectionWithId = { direction: Direction; id: number };
 
 export type ResultWitActions<T = boolean> = {
 	result: T;
