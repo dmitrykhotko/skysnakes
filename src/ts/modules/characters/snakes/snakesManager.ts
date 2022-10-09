@@ -4,6 +4,13 @@ import { PointWithId, Point } from '../../../utils/types';
 import { SnakesActions, SnakesStore, state } from '../../redux';
 import { Snake } from './snake';
 
+const initSnake = (snakeInitial: { id: Player; head: Point; direction: Direction }): void => {
+	const { id, head, direction } = snakeInitial;
+	const tail = Snake.initBody(head, SNAKE_LENGTH, direction);
+
+	state.dispatch(SnakesActions.setSnake({ id, head, tail, direction }));
+};
+
 export abstract class SnakesManager {
 	static move = (shouldMoveTail: (id: Player, head: Point) => boolean): void => {
 		const snakes = Object.values(state.get<SnakesStore>().snakes);
@@ -47,14 +54,7 @@ export abstract class SnakesManager {
 
 		const [snake1, snake2] = snakesInitial;
 
-		snake1 && this.initSnake(snake1);
-		snake2 && this.initSnake(snake2);
-	};
-
-	private static initSnake = (snakeInitial: { id: Player; head: Point; direction: Direction }): void => {
-		const { id, head, direction } = snakeInitial;
-		const tail = Snake.initBody(head, SNAKE_LENGTH, direction);
-
-		state.dispatch(SnakesActions.setSnake({ id, head, tail, direction }));
+		snake1 && initSnake(snake1);
+		snake2 && initSnake(snake2);
 	};
 }
