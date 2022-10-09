@@ -97,14 +97,8 @@ export class Controller {
 	private handleInput = (store: InputStore): void => {
 		const { playerInput } = store.input;
 
-		if (MoveInput[playerInput]) {
-			const { id, direction } = inputToIdDirection[playerInput as MoveInput];
-			state.dispatch(SnakesActions.sendDirection(direction, id));
-		}
-
-		if (FireInput[playerInput]) {
-			this.handleFire(store);
-		}
+		MoveInput[playerInput] && this.handleDirectionChange(store);
+		FireInput[playerInput] && this.handleFire(store);
 	};
 
 	private handleControlInput = (store: InputStore): void => {
@@ -118,6 +112,13 @@ export class Controller {
 			default:
 				break;
 		}
+	};
+
+	private handleDirectionChange = (store: InputStore) => {
+		const { playerInput } = store.input;
+		const { id, direction } = inputToIdDirection[playerInput as MoveInput];
+
+		state.dispatch(SnakesActions.sendDirection(direction, id));
 	};
 
 	private handleFire = (store: Store): void => {
