@@ -1,4 +1,4 @@
-import { BODY_PART_WEIGHT, FRIENDLY_FIRE_WEIGHT, HEAD_SHOT_WEIGHT } from '../../../utils/constants';
+import { BODY_PART_WEIGHT, FRIENDLY_FIRE_WEIGHT, HEAD_SHOT_AWARD, KILL_AWARD } from '../../../utils/constants';
 import { nextPointCreator } from '../../../utils/helpers';
 import { Bullet, PointWithId, Point, ResultWitActions } from '../../../utils/types';
 import { Action, ArenaActions, BinActions, BulletsActions, BulletsStore, SnakesActions, state } from '../../redux';
@@ -54,8 +54,18 @@ export abstract class BulletsManager {
 		actions.push(SnakesActions.setTail(nextTail, victim));
 		isDead && actions.push(SnakesActions.setHead(nextTail, victim));
 
-		const friendlyFactor = victim === shooter ? -FRIENDLY_FIRE_WEIGHT : 1;
-		const scoreDelta = Math.ceil(isHeadShot ? HEAD_SHOT_WEIGHT : bin.length * BODY_PART_WEIGHT * friendlyFactor);
+		const bodyFactor = BODY_PART_WEIGHT * (victim === shooter ? -FRIENDLY_FIRE_WEIGHT : 1);
+		let scoreDelta: number;
+
+		if (isHeadShot) {
+			scoreDelta = HEAD_SHOT_AWARD;
+		} else {
+			scoreDelta = Math.ceil(bin.length * bodyFactor);
+
+			if (isDead) {
+				scoreDelta += KILL_AWARD;
+			}
+		}
 
 		actions.push(ArenaActions.addCoins(scoreDelta, shooter), BinActions.moveToBin(bin));
 

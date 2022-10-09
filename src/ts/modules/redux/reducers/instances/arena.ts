@@ -1,15 +1,15 @@
 import {
-	INC_COINS,
+	INC_SCORE,
 	INC_DEATHS,
 	RESET_GAME,
 	SET_COIN,
 	SET_IN_PROGRESS,
 	SET_LOOSERS,
 	SET_SCORE,
-	ADD_COINS
+	ADD_SCORE
 } from '../../../../utils/constants';
 import { Player } from '../../../../utils/enums';
-import { Point, Score } from '../../../../utils/types';
+import { Point, PlayersStat } from '../../../../utils/types';
 import { Action, SetValueAction, SetValueByIdAction } from '../..';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
@@ -21,7 +21,7 @@ export type ArenaState = {
 	inProgress: boolean;
 	coin: Point;
 	loosers: Player[];
-	score: Record<Player, Score>;
+	playersStat: Record<Player, PlayersStat>;
 	strategy: ArenaStrategy;
 };
 
@@ -34,33 +34,42 @@ const initialState = {
 		inProgress: true,
 		coin: { x: 0, y: 0 },
 		loosers: [],
-		score: {} as Record<Player, Score>,
+		playersStat: {} as Record<Player, PlayersStat>,
 		strategy: new TransparentWallsStrategy()
 	}
 } as ArenaStore;
 
-const changeScore = (id: Player, store: ArenaStore, propName: string, value = 1): Store => {
+const changeStat = (id: Player, store: ArenaStore, propName: string, value = 1): Store => {
 	const { arena } = store;
-	const { score } = arena;
+	const { playersStat } = arena;
 
-	const playerScore = score[id];
+	const playerScore = playersStat[id];
 
 	if (!playerScore) {
 		return store;
 	}
 
-	return {
+	const stateVal = {
 		...store,
 		arena: {
 			...arena,
 			...{
-				score: {
-					...score,
-					...{ [id]: { ...playerScore, ...{ [propName]: +playerScore[propName as keyof Score] + value } } }
+				playersStat: {
+					...playersStat,
+					...{
+						[id]: {
+							...playerScore,
+							...{ [propName]: +playerScore[propName as keyof PlayersStat] + value }
+						}
+					}
 				}
 			}
 		}
 	};
+
+	console.log('stateVal: ', stateVal);
+
+	return stateVal;
 };
 
 export abstract class ArenaReducer extends Reducer<ArenaStore> {
@@ -82,15 +91,15 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 				propName = 'loosers';
 				break;
 			case SET_SCORE:
-				propName = 'score';
+				propName = 'playersStat';
 				break;
-			case INC_COINS:
-				return changeScore((action as SetValueAction<Player>).value, arenaStore, 'coins');
-			case ADD_COINS:
+			case INC_SCORE:
+				return changeStat((action as SetValueAction<Player>).value, arenaStore, 'score');
+			case ADD_SCORE:
 				const { id, value } = action as SetValueByIdAction<number, Player>;
-				return changeScore(id, arenaStore, 'coins', value);
+				return changeStat(id, arenaStore, 'score', value);
 			case INC_DEATHS:
-				return changeScore((action as SetValueAction<Player>).value, arenaStore, 'deaths');
+				return changeStat((action as SetValueAction<Player>).value, arenaStore, 'deaths');
 			case RESET_GAME:
 				return { ...state, ...initialState };
 			default:

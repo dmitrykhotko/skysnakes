@@ -24,7 +24,7 @@ import {
 	playerModeToDirections
 } from './utils';
 import { generateId, nextPointCreator } from '../../utils/helpers';
-import { GameState, Score, WeightedScore } from '../../utils/types';
+import { GameState, PlayersStat, WeightedScore } from '../../utils/types';
 import { NormalStrategy } from '../arena/strategies';
 
 export class Controller {
@@ -72,7 +72,7 @@ export class Controller {
 			snakes,
 			bullets,
 			bin,
-			score: this.getScore(arena.score)
+			score: this.getPlayersStat(arena.playersStat)
 		} as GameState;
 	};
 
@@ -139,13 +139,13 @@ export class Controller {
 		);
 	};
 
-	private getScore = (score: Record<Player, Score>): WeightedScore[] => {
+	private getPlayersStat = (score: Record<Player, PlayersStat>): WeightedScore[] => {
 		const wScore = [] as WeightedScore[];
 		const scoreArr = Object.entries(score);
 
 		for (let i = 0; i < scoreArr.length; i++) {
-			const [id, { deaths, coins }] = scoreArr[i];
-			wScore.push({ id: +id, deaths, score: coins * COIN_WEIGHT });
+			const [id, { deaths, score }] = scoreArr[i];
+			wScore.push({ id: +id, deaths, score: score * COIN_WEIGHT });
 		}
 
 		return wScore;

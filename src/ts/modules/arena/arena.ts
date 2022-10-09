@@ -12,7 +12,7 @@ import {
 	state,
 	CommonActions
 } from '../redux';
-import { Point, ResultWitActions, Score } from '../../utils/types';
+import { Point, ResultWitActions, PlayersStat } from '../../utils/types';
 import { Observer } from '../observable/observer';
 import { Serpentarium } from '../characters/snake';
 import { BulletsManager } from '../characters/bullets/bulletsManager';
@@ -65,8 +65,8 @@ export class Arena {
 		arenaStrategy?: ArenaStrategy,
 		bulletStrategy?: ArenaStrategy
 	): void => {
-		const { score, loosers } = this.getState();
-		const resetArena = Object.keys(score).length !== directions.length || loosers.length || reset;
+		const { playersStat, loosers } = this.getState();
+		const resetArena = Object.keys(playersStat).length !== directions.length || loosers.length || reset;
 
 		state.dispatch(resetArena ? CommonActions.resetGame() : BulletsActions.reset());
 
@@ -215,9 +215,9 @@ export class Arena {
 		state.dispatch(
 			ArenaActions.setScore(
 				this.snakes.getPlayers().reduce((acc, player) => {
-					acc[player] = { deaths: 0, coins: 0 };
+					acc[player] = { deaths: 0, score: 0 };
 					return acc;
-				}, {} as Record<Player, Score>)
+				}, {} as Record<Player, PlayersStat>)
 			),
 			ArenaActions.setLoosers([])
 		);
@@ -228,7 +228,7 @@ export class Arena {
 	private finish = (id: Player): Action[] => [ArenaActions.incDeaths(id), ArenaActions.setInProgress(false)];
 
 	private judge = (store: ArenaStore): void => {
-		const { score, inProgress } = store.arena;
+		const { playersStat, inProgress } = store.arena;
 
 		if (inProgress) {
 			return;
@@ -236,10 +236,10 @@ export class Arena {
 
 		const loosers = [] as Player[];
 
-		Object.entries(score).forEach(([id, score]) => {
+		Object.entries(playersStat).forEach(([id, playerStat]) => {
 			const player = +id;
 
-			if (score.deaths === this.deathsNum) {
+			if (playerStat.deaths === this.deathsNum) {
 				loosers.push(player);
 			}
 		});

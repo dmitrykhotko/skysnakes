@@ -32,9 +32,9 @@ export type SnakeState = {
 	direction: Direction;
 };
 
-export type Score = {
+export type PlayersStat = {
 	deaths: number;
-	coins: number;
+	score: number;
 };
 
 export type WeightedScore = {
