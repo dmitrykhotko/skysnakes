@@ -13,10 +13,10 @@ export const compareProps = <T = unknown>(
 	return predicate(oldVal ? oldVal[pName] : undefined, newVal[pName]) ? cb(newVal[pName] as T) : undefined;
 };
 
-export const setValue = <T>(state: T, action: Action, sectionName: string, pName: string): T => ({
+export const setValue = <T, K>(state: T, action: Action, sectionName: keyof T, pName: keyof K): T => ({
 	...state,
 	[sectionName]: {
-		...state[sectionName as keyof T],
+		...state[sectionName],
 		...{
 			[pName]: (action as SetValueAction<unknown>).value
 		}

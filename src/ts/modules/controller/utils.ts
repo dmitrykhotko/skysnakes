@@ -1,5 +1,5 @@
 import { HEIGHT, WIDTH } from '../../utils/constants';
-import { ActionInput, Strategy, Direction, MoveInput, Player, PlayerMode } from '../../utils/enums';
+import { FireInput, Strategy, Direction, MoveInput, Player, PlayerMode } from '../../utils/enums';
 import { NormalStrategy, SoftWallsStrategy, TransparentWallsStrategy } from '../arena/strategies';
 import { Renderer } from '../renderers/renderer';
 
@@ -44,6 +44,6 @@ export const defaultProps = {
 };
 
 export const ActionInputToPlayer = {
-	[ActionInput.RFire]: Player.P1,
-	[ActionInput.LFire]: Player.P2
+	[FireInput.RFire]: Player.P1,
+	[FireInput.LFire]: Player.P2
 };

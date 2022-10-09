@@ -18,7 +18,7 @@ export enum MoveInput {
 	LRight = 8
 }
 
-export enum ActionInput {
+export enum FireInput {
 	RFire = 9,
 	LFire = 10
 }
@@ -30,16 +30,16 @@ export enum ControlInput {
 }
 
 export enum KeyCode {
-	ArrowUp = 'ArrowUp',
-	ArrowDown = 'ArrowDown',
-	ArrowLeft = 'ArrowLeft',
-	ArrowRight = 'ArrowRight',
-	KeyW = 'KeyW',
-	KeyS = 'KeyS',
-	KeyA = 'KeyA',
-	KeyD = 'KeyD',
-	KeyT = 'KeyT',
-	Space = 'Space'
+	ArrowUp = MoveInput.RUp,
+	ArrowDown = MoveInput.RDown,
+	ArrowLeft = MoveInput.RLeft,
+	ArrowRight = MoveInput.RRight,
+	KeyW = MoveInput.LUp,
+	KeyS = MoveInput.LDown,
+	KeyA = MoveInput.LLeft,
+	KeyD = MoveInput.LRight,
+	KeyT = FireInput.LFire,
+	Space = FireInput.RFire
 }
 
 export enum Player {

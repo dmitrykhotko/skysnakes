@@ -115,6 +115,6 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 				return state;
 		}
 
-		return setValue(arenaStore, action, 'arena', propName);
+		return setValue(arenaStore, action, 'arena', propName as keyof ArenaState);
 	};
 }

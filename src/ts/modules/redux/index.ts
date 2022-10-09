@@ -5,7 +5,7 @@ export { SettingsReducer, SettingsStore, SettingsState } from './reducers/instan
 export { ArenaReducer, ArenaStore, ArenaState } from './reducers/instances/arena';
 export { InputReducer, InputStore, InputState } from './reducers/instances/input';
 export { SnakesReducer, SnakesStore, SnakesState } from './reducers/instances/snakes';
-export { ShootingReducer, ShootingStore, ShootingState } from './reducers/instances/shooting';
+export { BulletsReducer, BulletsStore, BulletsState } from './reducers/instances/bullets';
 export { ReducerCollection } from './reducers/reducerCollection';
 
 export { Action } from './actions/action';
@@ -14,6 +14,6 @@ export { CommonActions } from './actions/actionsCreators/commonActions';
 export { ArenaActions } from './actions/actionsCreators/arenaActions';
 export { InputActions } from './actions/actionsCreators/inputActions';
 export { SnakesActions } from './actions/actionsCreators/snakesActions';
-export { ShootingActions } from './actions/actionsCreators/shootingActions';
+export { BulletsActions } from './actions/actionsCreators/bulletsActions';
 
 export { compareProps } from './reducers/utils';

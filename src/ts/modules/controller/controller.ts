@@ -1,14 +1,15 @@
-import { COIN_WEIGHT, FIRE, SET_DIRECTION, SET_RESET, SET_START } from '../../utils/constants';
-import { ControlInput, Player } from '../../utils/enums';
+import { COIN_WEIGHT, SET_INPUT, SET_RESET, SET_START } from '../../utils/constants';
+import { ControlInput, FireInput, MoveInput, Player } from '../../utils/enums';
 import {
 	ArenaStore,
-	ShootingStore,
+	BulletsStore,
 	InputStore,
 	SettingsStore,
 	SnakesActions,
 	SnakesStore,
 	state,
-	ShootingActions
+	BulletsActions,
+	Store
 } from '../redux';
 import { Arena } from '../arena/arena';
 import { Observer } from '../observable/observer';
@@ -64,12 +65,12 @@ export class Controller {
 	}
 
 	private getArenaData = (): GameState => {
-		const store = state.get<ArenaStore & SnakesStore & ShootingStore>();
+		const { arena, snakes, bullets } = state.get<ArenaStore & SnakesStore & BulletsStore>();
 		return {
-			...store.arena,
-			snakes: store.snakes,
-			bullets: store.shooting.bullets,
-			score: this.getScore(store.arena.score)
+			...arena,
+			snakes,
+			bullets,
+			score: this.getScore(arena.score)
 		} as GameState;
 	};
 
@@ -88,15 +89,22 @@ export class Controller {
 	};
 
 	private subscribe = (): void => {
-		state.subscribe(this.handleMoveInput as Observer, SET_DIRECTION);
+		state.subscribe(this.handleInput as Observer, SET_INPUT);
 		state.subscribe(this.handleControlInput as Observer, SET_START);
 		state.subscribe(this.handleControlInput as Observer, SET_RESET);
-		state.subscribe(this.handleFire as Observer, FIRE);
 	};
 
-	private handleMoveInput = (store: InputStore): void => {
-		const { id, direction } = inputToIdDirection[store.input.moveInput];
-		state.dispatch(SnakesActions.sendDirection(direction, id));
+	private handleInput = (store: InputStore): void => {
+		const { playerInput } = store.input;
+
+		if (MoveInput[playerInput]) {
+			const { id, direction } = inputToIdDirection[playerInput as MoveInput];
+			state.dispatch(SnakesActions.sendDirection(direction, id));
+		}
+
+		if (FireInput[playerInput]) {
+			this.handleFire(store);
+		}
 	};
 
 	private handleControlInput = (store: InputStore): void => {
@@ -112,15 +120,10 @@ export class Controller {
 		}
 	};
 
-	private handleFire = (store: ShootingStore): void => {
-		const { fire } = store.shooting;
-
-		if (!fire) {
-			return;
-		}
-
-		const player = ActionInputToPlayer[fire];
-		const snake = (store as unknown as SnakesStore).snakes[player];
+	private handleFire = (store: Store): void => {
+		const { playerInput } = (store as InputStore).input;
+		const player = ActionInputToPlayer[playerInput as FireInput];
+		const snake = (store as SnakesStore).snakes[player];
 
 		if (!snake) {
 			return;
@@ -129,7 +132,7 @@ export class Controller {
 		const { head, direction } = snake;
 
 		state.dispatch(
-			ShootingActions.setBullet({ id: generateId(), player, point: nextPointCreator[direction](head), direction })
+			BulletsActions.setBullet({ id: generateId(), player, point: nextPointCreator[direction](head), direction })
 		);
 	};
 

@@ -1,11 +1,11 @@
 import { BODY_PART_WEIGHT, FRIENDLY_FIRE_WEIGHT, HEAD_SHOT_WEIGHT } from '../../../utils/constants';
 import { nextPointCreator } from '../../../utils/helpers';
 import { Bullet, PointWithId, Point, ResultWitActions } from '../../../utils/types';
-import { Action, ArenaActions, ShootingActions, ShootingStore, SnakesActions, state } from '../../redux';
+import { Action, ArenaActions, BulletsActions, BulletsStore, SnakesActions, state } from '../../redux';
 
 export abstract class BulletsManager {
 	static move = (): void => {
-		const bullets = Object.values(state.get<ShootingStore>().shooting.bullets);
+		const bullets = Object.values(state.get<BulletsStore>().bullets);
 		const actions = [] as Action[];
 
 		for (let i = 0; i < bullets.length; i++) {
@@ -16,7 +16,7 @@ export abstract class BulletsManager {
 			nextPoint.prev = point;
 
 			actions.push(
-				ShootingActions.setBullet({ id, player, point: nextPoint, direction }),
+				BulletsActions.setBullet({ id, player, point: nextPoint, direction }),
 				ArenaActions.moveToBin([point])
 			);
 		}
@@ -30,7 +30,7 @@ export abstract class BulletsManager {
 
 		point.prev && bin.push(point.prev);
 
-		return [ShootingActions.removeBullet(id), ArenaActions.moveToBin(bin)];
+		return [BulletsActions.removeBullet(id), ArenaActions.moveToBin(bin)];
 	};
 
 	static hit = (bullet: Bullet, snakeShotResult: PointWithId): ResultWitActions => {

@@ -1,5 +1,5 @@
-import { ActionInput, DrawGrid, MoveInput, Player } from '../../../utils/enums';
-import { ShootingActions, InputActions, state, ArenaActions } from '../../redux';
+import { DrawGrid, Player } from '../../../utils/enums';
+import { InputActions, state, ArenaActions } from '../../redux';
 import { Bullet, GameState, PlayerInput, Point, SnakeState, WeightedScore } from '../../../utils/types';
 import { Renderer } from '../renderer';
 
@@ -47,13 +47,7 @@ export abstract class BaseRenderer extends Renderer {
 	}
 
 	protected input = (input: PlayerInput): void => {
-		if (MoveInput[input]) {
-			state.dispatch(InputActions.setMoveInput(input as MoveInput));
-		}
-
-		if (ActionInput[input]) {
-			state.dispatch(ShootingActions.fire(input as ActionInput));
-		}
+		state.dispatch(InputActions.setInput(input));
 	};
 
 	private renderMap = (): void => {
@@ -93,7 +87,6 @@ export abstract class BaseRenderer extends Renderer {
 
 		for (let i = 0; i < snakesArray.length; i++) {
 			const { id, head, tail } = snakesArray[i];
-
 			let current = tail;
 
 			while (current !== head) {
@@ -101,7 +94,7 @@ export abstract class BaseRenderer extends Renderer {
 				current.next && (current = current.next);
 			}
 
-			const headType = this.getHeadType(id);
+			const headType = id === Player.P1 ? DrawingObject.head1 : DrawingObject.head2;
 			this.renderCell(current, headType);
 		}
 	};
@@ -125,6 +118,4 @@ export abstract class BaseRenderer extends Renderer {
 
 		state.dispatch(ArenaActions.emptyBin());
 	};
-
-	private getHeadType = (id: Player): DrawingObject => (id === Player.P1 ? DrawingObject.head1 : DrawingObject.head2);
 }

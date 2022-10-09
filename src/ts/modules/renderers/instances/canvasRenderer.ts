@@ -1,20 +1,7 @@
 import { CELL_SIZE, HEIGHT, LINE_HEIGHT, TEXT_AREA_WIDTH, WIDTH } from '../../../utils/constants';
-import { MoveInput, DrawGrid, KeyCode, ActionInput } from '../../../utils/enums';
+import { DrawGrid, KeyCode } from '../../../utils/enums';
 import { GameState, PlayerInput, Point } from '../../../utils/types';
 import { BaseRenderer, DrawingObject } from './baseRenderer';
-
-const keyInputMapping: Record<KeyCode, PlayerInput> = {
-	[KeyCode.ArrowUp]: MoveInput.RUp,
-	[KeyCode.ArrowDown]: MoveInput.RDown,
-	[KeyCode.ArrowLeft]: MoveInput.RLeft,
-	[KeyCode.ArrowRight]: MoveInput.RRight,
-	[KeyCode.KeyW]: MoveInput.LUp,
-	[KeyCode.KeyS]: MoveInput.LDown,
-	[KeyCode.KeyA]: MoveInput.LLeft,
-	[KeyCode.KeyD]: MoveInput.LRight,
-	[KeyCode.Space]: ActionInput.RFire,
-	[KeyCode.KeyT]: ActionInput.LFire
-};
 
 const colors = {
 	[DrawingObject.empty]: '#E8F8F5',
@@ -130,15 +117,8 @@ export class CanvasRenderer extends BaseRenderer {
 	};
 
 	private onKeyDown = (event: KeyboardEvent): void => {
-		const keyCode = KeyCode[event.code as KeyCode];
-
-		if (!keyCode) {
-			return;
-		}
-
-		const playerInput = keyInputMapping[keyCode];
-
-		playerInput && this.input(playerInput);
+		const playerInput = KeyCode[event.code as unknown as KeyCode];
+		playerInput && this.input(playerInput as unknown as PlayerInput);
 	};
 
 	private focus = (): void => {

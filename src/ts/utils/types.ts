@@ -1,5 +1,5 @@
 import { Action } from '../modules/redux';
-import { Strategy, PlayerMode, DrawGrid, Direction, MoveInput, ActionInput, Player } from './enums';
+import { Strategy, PlayerMode, DrawGrid, Direction, MoveInput, FireInput, Player } from './enums';
 
 export type GameState = {
 	inProgress: boolean;
@@ -50,7 +50,7 @@ export type Bullet = {
 	direction: Direction;
 };
 
-export type PlayerInput = ActionInput | MoveInput;
+export type PlayerInput = FireInput | MoveInput;
 
 export type Id = number;
 
