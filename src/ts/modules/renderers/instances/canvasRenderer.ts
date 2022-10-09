@@ -118,7 +118,13 @@ export class CanvasRenderer extends BaseRenderer {
 
 	private onKeyDown = (event: KeyboardEvent): void => {
 		const playerInput = KeyCode[event.code as unknown as KeyCode];
-		playerInput && this.input(playerInput as unknown as PlayerInput);
+
+		if (!playerInput) {
+			return;
+		}
+
+		event.preventDefault();
+		this.input(playerInput as unknown as PlayerInput);
 	};
 
 	private focus = (): void => {

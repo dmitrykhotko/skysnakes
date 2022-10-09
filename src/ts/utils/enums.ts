@@ -38,7 +38,7 @@ export enum KeyCode {
 	KeyS = MoveInput.LDown,
 	KeyA = MoveInput.LLeft,
 	KeyD = MoveInput.LRight,
-	KeyT = FireInput.LFire,
+	Tab = FireInput.LFire,
 	Space = FireInput.RFire
 }
 
