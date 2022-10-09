@@ -14,7 +14,7 @@ import {
 } from '../redux';
 import { Point, ResultWitActions, PlayersStat } from '../../utils/types';
 import { Observer } from '../observable/observer';
-import { Serpentarium } from '../characters/snake';
+import { Serpentarium } from '../characters/snakes';
 import { BulletsManager } from '../characters/bullets/bulletsManager';
 import { ArenaStrategy } from './strategies';
 
