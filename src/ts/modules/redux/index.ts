@@ -17,5 +17,3 @@ export { InputActions } from './actions/actionsCreators/inputActions';
 export { SnakesActions } from './actions/actionsCreators/snakesActions';
 export { BulletsActions } from './actions/actionsCreators/bulletsActions';
 export { BinActions } from './actions/actionsCreators/binActions';
-
-export { compareProps } from './reducers/utils';
