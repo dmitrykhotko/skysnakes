@@ -11,7 +11,7 @@ import {
 	state,
 	CommonActions
 } from '../redux';
-import { Point, ResultWitActions, PlayersStat, DirectionWithId } from '../../utils/types';
+import { Point, ResultWitActions, PlayersStat, DirectionWithId, Id } from '../../utils/types';
 import { Observer } from '../observable/observer';
 import { SnakesManager } from '../characters/snakes/snakesManager';
 import { BulletsManager } from '../characters/bullets/bulletsManager';
@@ -193,7 +193,7 @@ export class Arena {
 		};
 	};
 
-	private runStrategy = (point: Point, id: number, strategy?: ArenaStrategy): ResultWitActions =>
+	private runStrategy = (point: Point, id: Id, strategy?: ArenaStrategy): ResultWitActions =>
 		strategy ? strategy.run(point, this.width, this.height, id) : { result: true, actions: [] };
 
 	private setCoin = (): Action => {

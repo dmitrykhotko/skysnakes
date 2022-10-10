@@ -5,6 +5,7 @@ import { Store } from '../../state';
 import { Reducer } from '../reducer';
 import { Point, SnakeData } from '../../../../utils/types';
 import { SnakesUtils } from '../../../../utils';
+import { filterById, getById } from '../../../../utils/helpers';
 
 export type SnakeState = SnakeData & { newDirection?: Direction };
 
@@ -23,15 +24,11 @@ const setProperty = <T extends Point | Direction>(
 ): SnakesStore => {
 	const snakesState = state as SnakesStore;
 	const { id, value } = action as SetValueByIdAction<T, Player>;
-	const targetSnake = SnakesUtils.getById(id, snakesState);
+	const targetSnake = getById(id, snakesState.snakes);
 
-	// TODO: move filtering to SnakesUtils, make it manual (for i = 0..len)
 	return {
 		...snakesState,
-		snakes: [
-			...snakesState.snakes.filter(({ id: playerId }) => playerId !== id),
-			{ ...targetSnake, ...{ [pName]: value } }
-		]
+		snakes: [...filterById(id, snakesState.snakes), { ...targetSnake, ...{ [pName]: value } }]
 	};
 };
 
@@ -41,7 +38,7 @@ const setSnake = (state: Store, action: Action): SnakesStore => {
 
 	return {
 		...snakesState,
-		snakes: [...snakesState.snakes.filter(({ id }) => id !== value.id), value]
+		snakes: [...filterById(value.id, snakesState.snakes), value]
 	};
 };
 

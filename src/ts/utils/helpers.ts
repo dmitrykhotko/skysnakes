@@ -1,5 +1,5 @@
 import { Direction } from './enums';
-import { Id, Point } from './types';
+import { Id, ObjectWithId, Point } from './types';
 
 let id = 0;
 
@@ -29,3 +29,32 @@ export const lcm = (...x: number[]): number => {
 };
 
 export const getRandomInt = (max: number): number => Math.floor(Math.random() * max);
+
+export const getById = <T extends ObjectWithId>(id: Id, items: T[]): T => {
+	let target!: T;
+
+	for (let i = 0; i < items.length; i++) {
+		const item = items[i];
+
+		if (item.id === id) {
+			target = item;
+			break;
+		}
+	}
+
+	return target;
+};
+
+export const filterById = <T extends ObjectWithId>(id: Id, items: T[]): T[] => {
+	const targets = [];
+
+	for (let i = 0; i < items.length; i++) {
+		const item = items[i];
+
+		if (item.id !== id) {
+			targets.push(item);
+		}
+	}
+
+	return targets;
+};

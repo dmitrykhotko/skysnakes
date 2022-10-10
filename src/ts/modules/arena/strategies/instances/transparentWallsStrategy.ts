@@ -1,4 +1,4 @@
-import { Point } from '../../../../utils/types';
+import { Id, Point } from '../../../../utils/types';
 import { Action, SnakesActions } from '../../../redux';
 import { BaseWallsStrategy, Position } from './baseWallsStrategy';
 
@@ -10,13 +10,7 @@ export class TransparentWallsStrategy extends BaseWallsStrategy {
 		[Position.Right]: (head: Point): number => (head.x = 0)
 	};
 
-	protected applyPosition = (
-		head: Point,
-		width: number,
-		height: number,
-		id: number,
-		position: Position
-	): Action[] => {
+	protected applyPosition = (head: Point, width: number, height: number, id: Id, position: Position): Action[] => {
 		this.headCalcs[position](head, width, height);
 		return [SnakesActions.setHead(head, id)];
 	};

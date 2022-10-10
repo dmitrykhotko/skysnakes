@@ -54,11 +54,15 @@ export type PlayerInput = FireInput | MoveInput;
 
 export type Id = number;
 
-export type PointWithId = { point: Point; id: number };
+export type PointWithId = { point: Point; id: Id };
 
-export type DirectionWithId = { direction: Direction; id: number };
+export type DirectionWithId = { direction: Direction; id: Id };
 
 export type ResultWitActions<T = boolean> = {
 	result: T;
 	actions: Action[];
 };
+
+export interface ObjectWithId {
+	id: Id
+}

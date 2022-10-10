@@ -1,4 +1,4 @@
-import { Point, ResultWitActions } from '../../../../utils/types';
+import { Id, Point, ResultWitActions } from '../../../../utils/types';
 import { Action } from '../../../redux';
 import { ArenaStrategy } from '../arenaStrategy';
 
@@ -41,11 +41,5 @@ export abstract class BaseWallsStrategy extends ArenaStrategy {
 		return pos;
 	};
 
-	protected abstract applyPosition(
-		point: Point,
-		width: number,
-		height: number,
-		id: number,
-		position: Position
-	): Action[];
+	protected abstract applyPosition(point: Point, width: number, height: number, id: Id, position: Position): Action[];
 }
