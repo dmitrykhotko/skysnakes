@@ -9,13 +9,13 @@ export abstract class BulletsManager {
 		const bullets = state.get<BulletsStore>().bullets;
 
 		for (let i = 0; i < bullets.length; i++) {
-			const { id, player, point, direction } = bullets[i];
+			const { id, playerId, point, direction } = bullets[i];
 			const nextPoint = nextPointCreator[direction](point);
 
 			point.prev = undefined;
 			nextPoint.prev = point;
 
-			const newBullet = { id, player, point: nextPoint, direction };
+			const newBullet = { id, playerId, point: nextPoint, direction };
 
 			state.dispatch(BulletsActions.setBullet(newBullet), BinActions.moveToBin([point]));
 			collisionActions.push(...BulletsManager.checkCollision(newBullet));
@@ -35,7 +35,7 @@ export abstract class BulletsManager {
 
 	static hit = (bullet: Bullet, snakeShotResult: PointWithId): ResultWitActions => {
 		const { id: victim, point: snakePoint } = snakeShotResult;
-		const { player: shooter } = bullet;
+		const { playerId: shooter } = bullet;
 		const bin = [] as Point[];
 		const actions = [...BulletsManager.removeBullet(bullet)] as Action[];
 		const nextPoint = snakePoint.next;

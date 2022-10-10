@@ -4,7 +4,7 @@ import { Strategy, PlayerMode, DrawGrid, Direction, MoveInput, FireInput, Player
 export type GameState = {
 	inProgress: boolean;
 	coin: Point;
-	snakes: Record<Player, SnakeData>;
+	snakes: SnakeData[];
 	bullets: Bullet[];
 	score: WeightedScore[];
 	loosers: Player[];
@@ -45,7 +45,7 @@ export type WeightedScore = {
 
 export type Bullet = {
 	id: Id;
-	player: Player;
+	playerId: Player;
 	point: Point;
 	direction: Direction;
 };

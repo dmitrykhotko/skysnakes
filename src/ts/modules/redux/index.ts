@@ -4,7 +4,7 @@ export { Reducer } from './reducers/reducer';
 export { SettingsReducer, SettingsStore, SettingsState } from './reducers/instances/settings';
 export { ArenaReducer, ArenaStore, ArenaState } from './reducers/instances/arena';
 export { InputReducer, InputStore, InputState } from './reducers/instances/input';
-export { SnakesReducer, SnakesStore, SnakesState } from './reducers/instances/snakes';
+export { SnakesReducer, SnakesStore, SnakeState } from './reducers/instances/snakes';
 export { BulletsReducer, BulletsStore, BulletsState } from './reducers/instances/bullets';
 export { BinReducer, BinStore, BinState } from './reducers/instances/bin';
 export { ReducerCollection } from './reducers/reducerCollection';

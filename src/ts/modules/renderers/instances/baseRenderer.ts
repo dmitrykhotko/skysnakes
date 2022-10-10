@@ -82,11 +82,9 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	};
 
-	private renderSnakes = (snakes: Record<Player, SnakeData>): void => {
-		const snakesArray = Object.values(snakes);
-
-		for (let i = 0; i < snakesArray.length; i++) {
-			const { id, head, tail } = snakesArray[i];
+	private renderSnakes = (snakes: SnakeData[]): void => {
+		for (let i = 0; i < snakes.length; i++) {
+			const { id, head, tail } = snakes[i];
 			let current = tail;
 
 			while (current !== head) {

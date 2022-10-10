@@ -8,7 +8,6 @@ import {
 	ArenaState,
 	BulletsActions,
 	BulletsStore,
-	SnakesStore,
 	state,
 	CommonActions
 } from '../redux';
@@ -17,6 +16,7 @@ import { Observer } from '../observable/observer';
 import { SnakesManager } from '../characters/snakes/snakesManager';
 import { BulletsManager } from '../characters/bullets/bulletsManager';
 import { ArenaStrategy } from './strategies';
+import { SnakesUtils } from '../../utils';
 
 export type ArenaProps = {
 	width?: number;
@@ -139,12 +139,10 @@ export class Arena {
 
 	private handleMoveSnakes = (): void => {
 		const actions = [] as Action[];
-		const heads = state.get<SnakesStore>().snakes;
-		const states = Object.entries(heads);
+		const snakes = SnakesUtils.get();
 
-		for (let i = 0; i < states.length; i++) {
-			const [player, { head }] = states[i];
-			const id = +player;
+		for (let i = 0; i < snakes.length; i++) {
+			const { id, head } = snakes[i];
 
 			if (SnakesManager.faceObject(head)) {
 				actions.push(...this.finish(id));
@@ -209,7 +207,7 @@ export class Arena {
 	};
 
 	private initScore = (): void => {
-		const players = Object.values(state.get<SnakesStore>().snakes).map(({ id }) => id);
+		const players = SnakesUtils.get().map(({ id }) => id);
 
 		state.dispatch(
 			ArenaActions.setScore(

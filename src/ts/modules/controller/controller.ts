@@ -16,7 +16,7 @@ import { Arena } from '../arena/arena';
 import { Observer } from '../observable/observer';
 import { Renderer } from '../renderers/renderer';
 import {
-	fireInputToPlayer,
+	fireInputToPlayerId,
 	arenaStrategies,
 	ControllerProps,
 	defaultProps,
@@ -26,6 +26,7 @@ import {
 import { generateId, nextPointCreator } from '../../utils/helpers';
 import { GameState, PlayersStat, WeightedScore } from '../../utils/types';
 import { NormalStrategy } from '../arena/strategies';
+import { SnakesUtils } from '../../utils';
 
 export class Controller {
 	private arena!: Arena;
@@ -119,15 +120,15 @@ export class Controller {
 	private handleDirectionChange = (store: Store): void => {
 		const { playerInput } = (store as InputStore).input;
 		const { id, direction } = inputToIdDirection[playerInput as MoveInput];
-		const snake = (store as SnakesStore).snakes[id];
+		const snake = SnakesUtils.getById(id);
 
 		snake && state.dispatch(SnakesActions.newDirection(direction, id));
 	};
 
 	private handleFire = (store: Store): void => {
 		const { playerInput } = (store as InputStore).input;
-		const player = fireInputToPlayer[playerInput as FireInput];
-		const snake = (store as SnakesStore).snakes[player];
+		const id = fireInputToPlayerId[playerInput as FireInput];
+		const snake = SnakesUtils.getById(id);
 
 		if (!snake) {
 			return;
@@ -136,7 +137,12 @@ export class Controller {
 		const { head, direction } = snake;
 
 		state.dispatch(
-			BulletsActions.setBullet({ id: generateId(), player, point: nextPointCreator[direction](head), direction })
+			BulletsActions.setBullet({
+				id: generateId(),
+				playerId: id,
+				point: nextPointCreator[direction](head),
+				direction
+			})
 		);
 	};
 

@@ -46,7 +46,7 @@ export const defaultProps = {
 	autostart: false
 };
 
-export const fireInputToPlayer = {
+export const fireInputToPlayerId = {
 	[FireInput.RFire]: Player.P1,
 	[FireInput.LFire]: Player.P2
 };

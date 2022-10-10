@@ -1,8 +1,9 @@
 import { NEW_DIRECTION, SNAKE_LENGTH } from '../../../utils/constants';
 import { Direction, Player } from '../../../utils/enums';
 import { comparePoints, nextPointCreator } from '../../../utils/helpers';
+import { SnakesUtils } from '../../../utils';
 import { PointWithId, Point } from '../../../utils/types';
-import { Action, BinActions, SnakesActions, SnakesStore, state } from '../../redux';
+import { Action, BinActions, SnakesActions, state } from '../../redux';
 import { SnakeState } from '../../redux/reducers/instances/snakes';
 
 const directionWeights = {
@@ -44,7 +45,7 @@ const initSnake = (snakeInitial: { id: Player; head: Point; direction: Direction
 
 export abstract class SnakesManager {
 	static move = (shouldMoveTail: (id: Player, head: Point) => boolean): void => {
-		const snakes = Object.values(state.get<SnakesStore>().snakes);
+		const snakes = SnakesUtils.get();
 
 		for (let i = 0; i < snakes.length; i++) {
 			const snake = snakes[i];
@@ -72,7 +73,7 @@ export abstract class SnakesManager {
 	};
 
 	static faceObject = (object: Point, skipHead = true): PointWithId | undefined => {
-		const snakes = Object.values(state.get<SnakesStore>().snakes);
+		const snakes = SnakesUtils.get();
 
 		for (let i = 0; i < snakes.length; i++) {
 			const { id, head } = snakes[i];
@@ -94,7 +95,7 @@ export abstract class SnakesManager {
 
 	static getBodiesSet = (width: number): Set<number> => {
 		const set: Set<number> = new Set<number>();
-		const snakes = Object.values(state.get<SnakesStore>().snakes);
+		const snakes = SnakesUtils.get();
 
 		snakes.forEach(({ head }) => {
 			let point: Point | undefined = head;

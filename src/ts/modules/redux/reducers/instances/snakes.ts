@@ -4,31 +4,34 @@ import { Action, SetValueAction, SetValueByIdAction } from '../..';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
 import { Point, SnakeData } from '../../../../utils/types';
+import { SnakesUtils } from '../../../../utils';
 
-export type SnakeState = SnakeData & { newDirection?: Direction; nextDirection?: Direction };
-export type SnakesState = Record<Player, SnakeState>;
+export type SnakeState = SnakeData & { newDirection?: Direction };
 
 export type SnakesStore = {
-	snakes: SnakesState;
+	snakes: SnakeState[];
 };
 
 const initialState = {
-	snakes: {}
+	snakes: []
 } as SnakesStore;
 
-const setData = <T extends Point | Direction>(state: Store, action: Action, pName: keyof SnakeState): SnakesStore => {
+const setProperty = <T extends Point | Direction>(
+	state: Store,
+	action: Action,
+	pName: keyof SnakeState
+): SnakesStore => {
 	const snakesState = state as SnakesStore;
 	const { id, value } = action as SetValueByIdAction<T, Player>;
+	const targetSnake = SnakesUtils.getById(id, snakesState);
 
+	// TODO: move filtering to SnakesUtils, make it manual (for i = 0..len)
 	return {
 		...snakesState,
-		snakes: {
-			...snakesState.snakes,
-			[id]: {
-				...snakesState.snakes[id],
-				[pName]: value
-			}
-		}
+		snakes: [
+			...snakesState.snakes.filter(({ id: playerId }) => playerId !== id),
+			{ ...targetSnake, ...{ [pName]: value } }
+		]
 	};
 };
 
@@ -38,10 +41,7 @@ const setSnake = (state: Store, action: Action): SnakesStore => {
 
 	return {
 		...snakesState,
-		snakes: {
-			...snakesState.snakes,
-			[value.id]: value
-		}
+		snakes: [...snakesState.snakes.filter(({ id }) => id !== value.id), value]
 	};
 };
 
@@ -70,6 +70,6 @@ export abstract class SnakesReducer extends Reducer<SnakesStore> {
 				return state;
 		}
 
-		return setData(state, action, propName as keyof SnakeState);
+		return setProperty(state, action, propName as keyof SnakeState);
 	};
 }
