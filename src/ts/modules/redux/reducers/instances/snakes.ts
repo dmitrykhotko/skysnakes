@@ -4,7 +4,6 @@ import { Action, SetValueAction, SetValueByIdAction } from '../..';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
 import { Point, SnakeData } from '../../../../utils/types';
-import { SnakesUtils } from '../../../../utils';
 import { filterById, getById } from '../../../../utils/helpers';
 
 export type SnakeState = SnakeData & { newDirection?: Direction };

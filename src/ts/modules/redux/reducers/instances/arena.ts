@@ -16,12 +16,13 @@ import { Reducer } from '../reducer';
 import { setValue } from '../utils';
 import { ArenaStrategy } from '../../../arena/strategies/arenaStrategy';
 import { TransparentWallsStrategy } from '../../../arena/strategies';
+import { filterById, getById } from '../../../../utils/helpers';
 
 export type ArenaState = {
 	inProgress: boolean;
 	coin: Point;
 	loosers: Player[];
-	playersStat: Record<Player, PlayersStat>;
+	playersStat: PlayersStat[];
 	strategy: ArenaStrategy;
 };
 
@@ -34,7 +35,7 @@ const initialState = {
 		inProgress: true,
 		coin: { x: 0, y: 0 },
 		loosers: [],
-		playersStat: {} as Record<Player, PlayersStat>,
+		playersStat: [],
 		strategy: new TransparentWallsStrategy()
 	}
 } as ArenaStore;
@@ -43,9 +44,9 @@ const changeStat = (id: Player, store: ArenaStore, propName: string, value = 1):
 	const { arena } = store;
 	const { playersStat } = arena;
 
-	const playerScore = playersStat[id];
+	const targetStat = getById(id, playersStat);
 
-	if (!playerScore) {
+	if (!targetStat) {
 		return store;
 	}
 
@@ -53,17 +54,10 @@ const changeStat = (id: Player, store: ArenaStore, propName: string, value = 1):
 		...store,
 		arena: {
 			...arena,
-			...{
-				playersStat: {
-					...playersStat,
-					...{
-						[id]: {
-							...playerScore,
-							...{ [propName]: +playerScore[propName as keyof PlayersStat] + value }
-						}
-					}
-				}
-			}
+			playersStat: [
+				...filterById(id, playersStat),
+				{ ...targetStat, [propName]: targetStat[propName as keyof PlayersStat] + value }
+			]
 		}
 	};
 };

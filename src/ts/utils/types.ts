@@ -33,6 +33,7 @@ export type SnakeData = {
 };
 
 export type PlayersStat = {
+	id: Id;
 	deaths: number;
 	score: number;
 };

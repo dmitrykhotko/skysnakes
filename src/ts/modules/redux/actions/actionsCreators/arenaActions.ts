@@ -17,6 +17,6 @@ export abstract class ArenaActions extends SetActions {
 	static addCoins = super.setValueById<number, Player>(ADD_SCORE);
 	static setInProgress = super.setValue<boolean>(SET_IN_PROGRESS);
 	static setLoosers = super.setValue<Player[]>(SET_LOOSERS);
-	static setScore = super.setValue<Record<Player, PlayersStat>>(SET_SCORE);
+	static setScore = super.setValue<PlayersStat[]>(SET_SCORE);
 	static incDeaths = super.setValue<Player>(INC_DEATHS);
 }

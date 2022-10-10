@@ -1,5 +1,5 @@
 import { COIN_WEIGHT, SET_INPUT, SET_RESET, SET_START } from '../../utils/constants';
-import { ControlInput, FireInput, MoveInput, Player } from '../../utils/enums';
+import { ControlInput, FireInput, MoveInput } from '../../utils/enums';
 import {
 	ArenaStore,
 	BulletsStore,
@@ -146,13 +146,12 @@ export class Controller {
 		);
 	};
 
-	private getPlayersStat = (score: Record<Player, PlayersStat>): WeightedScore[] => {
+	private getPlayersStat = (playersStat: PlayersStat[]): WeightedScore[] => {
 		const wScore = [] as WeightedScore[];
-		const scoreArr = Object.entries(score);
 
-		for (let i = 0; i < scoreArr.length; i++) {
-			const [id, { deaths, score }] = scoreArr[i];
-			wScore.push({ id: +id, deaths, score: score * COIN_WEIGHT });
+		for (let i = 0; i < playersStat.length; i++) {
+			const { id, deaths, score } = playersStat[i];
+			wScore.push({ id, deaths, score: score * COIN_WEIGHT });
 		}
 
 		return wScore;

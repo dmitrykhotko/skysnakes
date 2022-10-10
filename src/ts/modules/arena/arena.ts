@@ -11,7 +11,7 @@ import {
 	state,
 	CommonActions
 } from '../redux';
-import { Point, ResultWitActions, PlayersStat, DirectionWithId, Id } from '../../utils/types';
+import { Point, ResultWitActions, DirectionWithId, Id } from '../../utils/types';
 import { Observer } from '../observable/observer';
 import { SnakesManager } from '../characters/snakes/snakesManager';
 import { BulletsManager } from '../characters/bullets/bulletsManager';
@@ -65,7 +65,7 @@ export class Arena {
 		bulletStrategy?: ArenaStrategy
 	): void => {
 		const { playersStat, loosers } = this.getState();
-		const resetArena = Object.keys(playersStat).length !== snakesInitial.length || loosers.length || reset;
+		const resetArena = playersStat.length !== snakesInitial.length || loosers.length || reset;
 
 		state.dispatch(resetArena ? CommonActions.resetGame() : BulletsActions.reset());
 
@@ -207,15 +207,10 @@ export class Arena {
 	};
 
 	private initScore = (): void => {
-		const players = SnakesUtils.get().map(({ id }) => id);
+		const ids = SnakesUtils.get().map(({ id }) => id);
 
 		state.dispatch(
-			ArenaActions.setScore(
-				players.reduce((acc, player) => {
-					acc[player] = { deaths: 0, score: 0 };
-					return acc;
-				}, {} as Record<Player, PlayersStat>)
-			),
+			ArenaActions.setScore(ids.map(id => ({ id, deaths: 0, score: 0 }))),
 			ArenaActions.setLoosers([])
 		);
 	};
@@ -233,11 +228,9 @@ export class Arena {
 
 		const loosers = [] as Player[];
 
-		Object.entries(playersStat).forEach(([id, playerStat]) => {
-			const player = +id;
-
-			if (playerStat.deaths === this.deathsNum) {
-				loosers.push(player);
+		playersStat.forEach(({ id, deaths }) => {
+			if (deaths === this.deathsNum) {
+				loosers.push(id);
 			}
 		});
 
