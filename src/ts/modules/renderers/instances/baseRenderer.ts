@@ -1,6 +1,6 @@
 import { DrawGrid, Player } from '../../../utils/enums';
 import { InputActions, state, BinActions } from '../../redux';
-import { Bullet, GameState, PlayerInput, Point, SnakeData, WeightedScore } from '../../../utils/types';
+import { Bullet, GameState, PlayerInput, PlayersStat, Point, SnakeData } from '../../../utils/types';
 import { Renderer } from '../renderer';
 
 export enum DrawingObject {
@@ -27,7 +27,7 @@ export abstract class BaseRenderer extends Renderer {
 	}
 
 	render(state: GameState): void {
-		const { snakes, score, loosers, bullets, bin } = state;
+		const { snakes, score, winners, bullets, bin } = state;
 
 		if (!this.isInitialized) {
 			this.isInitialized = true;
@@ -35,7 +35,7 @@ export abstract class BaseRenderer extends Renderer {
 		}
 
 		this.renderSnakes(snakes);
-		this.renderPlayerInfo(score, loosers);
+		this.renderPlayerInfo(score, winners);
 		this.renderCell(state.coin, DrawingObject.coin);
 		this.renderBullets(bullets);
 		this.emptyBin(bin);
@@ -58,24 +58,24 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	};
 
-	private renderPlayerInfo = (wScore: WeightedScore[], loosers: Player[]): void => {
+	private renderPlayerInfo = (wScore: PlayersStat[], winners: Player[]): void => {
 		let lineNumber = 1;
 
-		if (loosers.length) {
-			this.renderTextLine(`LOOSER${loosers.length > 1 ? 'S' : ''}:`, lineNumber++);
+		if (winners.length) {
+			this.renderTextLine('WINNERS:', lineNumber++);
 
-			for (let i = 0; i < loosers.length; i++) {
-				this.renderTextLine(`${Player[loosers[i]]}`, lineNumber++);
+			for (let i = 0; i < winners.length; i++) {
+				this.renderTextLine(`${Player[winners[i]]}`, lineNumber++);
 			}
 
 			lineNumber += 2;
 		}
 
 		for (let i = 0; i < wScore.length; i++) {
-			const { id, deaths, score } = wScore[i];
+			const { id, lives, score } = wScore[i];
 
 			this.renderTextLine(`Player: ${Player[id]}`, lineNumber++);
-			this.renderTextLine(`Deaths: ${deaths}`, lineNumber++);
+			this.renderTextLine(`Lives: ${lives}`, lineNumber++);
 			this.renderTextLine(`Score: ${score}`, lineNumber);
 
 			lineNumber += 2;

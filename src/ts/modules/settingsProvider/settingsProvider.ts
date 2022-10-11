@@ -22,7 +22,7 @@ const initRadioButton = <T>(name: string, controlPanel: HTMLElement, action: (va
 
 export abstract class SettingsProvider {
 	public static init = (controlPanel: HTMLElement): void => {
-		const { playerMode, arenaType, drawGrid, deathsNum } = state.get<SettingsStore>().settings;
+		const { playerMode, arenaType, drawGrid, lives } = state.get<SettingsStore>().settings;
 
 		initButton('.js-Snake__Start', controlPanel, () => state.dispatch(InputActions.setStart()));
 		initButton('.js-Snake__Reset', controlPanel, () => state.dispatch(InputActions.setReset()));
@@ -36,11 +36,11 @@ export abstract class SettingsProvider {
 		initRadioButton('arenaType', controlPanel, SettingsActions.setArenaType);
 		initRadioButton('drawGrid', controlPanel, SettingsActions.setDrawGrid);
 
-		const deathsNumInput = controlPanel.querySelector('.js-Snake__DeathsNum') as HTMLInputElement;
-		deathsNumInput.value = deathsNum.toString();
+		const livesInput = controlPanel.querySelector('.js-Snake__Lives') as HTMLInputElement;
+		livesInput.value = lives.toString();
 
-		deathsNumInput.addEventListener('change', () => {
-			state.dispatch(SettingsActions.setDeathsNum(+deathsNumInput.value));
+		livesInput.addEventListener('change', () => {
+			state.dispatch(SettingsActions.setLives(+livesInput.value));
 		});
 	};
 }

@@ -1,4 +1,4 @@
-import { SET_ARENA_TYPE, SET_DEATHS_NUM, SET_DRAW_GRID, SET_PLAYER_MODE } from '../../../../utils/constants';
+import { SET_ARENA_TYPE, SET_LIVES, SET_DRAW_GRID, SET_PLAYER_MODE, LIVES } from '../../../../utils/constants';
 import { Strategy, DrawGrid, PlayerMode } from '../../../../utils/enums';
 import { Action } from '../..';
 import { Store } from '../../state';
@@ -9,7 +9,7 @@ export type SettingsState = {
 	playerMode: PlayerMode;
 	arenaType: Strategy;
 	drawGrid: DrawGrid;
-	deathsNum: number;
+	lives: number;
 };
 
 export type SettingsStore = {
@@ -21,7 +21,7 @@ const initialState = {
 		playerMode: PlayerMode.Multiplayer,
 		arenaType: Strategy.Transparent,
 		drawGrid: DrawGrid.No,
-		deathsNum: 2
+		lives: LIVES
 	}
 } as SettingsStore;
 
@@ -44,8 +44,8 @@ export abstract class SettingsReducer extends Reducer<SettingsStore> {
 			case SET_DRAW_GRID:
 				propName = 'drawGrid';
 				break;
-			case SET_DEATHS_NUM:
-				propName = 'deathsNum';
+			case SET_LIVES:
+				propName = 'lives';
 				break;
 			default:
 				return state;

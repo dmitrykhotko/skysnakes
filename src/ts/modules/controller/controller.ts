@@ -24,7 +24,7 @@ import {
 	toDirectionsAndPlayers
 } from './utils';
 import { generateId, nextPointCreator } from '../../utils/helpers';
-import { GameState, PlayersStat, WeightedScore } from '../../utils/types';
+import { GameState, PlayersStat } from '../../utils/types';
 import { NormalStrategy } from '../arena/strategies';
 import { SnakesUtils } from '../../utils';
 
@@ -68,21 +68,23 @@ export class Controller {
 
 	private getArenaData = (): GameState => {
 		const { arena, snakes, bullets, bin } = state.get<ArenaStore & SnakesStore & BulletsStore & BinStore>();
+
 		return {
 			...arena,
 			snakes,
 			bullets,
 			bin,
-			score: this.getPlayersStat(arena.playersStat)
+			winners: [...arena.winners].sort(),
+			score: [...this.getPlayersStat(arena.playersStat)].sort((p1, p2) => p1.id - p2.id)
 		} as GameState;
 	};
 
 	private start = (reset = false): void => {
-		const { playerMode, arenaType, drawGrid, deathsNum } = state.get<SettingsStore>().settings;
+		const { playerMode, arenaType, drawGrid, lives } = state.get<SettingsStore>().settings;
 		const snakesInitial = toDirectionsAndPlayers[playerMode];
 
 		this.renderer.reset(drawGrid);
-		this.arena.start(snakesInitial, deathsNum, reset, new arenaStrategies[arenaType](), new NormalStrategy());
+		this.arena.start(snakesInitial, lives, reset, new arenaStrategies[arenaType](), new NormalStrategy());
 
 		this.onStart();
 	};
@@ -146,12 +148,12 @@ export class Controller {
 		);
 	};
 
-	private getPlayersStat = (playersStat: PlayersStat[]): WeightedScore[] => {
-		const wScore = [] as WeightedScore[];
+	private getPlayersStat = (playersStat: PlayersStat[]): PlayersStat[] => {
+		const wScore = [] as PlayersStat[];
 
 		for (let i = 0; i < playersStat.length; i++) {
-			const { id, deaths, score } = playersStat[i];
-			wScore.push({ id, deaths, score: score * COIN_WEIGHT });
+			const { id, lives, score } = playersStat[i];
+			wScore.push({ id, lives, score: score * COIN_WEIGHT });
 		}
 
 		return wScore;

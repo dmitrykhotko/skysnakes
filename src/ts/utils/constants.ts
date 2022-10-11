@@ -12,6 +12,7 @@ export const CELL_SIZE = 25;
 export const LINE_HEIGHT = 40;
 
 export const SNAKE_LENGTH = 3;
+export const LIVES = 2;
 
 export const GAME_SPEED = 30; // Valid values are 60,30,20,15,10...
 export const SNAKE_SPEED = 1;
@@ -34,17 +35,16 @@ export const SET_COIN = 'ARENA/SET_COIN';
 export const INC_SCORE = 'ARENA/INC_SCORE';
 export const ADD_SCORE = 'ARENA/ADD_SCORE';
 export const SET_IN_PROGRESS = 'ARENA/SET_IN_PROGRESS';
-export const SET_LOOSERS = 'ARENA/SET_LOOSERS';
+export const SET_WINNERS = 'ARENA/SET_WINNERS';
 export const SET_SCORE = 'ARENA/SET_SCORE';
-export const INC_DEATHS = 'ARENA/INC_DEATHS';
-export const SET_DEATHS = 'ARENA/SET_DEATHS';
+export const DEC_LIVES = 'ARENA/DEC_LIVES';
 
 //// USER SETTINGS ACTIONS
 
 export const SET_PLAYER_MODE = 'USER_SETTINGS/SET_PLAYER_MODE';
 export const SET_ARENA_TYPE = 'USER_SETTINGS/SET_ARENA_TYPE';
 export const SET_DRAW_GRID = 'USER_SETTINGS/SET_DRAW_GRID';
-export const SET_DEATHS_NUM = 'USER_SETTINGS/SET_DEATHS_NUM';
+export const SET_LIVES = 'USER_SETTINGS/SET_LIVES';
 
 //// INPUT ACTIONS
 

@@ -6,8 +6,8 @@ export type GameState = {
 	coin: Point;
 	snakes: SnakeData[];
 	bullets: Bullet[];
-	score: WeightedScore[];
-	loosers: Player[];
+	score: PlayersStat[];
+	winners: Player[];
 	bin: Point[];
 };
 
@@ -16,13 +16,6 @@ export type Point = {
 	y: number;
 	next?: Point;
 	prev?: Point;
-};
-
-export type UserSettings = {
-	playerMode: PlayerMode;
-	arenaType: Strategy;
-	drawGrid: DrawGrid;
-	deathsNum: number;
 };
 
 export type SnakeData = {
@@ -34,14 +27,8 @@ export type SnakeData = {
 
 export type PlayersStat = {
 	id: Id;
-	deaths: number;
+	lives: number;
 	score: number;
-};
-
-export type WeightedScore = {
-	deaths: number;
-	score: number;
-	id: Player;
 };
 
 export type Bullet = {

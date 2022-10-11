@@ -1,10 +1,10 @@
 import {
 	INC_SCORE,
-	INC_DEATHS,
+	DEC_LIVES,
 	RESET_GAME,
 	SET_COIN,
 	SET_IN_PROGRESS,
-	SET_LOOSERS,
+	SET_WINNERS,
 	SET_SCORE,
 	ADD_SCORE
 } from '../../../../utils/constants';
@@ -21,7 +21,7 @@ import { filterById, getById } from '../../../../utils/helpers';
 export type ArenaState = {
 	inProgress: boolean;
 	coin: Point;
-	loosers: Player[];
+	winners: Player[];
 	playersStat: PlayersStat[];
 	strategy: ArenaStrategy;
 };
@@ -34,7 +34,7 @@ const initialState = {
 	arena: {
 		inProgress: true,
 		coin: { x: 0, y: 0 },
-		loosers: [],
+		winners: [],
 		playersStat: [],
 		strategy: new TransparentWallsStrategy()
 	}
@@ -77,8 +77,8 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 			case SET_IN_PROGRESS:
 				propName = 'inProgress';
 				break;
-			case SET_LOOSERS:
-				propName = 'loosers';
+			case SET_WINNERS:
+				propName = 'winners';
 				break;
 			case SET_SCORE:
 				propName = 'playersStat';
@@ -88,8 +88,8 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 			case ADD_SCORE:
 				const { id, value } = action as SetValueByIdAction<number, Player>;
 				return changeStat(id, arenaStore, 'score', value);
-			case INC_DEATHS:
-				return changeStat((action as SetValueAction<Player>).value, arenaStore, 'deaths');
+			case DEC_LIVES:
+				return changeStat((action as SetValueAction<Player>).value, arenaStore, 'lives', -1);
 			case RESET_GAME:
 				return { ...state, ...initialState };
 			default:

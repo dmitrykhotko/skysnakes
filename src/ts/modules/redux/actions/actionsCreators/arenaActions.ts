@@ -1,9 +1,9 @@
 import {
 	INC_SCORE,
-	INC_DEATHS,
+	DEC_LIVES,
 	SET_COIN,
 	SET_IN_PROGRESS,
-	SET_LOOSERS,
+	SET_WINNERS,
 	SET_SCORE,
 	ADD_SCORE
 } from '../../../../utils/constants';
@@ -16,7 +16,7 @@ export abstract class ArenaActions extends SetActions {
 	static incCoins = super.setValue<Player>(INC_SCORE);
 	static addCoins = super.setValueById<number, Player>(ADD_SCORE);
 	static setInProgress = super.setValue<boolean>(SET_IN_PROGRESS);
-	static setLoosers = super.setValue<Player[]>(SET_LOOSERS);
+	static setWinners = super.setValue<Player[]>(SET_WINNERS);
 	static setScore = super.setValue<PlayersStat[]>(SET_SCORE);
-	static incDeaths = super.setValue<Player>(INC_DEATHS);
+	static decLives = super.setValue<Player>(DEC_LIVES);
 }

@@ -33,7 +33,6 @@ const defaultProps = {
 };
 
 export class Arena {
-	private deathsNum!: number;
 	private width: number;
 	private height: number;
 	private stepsNum: number;
@@ -59,26 +58,27 @@ export class Arena {
 
 	start = (
 		snakesInitial: DirectionWithId[],
-		deathsNum: number,
+		lives: number,
 		reset: boolean,
 		arenaStrategy?: ArenaStrategy,
 		bulletStrategy?: ArenaStrategy
 	): void => {
-		const { playersStat, loosers } = this.getState();
-		const resetArena = playersStat.length !== snakesInitial.length || loosers.length || reset;
+		const { playersStat, winners } = this.getState();
+		const resetArena = playersStat.length !== snakesInitial.length || winners.length || reset;
+		const actions = [this.setCoin(), ArenaActions.setInProgress(true)];
 
 		state.dispatch(resetArena ? CommonActions.resetGame() : BulletsActions.reset());
 
 		this.steps = 0;
-		this.deathsNum = deathsNum;
 
 		SnakesManager.initSnakes(snakesInitial.map(item => ({ ...item, head: this.getStartPoint(item.direction) })));
 
 		this.arenaStrategy = arenaStrategy;
 		this.bulletStrategy = bulletStrategy;
 
-		resetArena && this.initScore();
-		state.dispatch(this.setCoin(), ArenaActions.setInProgress(true));
+		resetArena && actions.push(...this.initScore(lives));
+
+		state.dispatch(...actions);
 	};
 
 	move = (): void => {
@@ -206,18 +206,14 @@ export class Arena {
 		return ArenaActions.setCoin({ x, y });
 	};
 
-	private initScore = (): void => {
+	private initScore = (lives: number): Action[] => {
 		const ids = SnakesUtils.get().map(({ id }) => id);
-
-		state.dispatch(
-			ArenaActions.setScore(ids.map(id => ({ id, deaths: 0, score: 0 }))),
-			ArenaActions.setLoosers([])
-		);
+		return [ArenaActions.setScore(ids.map(id => ({ id, lives, score: 0 }))), ArenaActions.setWinners([])];
 	};
 
 	private getState = (): ArenaState => state.get<ArenaStore>().arena;
 
-	private finish = (id: Player): Action[] => [ArenaActions.incDeaths(id), ArenaActions.setInProgress(false)];
+	private finish = (id: Player): Action[] => [ArenaActions.decLives(id), ArenaActions.setInProgress(false)];
 
 	private judge = (store: ArenaStore): void => {
 		const { playersStat, inProgress } = store.arena;
@@ -226,15 +222,14 @@ export class Arena {
 			return;
 		}
 
-		const loosers = [] as Player[];
+		if (!playersStat.some(({ lives }) => lives === 0)) {
+			return;
+		}
 
-		playersStat.forEach(({ id, deaths }) => {
-			if (deaths === this.deathsNum) {
-				loosers.push(id);
-			}
-		});
+		const maxScore = Math.max(...playersStat.map(({ score }) => score));
+		const winners = playersStat.filter(stat => stat.score === maxScore).map(({ id }) => id);
 
-		loosers.length && state.dispatch(ArenaActions.setLoosers(loosers));
+		winners.length && state.dispatch(ArenaActions.setWinners(winners));
 	};
 
 	private getFreeCells = (): number[] => {
