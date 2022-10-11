@@ -17,9 +17,6 @@ const getStartPoint = (direction: Direction, width: number, height: number): Poi
 	let head: Point;
 
 	switch (direction) {
-		case Direction.Right:
-			head = { x: 0, y: height / 2 };
-			break;
 		case Direction.Left:
 			head = { x: width, y: height / 2 };
 			break;
@@ -29,6 +26,7 @@ const getStartPoint = (direction: Direction, width: number, height: number): Poi
 		case Direction.Up:
 			head = { x: width / 2, y: height };
 			break;
+		case Direction.Right:
 		default:
 			head = { x: 0, y: height / 2 };
 			break;

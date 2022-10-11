@@ -1,5 +1,5 @@
 import { BULLET_SPEED, HEIGHT, SET_IN_PROGRESS, SNAKE_SPEED, WIDTH } from '../../utils/constants';
-import { Direction, Player } from '../../utils/enums';
+import { Player } from '../../utils/enums';
 import { comparePoints, getRandomInt, lcm } from '../../utils/helpers';
 import {
 	Action,
