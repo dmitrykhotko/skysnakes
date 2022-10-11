@@ -13,7 +13,7 @@ const directionWeights = {
 	[Direction.Right]: 2
 };
 
-const getStartPoint = (direction: Direction, height: number, width: number): Point => {
+const getStartPoint = (direction: Direction, width: number, height: number): Point => {
 	let head: Point;
 
 	switch (direction) {
