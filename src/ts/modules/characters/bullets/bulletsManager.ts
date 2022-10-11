@@ -1,6 +1,6 @@
 import { BODY_PART_WEIGHT, FRIENDLY_FIRE_WEIGHT, HEAD_SHOT_AWARD, KILL_AWARD } from '../../../utils/constants';
 import { nextPointCreator } from '../../../utils/helpers';
-import { Bullet, PointWithId, Point, ResultWitActions } from '../../../utils/types';
+import { Bullet, PointWithId, Point } from '../../../utils/types';
 import { Action, ArenaActions, BinActions, BulletsActions, BulletsStore, SnakesActions, state } from '../../redux';
 
 export abstract class BulletsManager {
@@ -33,7 +33,7 @@ export abstract class BulletsManager {
 		return [BulletsActions.removeBullet(id), BinActions.moveToBin(bin)];
 	};
 
-	static hit = (bullet: Bullet, snakeShotResult: PointWithId): ResultWitActions => {
+	static hit = (bullet: Bullet, snakeShotResult: PointWithId): boolean => {
 		const { id: victim, point: snakePoint } = snakeShotResult;
 		const { playerId: shooter } = bullet;
 		const bin = [] as Point[];
@@ -67,12 +67,21 @@ export abstract class BulletsManager {
 			}
 		}
 
-		actions.push(ArenaActions.addCoins(scoreDelta, shooter), BinActions.moveToBin(bin));
+		state.dispatch(...actions, ArenaActions.addCoins(scoreDelta, shooter), BinActions.moveToBin(bin));
 
-		return {
-			result: isDead,
-			actions
-		};
+		return isDead;
+	};
+
+	static getBulletsSet = (width: number): Set<number> => {
+		const set: Set<number> = new Set<number>();
+		const bullets = state.get<BulletsStore>().bullets;
+
+		for (let i = 0; i < bullets.length; i++) {
+			const { point } = bullets[i];
+			set.add(point.x + point.y * width);
+		}
+
+		return set;
 	};
 
 	private static checkCollision = (bullet: Bullet): Action[] => {

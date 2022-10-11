@@ -1,4 +1,4 @@
-import { NEW_DIRECTION, SNAKE_LENGTH } from '../../../utils/constants';
+import { SNAKE_LENGTH } from '../../../utils/constants';
 import { Direction, Player } from '../../../utils/enums';
 import { comparePoints, nextPointCreator } from '../../../utils/helpers';
 import { SnakesUtils } from '../../../utils';
@@ -65,8 +65,6 @@ const initSnake = (id: Player, direction: Direction, head: Point): void => {
 
 export abstract class SnakesManager {
 	static initSnakes = (snakesInitial: DirectionWithId[], width: number, height: number): void => {
-		state.unsubscribeByType(NEW_DIRECTION);
-
 		snakesInitial.forEach(({ id, direction }) => {
 			initSnake(id, direction, getStartPoint(direction, width, height));
 		});
@@ -121,18 +119,18 @@ export abstract class SnakesManager {
 		}
 	};
 
-	static getBodiesSet = (width: number): Set<number> => {
+	static getSnakesSet = (width: number): Set<number> => {
 		const set: Set<number> = new Set<number>();
 		const snakes = SnakesUtils.get();
 
-		snakes.forEach(({ head }) => {
-			let point: Point | undefined = head;
+		for (let i = 0; i < snakes.length; i++) {
+			let point: Point | undefined = snakes[i].head;
 
 			while (point) {
 				set.add(point.x + point.y * width);
 				point = point.prev;
 			}
-		});
+		}
 
 		return set;
 	};

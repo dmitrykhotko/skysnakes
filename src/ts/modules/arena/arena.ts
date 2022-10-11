@@ -1,6 +1,6 @@
-import { BULLET_SPEED, HEIGHT, SET_IN_PROGRESS, SNAKE_SPEED, WIDTH } from '../../utils/constants';
+import { BULLET_SPEED, HEIGHT, SNAKE_SPEED, WIDTH } from '../../utils/constants';
 import { Player } from '../../utils/enums';
-import { comparePoints, getRandomInt, lcm } from '../../utils/helpers';
+import { comparePoints, getById, getRandomInt, lcm } from '../../utils/helpers';
 import {
 	Action,
 	ArenaActions,
@@ -12,7 +12,6 @@ import {
 	CommonActions
 } from '../redux';
 import { Point, ResultWitActions, DirectionWithId, Id } from '../../utils/types';
-import { Observer } from '../observable/observer';
 import { SnakesManager } from '../characters/snakes/snakesManager';
 import { BulletsManager } from '../characters/bullets/bulletsManager';
 import { ArenaStrategy } from './strategies';
@@ -24,6 +23,8 @@ export type ArenaProps = {
 	snakeSpeed?: number;
 	bulletSpeed?: number;
 };
+
+type someFunc = (...params: unknown[]) => unknown;
 
 const defaultProps = {
 	width: WIDTH,
@@ -41,6 +42,7 @@ export class Arena {
 	private bulletStep: number;
 	private arenaStrategy?: ArenaStrategy;
 	private bulletStrategy?: ArenaStrategy;
+	private snakesInitial!: DirectionWithId[];
 
 	constructor(props: ArenaProps) {
 		const aProps = { ...defaultProps, ...props };
@@ -52,8 +54,6 @@ export class Arena {
 		this.stepsNum = lcm(snakeSpeed, bulletSpeed);
 		this.snakeStep = this.stepsNum / snakeSpeed;
 		this.bulletStep = this.stepsNum / bulletSpeed;
-
-		state.subscribe(this.judge as Observer, SET_IN_PROGRESS);
 	}
 
 	start = (
@@ -71,7 +71,8 @@ export class Arena {
 
 		this.steps = 0;
 
-		SnakesManager.initSnakes(snakesInitial, this.width, this.height);
+		this.snakesInitial = snakesInitial;
+		SnakesManager.initSnakes(this.snakesInitial, this.width, this.height);
 
 		this.arenaStrategy = arenaStrategy;
 		this.bulletStrategy = bulletStrategy;
@@ -85,38 +86,27 @@ export class Arena {
 		this.steps++;
 
 		const moveBullets = !(this.steps % this.bulletStep);
+		const moveSnakes = !(this.steps % this.snakeStep);
 
-		if (moveBullets) {
-			BulletsManager.move();
-			this.handleMoveBullets();
-		}
-
-		const { inProgress } = this.getState();
-		const moveSnakes = inProgress && !(this.steps % this.snakeStep);
-
-		if (moveSnakes) {
-			SnakesManager.move((id: Player, head: Point) => {
-				const success = this.faceCoin(head);
-				success && state.dispatch(ArenaActions.incCoins(id));
-
-				return !success;
-			});
-
-			this.handleMoveSnakes();
-			state.dispatch(...this.checkHits().actions);
-		}
+		moveBullets && this.callIfInProgress(this.moveBullets);
+		moveSnakes && this.callIfInProgress(this.moveSnakes);
 
 		this.steps === this.stepsNum && (this.steps = 0);
 	};
 
-	private handleMoveBullets = (): void => {
-		const { result: isHit, actions: hitActions } = this.checkHits();
-		const actions = [...hitActions];
+	private callIfInProgress = (callMe: someFunc, ...params: unknown[]): unknown => {
+		const { inProgress } = this.getState();
+		return inProgress ? callMe(...params) : undefined;
+	};
 
-		if (isHit) {
-			return state.dispatch(...actions);
+	private moveBullets = (): void => {
+		BulletsManager.move();
+
+		if (this.checkHits()) {
+			return;
 		}
 
+		const actions = [];
 		const bullets = state.get<BulletsStore>().bullets;
 
 		for (let i = 0; i < bullets.length; i++) {
@@ -137,15 +127,24 @@ export class Arena {
 		state.dispatch(...actions);
 	};
 
-	private handleMoveSnakes = (): void => {
+	private moveSnakes = (): void => {
+		SnakesManager.move((id: Player, head: Point) => {
+			const success = this.faceCoin(head);
+			success && state.dispatch(ArenaActions.incCoins(id));
+
+			return !success;
+		});
+
 		const actions = [] as Action[];
 		const snakes = SnakesUtils.get();
+		const respawnPlayers = [];
 
 		for (let i = 0; i < snakes.length; i++) {
 			const { id, head } = snakes[i];
 
 			if (SnakesManager.faceObject(head)) {
-				actions.push(...this.finish(id));
+				this.finish(id);
+				respawnPlayers.push(id);
 				continue;
 			}
 
@@ -153,16 +152,20 @@ export class Arena {
 			actions.push(...adjustSnakeActions);
 
 			if (!snakeIsOk) {
-				actions.push(...this.finish(id));
+				this.finish(id);
+				respawnPlayers.push(id);
 				continue;
 			}
 		}
 
 		state.dispatch(...actions);
+		this.checkHits();
+		this.judge();
+
+		respawnPlayers.length && this.callIfInProgress(this.respawn as someFunc, respawnPlayers);
 	};
 
-	private checkHits = (): ResultWitActions => {
-		const actions = [] as Action[];
+	private checkHits = (): boolean => {
 		const bullets = state.get<BulletsStore>().bullets;
 
 		for (let i = 0; i < bullets.length; i++) {
@@ -174,23 +177,20 @@ export class Arena {
 				continue;
 			}
 
-			const { result: isHit, actions: hitActions } = BulletsManager.hit(bullet, snakeShotResult);
-			actions.push(...hitActions);
+			const isHit = BulletsManager.hit(bullet, snakeShotResult);
 
 			if (isHit) {
-				actions.push(...this.finish(snakeShotResult.id));
+				const playerId = snakeShotResult.id;
 
-				return {
-					result: isHit,
-					actions
-				};
+				this.finish(playerId);
+				this.judge();
+				this.callIfInProgress(this.respawn as someFunc, [playerId]);
+
+				return true;
 			}
 		}
 
-		return {
-			result: false,
-			actions
-		};
+		return false;
 	};
 
 	private runStrategy = (point: Point, id: Id, strategy?: ArenaStrategy): ResultWitActions =>
@@ -213,14 +213,12 @@ export class Arena {
 
 	private getState = (): ArenaState => state.get<ArenaStore>().arena;
 
-	private finish = (id: Player): Action[] => [ArenaActions.decLives(id), ArenaActions.setInProgress(false)];
+	private finish = (id: Player): void => {
+		state.dispatch(ArenaActions.decLives(id));
+	};
 
-	private judge = (store: ArenaStore): void => {
-		const { playersStat, inProgress } = store.arena;
-
-		if (inProgress) {
-			return;
-		}
+	private judge = (): void => {
+		const { playersStat } = this.getState();
 
 		if (!playersStat.some(({ lives }) => lives === 0)) {
 			return;
@@ -229,15 +227,34 @@ export class Arena {
 		const maxScore = Math.max(...playersStat.map(({ score }) => score));
 		const winners = playersStat.filter(stat => stat.score === maxScore).map(({ id }) => id);
 
-		winners.length && state.dispatch(ArenaActions.setWinners(winners));
+		winners.length && state.dispatch(ArenaActions.setInProgress(false), ArenaActions.setWinners(winners));
+	};
+
+	private respawn = (ids: Player[]): void => {
+		const snakesInitial = [];
+
+		for (let i = 0; i < ids.length; i++) {
+			for (let j = 0; j < this.snakesInitial.length; j++) {
+				const item = this.snakesInitial[j];
+
+				if (ids[i] === item.id) {
+					snakesInitial.push(item);
+				}
+			}
+		}
+
+		SnakesManager.initSnakes(snakesInitial, this.width, this.height);
 	};
 
 	private getFreeCells = (): number[] => {
 		const cells: number[] = [];
-		const bodiesSet = SnakesManager.getBodiesSet(this.width);
+		const set = new Set<number>([
+			...SnakesManager.getSnakesSet(this.width),
+			...BulletsManager.getBulletsSet(this.width)
+		]);
 
 		for (let i = 0; i < this.width * this.height; i++) {
-			if (bodiesSet.has(i)) {
+			if (set.has(i)) {
 				continue;
 			}
 
