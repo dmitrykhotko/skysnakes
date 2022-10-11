@@ -1,6 +1,6 @@
 import { BULLET_SPEED, HEIGHT, SNAKE_SPEED, WIDTH } from '../../utils/constants';
 import { Player } from '../../utils/enums';
-import { comparePoints, getById, getRandomInt, lcm } from '../../utils/helpers';
+import { comparePoints, getRandomInt, lcm } from '../../utils/helpers';
 import {
 	Action,
 	ArenaActions,
