@@ -1,7 +1,7 @@
-import { Direction, Player } from '../../../../utils/enums';
+import { Direction, Player, Position } from '../../../../utils/enums';
 import { Point } from '../../../../utils/types';
 import { Action, SnakesActions } from '../../../redux';
-import { BaseWallsStrategy, Position } from './baseWallsStrategy';
+import { BaseWallsStrategy } from './baseWallsStrategy';
 
 const faceTopBottom = ({ x }: Point): Direction => (x === 0 ? Direction.Right : Direction.Left);
 const fateLeftRight = ({ y }: Point): Direction => (y === 0 ? Direction.Down : Direction.Up);

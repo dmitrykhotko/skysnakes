@@ -10,48 +10,48 @@ export type BulletsStore = {
 	bullets: BulletsState;
 };
 
-const initialState = {
-	bullets: []
-} as BulletsStore;
-
-const setBullet = (state: Store, action: Action): BulletsStore => {
-	const bulletsState = state as BulletsStore;
-	const { value } = action as SetValueAction<Bullet>;
-
-	return {
-		...bulletsState,
-		bullets: [...bulletsState.bullets.filter(({ id }) => id !== value.id), value]
-	};
-};
-
-const removeBullet = (state: Store, action: Action): BulletsStore => {
-	const bulletsState = state as BulletsStore;
-	const { value } = action as SetValueAction<Id>;
-
-	const bullets = bulletsState.bullets.filter(bullet => bullet.id !== value);
-
-	return {
-		...bulletsState,
-		bullets
-	};
-};
-
 export abstract class BulletsReducer extends Reducer<BulletsStore> {
-	static getInitialState = (): BulletsStore => initialState;
+	private static initialState = {
+		bullets: []
+	} as BulletsStore;
+
+	static getInitialState = (): BulletsStore => this.initialState;
 
 	static reduce = (state: Store, action: Action): Store => {
 		const { type } = action;
 
 		switch (type) {
 			case SET_BULLET:
-				return setBullet(state, action);
+				return this.setBullet(state, action);
 			case REMOVE_BULLET:
-				return removeBullet(state, action);
+				return this.removeBullet(state, action);
 			case RESET_BULLETS:
 			case RESET_GAME:
-				return { ...state, ...initialState };
+				return { ...state, ...this.initialState };
 			default:
 				return state;
 		}
+	};
+
+	private static setBullet = (state: Store, action: Action): BulletsStore => {
+		const bulletsState = state as BulletsStore;
+		const { value } = action as SetValueAction<Bullet>;
+
+		return {
+			...bulletsState,
+			bullets: [...bulletsState.bullets.filter(({ id }) => id !== value.id), value]
+		};
+	};
+
+	private static removeBullet = (state: Store, action: Action): BulletsStore => {
+		const bulletsState = state as BulletsStore;
+		const { value } = action as SetValueAction<Id>;
+
+		const bullets = bulletsState.bullets.filter(bullet => bullet.id !== value);
+
+		return {
+			...bulletsState,
+			bullets
+		};
 	};
 }

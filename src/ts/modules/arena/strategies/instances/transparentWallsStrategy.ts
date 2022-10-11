@@ -1,6 +1,7 @@
+import { Position } from '../../../../utils/enums';
 import { Id, Point } from '../../../../utils/types';
 import { Action, SnakesActions } from '../../../redux';
-import { BaseWallsStrategy, Position } from './baseWallsStrategy';
+import { BaseWallsStrategy } from './baseWallsStrategy';
 
 export class TransparentWallsStrategy extends BaseWallsStrategy {
 	private headCalcs = {

@@ -23,11 +23,10 @@ import {
 	inputToIdDirection,
 	toDirectionsAndPlayers
 } from './utils';
-import { generateId, nextPointCreator } from '../../utils/helpers';
 import { GameState, PlayersStat } from '../../utils/types';
 import { NormalStrategy } from '../arena/strategies';
-import { SnakesUtils } from '../../utils';
-
+import { Hlp, SnakesUtils } from '../../utils';
+0;
 export class Controller {
 	private arena!: Arena;
 	private renderer: Renderer;
@@ -140,9 +139,9 @@ export class Controller {
 
 		state.dispatch(
 			BulletsActions.setBullet({
-				id: generateId(),
+				id: Hlp.generateId(),
 				playerId: id,
-				point: nextPointCreator[direction](head),
+				point: Hlp.nextPoint(head, direction),
 				direction
 			})
 		);

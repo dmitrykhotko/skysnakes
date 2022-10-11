@@ -1,6 +1,5 @@
 import { BULLET_SPEED, HEIGHT, SNAKE_SPEED, WIDTH } from '../../utils/constants';
 import { Player } from '../../utils/enums';
-import { comparePoints, getRandomInt, lcm } from '../../utils/helpers';
 import {
 	Action,
 	ArenaActions,
@@ -15,7 +14,7 @@ import { Point, ResultWitActions, DirectionWithId, Id } from '../../utils/types'
 import { SnakesManager } from '../characters/snakes/snakesManager';
 import { BulletsManager } from '../characters/bullets/bulletsManager';
 import { ArenaStrategy } from './strategies';
-import { SnakesUtils } from '../../utils';
+import { Hlp, SnakesUtils } from '../../utils';
 
 export type ArenaProps = {
 	width?: number;
@@ -51,7 +50,7 @@ export class Arena {
 
 		const { snakeSpeed, bulletSpeed } = aProps;
 
-		this.stepsNum = lcm(snakeSpeed, bulletSpeed);
+		this.stepsNum = Hlp.lcm(snakeSpeed, bulletSpeed);
 		this.snakeStep = this.stepsNum / snakeSpeed;
 		this.bulletStep = this.stepsNum / bulletSpeed;
 	}
@@ -198,7 +197,7 @@ export class Arena {
 
 	private setCoin = (): Action => {
 		const freeCells = this.getFreeCells();
-		const coinCellIndex = getRandomInt(freeCells.length);
+		const coinCellIndex = Hlp.randomInt(freeCells.length);
 		const coinCellValue = freeCells[coinCellIndex];
 		const x = coinCellValue % this.width;
 		const y = (coinCellValue - x) / this.width;
@@ -265,7 +264,7 @@ export class Arena {
 	};
 
 	private faceCoin = (object: Point): boolean => {
-		const success = comparePoints(object, this.getState().coin);
+		const success = Hlp.comparePoints(object, this.getState().coin);
 		success && state.dispatch(this.setCoin());
 
 		return success;

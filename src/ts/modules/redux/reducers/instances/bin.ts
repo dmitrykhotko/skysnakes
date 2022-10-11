@@ -10,12 +10,12 @@ export type BinStore = {
 	bin: BinState;
 };
 
-const initialState = {
-	bin: []
-} as BinStore;
-
 export abstract class BinReducer extends Reducer<BinStore> {
-	static getInitialState = (): BinStore => initialState;
+	private static initialState = {
+		bin: []
+	} as BinStore;
+
+	static getInitialState = (): BinStore => this.initialState;
 
 	static reduce = (state: Store, action: Action): Store => {
 		const { type } = action;

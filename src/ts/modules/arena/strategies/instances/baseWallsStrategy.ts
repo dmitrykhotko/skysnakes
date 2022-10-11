@@ -1,13 +1,7 @@
+import { Position } from '../../../../utils/enums';
 import { Id, Point, ResultWitActions } from '../../../../utils/types';
 import { Action } from '../../../redux';
 import { ArenaStrategy } from '../arenaStrategy';
-
-export enum Position {
-	Top,
-	Left,
-	Bottom,
-	Right
-}
 
 export abstract class BaseWallsStrategy extends ArenaStrategy {
 	run = (point: Point, width: number, height: number, id?: number): ResultWitActions => {

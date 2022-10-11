@@ -1,7 +1,7 @@
 import { CELL_SIZE, HEIGHT, LINE_HEIGHT, TEXT_AREA_WIDTH, WIDTH } from '../../../utils/constants';
-import { DrawGrid, KeyCode } from '../../../utils/enums';
+import { DrawGrid, DrawingObject, KeyCode } from '../../../utils/enums';
 import { GameState, Point } from '../../../utils/types';
-import { BaseRenderer, DrawingObject } from './baseRenderer';
+import { BaseRenderer } from './baseRenderer';
 
 const colors = {
 	[DrawingObject.empty]: '#E8F8F5',

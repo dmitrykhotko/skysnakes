@@ -7,6 +7,13 @@ export enum Direction {
 	Right = 4
 }
 
+export enum Position {
+	Top,
+	Left,
+	Bottom,
+	Right
+}
+
 export enum MoveInput {
 	RUp = 1,
 	RDown = 2,
@@ -61,4 +68,14 @@ export enum Strategy {
 export enum DrawGrid {
 	Yes = 'yes',
 	No = 'no'
+}
+
+export enum DrawingObject {
+	empty = 1,
+	head1 = 2,
+	head2 = 3,
+	body = 4,
+	coin = 5,
+	grid = 6,
+	bullet = 7
 }

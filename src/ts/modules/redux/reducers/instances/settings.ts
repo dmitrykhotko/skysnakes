@@ -16,17 +16,17 @@ export type SettingsStore = {
 	settings: SettingsState;
 };
 
-const initialState = {
-	settings: {
-		playerMode: PlayerMode.Multiplayer,
-		arenaType: Strategy.Transparent,
-		drawGrid: DrawGrid.No,
-		lives: LIVES
-	}
-} as SettingsStore;
-
 export abstract class SettingsReducer extends Reducer<SettingsStore> {
-	static getInitialState = (): SettingsStore => initialState;
+	private static initialState = {
+		settings: {
+			playerMode: PlayerMode.Multiplayer,
+			arenaType: Strategy.Transparent,
+			drawGrid: DrawGrid.No,
+			lives: LIVES
+		}
+	} as SettingsStore;
+
+	static getInitialState = (): SettingsStore => this.initialState;
 
 	static reduce = (state: Store, action: Action): Store => {
 		let propName: string;

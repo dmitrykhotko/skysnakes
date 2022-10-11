@@ -15,25 +15,15 @@ export type InputStore = {
 	input: InputState;
 };
 
-const initialState = {
-	input: {
-		playerInput: MoveInput.RRight,
-		controlInput: ControlInput.Empty
-	}
-} as InputStore;
-
-const startReset = (state: Store, action: Action): Store => {
-	return {
-		...state,
-		input: {
-			moveInput: initialState.input.playerInput,
-			controlInput: (action as SetValueAction<ControlInput>).value
-		}
-	};
-};
-
 export abstract class InputReducer extends Reducer<InputStore> {
-	static getInitialState = (): InputStore => initialState;
+	private static initialState = {
+		input: {
+			playerInput: MoveInput.RRight,
+			controlInput: ControlInput.Empty
+		}
+	} as InputStore;
+
+	static getInitialState = (): InputStore => this.initialState;
 
 	static reduce = (state: Store, action: Action): Store => {
 		const { type } = action;
@@ -45,11 +35,21 @@ export abstract class InputReducer extends Reducer<InputStore> {
 				return buildPlayerInputState('playerInput');
 			case SET_START:
 			case SET_RESET:
-				return startReset(state, action);
+				return this.startReset(state, action);
 			case RESET_GAME:
-				return { ...state, ...initialState };
+				return { ...state, ...this.initialState };
 			default:
 				return state;
 		}
+	};
+
+	private static startReset = (state: Store, action: Action): Store => {
+		return {
+			...state,
+			input: {
+				moveInput: this.initialState.input.playerInput,
+				controlInput: (action as SetValueAction<ControlInput>).value
+			}
+		};
 	};
 }

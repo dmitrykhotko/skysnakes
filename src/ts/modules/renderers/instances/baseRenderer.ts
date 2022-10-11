@@ -1,17 +1,7 @@
-import { DrawGrid, Player } from '../../../utils/enums';
+import { DrawGrid, DrawingObject, Player } from '../../../utils/enums';
 import { InputActions, state, BinActions } from '../../redux';
 import { Bullet, GameState, PlayerInput, PlayersStat, Point, SnakeData } from '../../../utils/types';
 import { Renderer } from '../renderer';
-
-export enum DrawingObject {
-	empty = 1,
-	head1 = 2,
-	head2 = 3,
-	body = 4,
-	coin = 5,
-	grid = 6,
-	bullet = 7
-}
 
 export abstract class BaseRenderer extends Renderer {
 	protected drawGrid = DrawGrid.No;

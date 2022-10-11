@@ -1,5 +1,5 @@
 import { BODY_PART_WEIGHT, FRIENDLY_FIRE_WEIGHT, HEAD_SHOT_AWARD, KILL_AWARD } from '../../../utils/constants';
-import { nextPointCreator } from '../../../utils/helpers';
+import { Hlp } from '../../../utils';
 import { Bullet, PointWithId, Point } from '../../../utils/types';
 import { Action, ArenaActions, BinActions, BulletsActions, BulletsStore, SnakesActions, state } from '../../redux';
 
@@ -10,7 +10,7 @@ export abstract class BulletsManager {
 
 		for (let i = 0; i < bullets.length; i++) {
 			const { id, playerId, point, direction } = bullets[i];
-			const nextPoint = nextPointCreator[direction](point);
+			const nextPoint = Hlp.nextPoint(point, direction);
 
 			point.prev = undefined;
 			nextPoint.prev = point;
@@ -18,7 +18,7 @@ export abstract class BulletsManager {
 			const newBullet = { id, playerId, point: nextPoint, direction };
 
 			state.dispatch(BulletsActions.setBullet(newBullet), BinActions.moveToBin([point]));
-			collisionActions.push(...BulletsManager.checkCollision(newBullet));
+			collisionActions.push(...this.checkCollision(newBullet));
 		}
 
 		state.dispatch(...collisionActions);
@@ -37,7 +37,7 @@ export abstract class BulletsManager {
 		const { id: victim, point: snakePoint } = snakeShotResult;
 		const { playerId: shooter } = bullet;
 		const bin = [] as Point[];
-		const actions = [...BulletsManager.removeBullet(bullet)] as Action[];
+		const actions = [...this.removeBullet(bullet)] as Action[];
 		const nextPoint = snakePoint.next;
 		const isHeadShot = !nextPoint;
 		const isDead = isHeadShot || !nextPoint.next; // it's either head shot or shot the last body piece
@@ -105,11 +105,11 @@ export abstract class BulletsManager {
 			}
 
 			if (!result) {
-				actions.push(...BulletsManager.removeBullet(bullet));
+				actions.push(...this.removeBullet(bullet));
 				result = true;
 			}
 
-			actions.push(...BulletsManager.removeBullet(currBullet));
+			actions.push(...this.removeBullet(currBullet));
 		}
 
 		return actions;
