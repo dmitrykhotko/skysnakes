@@ -71,7 +71,7 @@ export class Arena {
 
 		this.steps = 0;
 
-		SnakesManager.initSnakes(snakesInitial.map(item => ({ ...item, head: this.getStartPoint(item.direction) })));
+		SnakesManager.initSnakes(snakesInitial, this.width, this.height);
 
 		this.arenaStrategy = arenaStrategy;
 		this.bulletStrategy = bulletStrategy;
@@ -252,29 +252,5 @@ export class Arena {
 		success && state.dispatch(this.setCoin());
 
 		return success;
-	};
-
-	private getStartPoint = (direction: Direction): Point => {
-		let head: Point;
-
-		switch (direction) {
-			case Direction.Right:
-				head = { x: 0, y: this.height / 2 };
-				break;
-			case Direction.Left:
-				head = { x: this.width, y: this.height / 2 };
-				break;
-			case Direction.Down:
-				head = { x: this.width / 2, y: 0 };
-				break;
-			case Direction.Up:
-				head = { x: this.width / 2, y: this.height };
-				break;
-			default:
-				head = { x: 0, y: this.height / 2 };
-				break;
-		}
-
-		return head;
 	};
 }

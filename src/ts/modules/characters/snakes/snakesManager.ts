@@ -2,7 +2,7 @@ import { NEW_DIRECTION, SNAKE_LENGTH } from '../../../utils/constants';
 import { Direction, Player } from '../../../utils/enums';
 import { comparePoints, nextPointCreator } from '../../../utils/helpers';
 import { SnakesUtils } from '../../../utils';
-import { PointWithId, Point } from '../../../utils/types';
+import { PointWithId, Point, DirectionWithId } from '../../../utils/types';
 import { Action, BinActions, SnakesActions, state } from '../../redux';
 import { SnakeState } from '../../redux/reducers/instances/snakes';
 
@@ -11,6 +11,30 @@ const directionWeights = {
 	[Direction.Down]: 1,
 	[Direction.Left]: -2,
 	[Direction.Right]: 2
+};
+
+const getStartPoint = (direction: Direction, height: number, width: number): Point => {
+	let head: Point;
+
+	switch (direction) {
+		case Direction.Right:
+			head = { x: 0, y: height / 2 };
+			break;
+		case Direction.Left:
+			head = { x: width, y: height / 2 };
+			break;
+		case Direction.Down:
+			head = { x: width / 2, y: 0 };
+			break;
+		case Direction.Up:
+			head = { x: width / 2, y: height };
+			break;
+		default:
+			head = { x: 0, y: height / 2 };
+			break;
+	}
+
+	return head;
 };
 
 const initSnakeBody = (head: Point, length: number, direction: Direction): Point => {
@@ -36,14 +60,20 @@ const initSnakeBody = (head: Point, length: number, direction: Direction): Point
 	return tail;
 };
 
-const initSnake = (snakeInitial: { id: Player; head: Point; direction: Direction }): void => {
-	const { id, head, direction } = snakeInitial;
+const initSnake = (id: Player, direction: Direction, head: Point): void => {
 	const tail = initSnakeBody(head, SNAKE_LENGTH, direction);
-
 	state.dispatch(SnakesActions.setSnake({ id, head, tail, direction }));
 };
 
 export abstract class SnakesManager {
+	static initSnakes = (snakesInitial: DirectionWithId[], width: number, height: number): void => {
+		state.unsubscribeByType(NEW_DIRECTION);
+
+		snakesInitial.forEach(({ id, direction }) => {
+			initSnake(id, direction, getStartPoint(direction, width, height));
+		});
+	};
+
 	static move = (shouldMoveTail: (id: Player, head: Point) => boolean): void => {
 		const snakes = SnakesUtils.get();
 
@@ -107,15 +137,6 @@ export abstract class SnakesManager {
 		});
 
 		return set;
-	};
-
-	static initSnakes = (snakesInitial: { id: Player; head: Point; direction: Direction }[]): void => {
-		state.unsubscribeByType(NEW_DIRECTION);
-
-		const [snake1, snake2] = snakesInitial;
-
-		snake1 && initSnake(snake1);
-		snake2 && initSnake(snake2);
 	};
 
 	private static applyDirection = (data: SnakeState): Direction => {
