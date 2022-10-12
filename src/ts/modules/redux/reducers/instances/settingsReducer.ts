@@ -1,4 +1,11 @@
-import { SET_ARENA_TYPE, SET_LIVES, SET_DRAW_GRID, SET_PLAYER_MODE, LIVES } from '../../../../utils/constants';
+import {
+	SET_ARENA_TYPE,
+	SET_LIVES,
+	SET_DRAW_GRID,
+	SET_PLAYER_MODE,
+	LIVES,
+	PLAYER_MODE
+} from '../../../../utils/constants';
 import { Strategy, DrawGrid, PlayerMode } from '../../../../utils/enums';
 import { Action } from '../..';
 import { Store } from '../../state';
@@ -19,7 +26,7 @@ export type SettingsStore = {
 export abstract class SettingsReducer extends Reducer<SettingsStore> {
 	private static initialState = {
 		settings: {
-			playerMode: PlayerMode.Multiplayer,
+			playerMode: PLAYER_MODE,
 			arenaType: Strategy.Transparent,
 			drawGrid: DrawGrid.No,
 			lives: LIVES
