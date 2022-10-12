@@ -11,8 +11,8 @@ export const TEXT_AREA_WIDTH = 200;
 export const CELL_SIZE = 25;
 export const LINE_HEIGHT = 40;
 
-export const SNAKE_LENGTH = 3;
-export const LIVES = 2;
+export const SNAKE_LENGTH = 30;
+export const LIVES = 100;
 
 export const GAME_SPEED = 30; // Valid values are 60,30,20,15,10...
 export const SNAKE_SPEED = 1;
@@ -23,6 +23,8 @@ export const KILL_AWARD = 10;
 export const COIN_WEIGHT = 1;
 export const BODY_PART_WEIGHT = 1;
 export const FRIENDLY_FIRE_WEIGHT = 0.5;
+
+export const RESPAWN_DELAY = 30;
 
 // ACTIONS
 
@@ -56,6 +58,7 @@ export const SET_RESET = 'INPUT/SET_RESET';
 //// SNAKES ACTIONS
 
 export const SET_SNAKE = 'SNAKES/SET_SNAKE';
+export const REMOVE_SNAKE = 'SNAKES/REMOVE_SNAKE';
 export const SET_HEAD = 'SNAKES/SET_HEAD';
 export const SET_TAIL = 'SNAKES/SET_TAIL';
 export const NEW_DIRECTION = 'SNAKES/NEW_DIRECTION';

@@ -84,6 +84,27 @@ export abstract class SnakesManager {
 		return set;
 	};
 
+	static removeSnakes = (ids: Player[]): void => {
+		const bin = [] as Point[];
+		const actions = [] as Action[];
+
+		for (let i = 0; i < ids.length; i++) {
+			const id = ids[i];
+			const snake = SnakesUtils.getById(id);
+
+			let point: Point | undefined = snake.head;
+
+			while (point) {
+				bin.push(point);
+				point = point.prev;
+			}
+
+			actions.push(SnakesActions.removeSnake(id));
+		}
+
+		state.dispatch(...actions, BinActions.moveToBin(bin));
+	};
+
 	private static initSnake = (id: Player, direction: Direction, head: Point): void => {
 		const tail = this.initSnakeBody(head, SNAKE_LENGTH, direction);
 		state.dispatch(SnakesActions.setSnake({ id, head, tail, direction }));

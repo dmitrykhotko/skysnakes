@@ -54,7 +54,7 @@ export class Controller {
 	}
 
 	notify(): void {
-		this.arena.move();
+		this.arena.step();
 
 		const arenaState = this.getArenaData();
 

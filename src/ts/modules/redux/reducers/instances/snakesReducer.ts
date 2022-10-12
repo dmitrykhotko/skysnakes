@@ -1,4 +1,4 @@
-import { RESET_GAME, NEW_DIRECTION, SET_HEAD, SET_SNAKE, SET_TAIL } from '../../../../utils/constants';
+import { RESET_GAME, NEW_DIRECTION, SET_HEAD, SET_SNAKE, SET_TAIL, REMOVE_SNAKE } from '../../../../utils/constants';
 import { Direction, Player } from '../../../../utils/enums';
 import { Action, SetValueAction, SetValueByIdAction } from '../..';
 import { Store } from '../../state';
@@ -26,6 +26,11 @@ export abstract class SnakesReducer extends Reducer<SnakesStore> {
 		switch (type) {
 			case SET_SNAKE:
 				return this.setSnake(state, action);
+			case REMOVE_SNAKE:
+				return {
+					...state,
+					snakes: [...Hlp.filterById((action as SetValueAction<Player>).value, (state as SnakesStore).snakes)]
+				};
 			case SET_HEAD:
 				propName = 'head';
 				break;

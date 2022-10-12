@@ -39,35 +39,36 @@ export abstract class BulletsManager {
 		const bin = [] as Point[];
 		const actions = [...this.removeBullet(bullet)] as Action[];
 		const nextPoint = snakePoint.next;
-		const isHeadShot = !nextPoint;
-		const isDead = isHeadShot || !nextPoint.next; // it's either head shot or shot the last body piece
+		const isDead = !nextPoint;
+		const isHeadShot = isDead && snakePoint.prev;
 		const nextTail = nextPoint || snakePoint;
+		let scoreDelta: number;
 
-		let trashPoint: Point | undefined = snakePoint;
+		if (!isDead) {
+			let trashPoint: Point | undefined = snakePoint;
 
-		while (trashPoint) {
-			bin.push(trashPoint);
-			trashPoint = trashPoint.prev;
+			while (trashPoint) {
+				bin.push(trashPoint);
+				trashPoint = trashPoint.prev;
+			}
+
+			nextTail.prev = undefined;
+			actions.push(SnakesActions.setTail(nextTail, victim), BinActions.moveToBin(bin));
 		}
 
-		nextTail.prev = undefined;
-		actions.push(SnakesActions.setTail(nextTail, victim));
-		isDead && actions.push(SnakesActions.setHead(nextTail, victim));
-
 		const bodyFactor = BODY_PART_WEIGHT * (victim === shooter ? -FRIENDLY_FIRE_WEIGHT : 1);
-		let scoreDelta: number;
 
 		if (isHeadShot) {
 			scoreDelta = HEAD_SHOT_AWARD;
 		} else {
-			scoreDelta = Math.ceil(bin.length * bodyFactor);
+			scoreDelta = Math.ceil((bin.length || 1) * bodyFactor);
 
 			if (isDead) {
 				scoreDelta += KILL_AWARD;
 			}
 		}
 
-		state.dispatch(...actions, ArenaActions.addCoins(scoreDelta, shooter), BinActions.moveToBin(bin));
+		state.dispatch(...actions, ArenaActions.addCoins(scoreDelta, shooter));
 
 		return isDead;
 	};
