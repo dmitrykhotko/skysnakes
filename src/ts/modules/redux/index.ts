@@ -1,12 +1,12 @@
 export { Store, state } from './state';
 
 export { Reducer } from './reducers/reducer';
-export { SettingsReducer, SettingsStore, SettingsState } from './reducers/instances/settings';
-export { ArenaReducer, ArenaStore, ArenaState } from './reducers/instances/arena';
-export { InputReducer, InputStore, InputState } from './reducers/instances/input';
-export { SnakesReducer, SnakesStore, SnakeState } from './reducers/instances/snakes';
-export { BulletsReducer, BulletsStore, BulletsState } from './reducers/instances/bullets';
-export { BinReducer, BinStore, BinState } from './reducers/instances/bin';
+export { SettingsReducer, SettingsStore, SettingsState } from './reducers/instances/settingsReducer';
+export { ArenaReducer, ArenaStore, ArenaState } from './reducers/instances/arenaReducer';
+export { InputReducer, InputStore, InputState } from './reducers/instances/inputReducer';
+export { SnakesReducer, SnakesStore, SnakeState } from './reducers/instances/snakesReducer';
+export { BulletsReducer, BulletsStore, BulletsState } from './reducers/instances/bulletsReducer';
+export { BinReducer, BinStore, BinState } from './reducers/instances/binReducer';
 export { ReducerCollection } from './reducers/reducerCollection';
 
 export { Action } from './actions/action';

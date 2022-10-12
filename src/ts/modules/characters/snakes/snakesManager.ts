@@ -3,7 +3,7 @@ import { Direction, Player } from '../../../utils/enums';
 import { Hlp, SnakesUtils } from '../../../utils';
 import { PointWithId, Point, DirectionWithId } from '../../../utils/types';
 import { Action, BinActions, SnakesActions, state } from '../../redux';
-import { SnakeState } from '../../redux/reducers/instances/snakes';
+import { SnakeState } from '../../redux/reducers/instances/snakesReducer';
 
 export abstract class SnakesManager {
 	private static directionWeights = {

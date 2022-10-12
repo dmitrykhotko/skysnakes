@@ -2,12 +2,12 @@ import { TRACE_STATE } from '../../utils/constants';
 import { Observable } from '../observable/observable';
 import { Observer } from '../observable/observer';
 import { Action } from './';
-import { ArenaReducer } from './reducers/instances/arena';
-import { InputReducer } from './reducers/instances/input';
-import { SettingsReducer } from './reducers/instances/settings';
-import { SnakesReducer } from './reducers/instances/snakes';
-import { BulletsReducer } from './reducers/instances/bullets';
-import { BinReducer } from './reducers/instances/bin';
+import { ArenaReducer } from './reducers/instances/arenaReducer';
+import { InputReducer } from './reducers/instances/inputReducer';
+import { SettingsReducer } from './reducers/instances/settingsReducer';
+import { SnakesReducer } from './reducers/instances/snakesReducer';
+import { BulletsReducer } from './reducers/instances/bulletsReducer';
+import { BinReducer } from './reducers/instances/binReducer';
 import { Reducer } from './reducers/reducer';
 import { ReducerCollection } from './reducers/reducerCollection';
 
