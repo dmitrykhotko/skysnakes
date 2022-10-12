@@ -140,7 +140,7 @@ export class Controller {
 		state.dispatch(
 			BulletsActions.setBullet({
 				id: Hlp.generateId(),
-				playerId: id,
+				player: id,
 				point: Hlp.nextPoint(head, direction),
 				direction
 			})

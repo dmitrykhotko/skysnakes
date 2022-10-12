@@ -1,9 +1,15 @@
 import { SNAKE_LENGTH } from '../../../utils/constants';
 import { Direction, Player } from '../../../utils/enums';
 import { Hlp, SnakesUtils } from '../../../utils';
-import { PointWithId, Point, DirectionWithId } from '../../../utils/types';
+import { PointWithId, Point, DirectionWithId, ResultWitActions } from '../../../utils/types';
 import { Action, BinActions, SnakesActions, state } from '../../redux';
 import { SnakeState } from '../../redux/reducers/instances/snakesReducer';
+
+export type HitResult = {
+	damage: number;
+	isDead: boolean;
+	isHeadShot: boolean;
+};
 
 export abstract class SnakesManager {
 	private static directionWeights = {
@@ -19,7 +25,7 @@ export abstract class SnakesManager {
 		});
 	};
 
-	static move = (shouldMoveTail: (id: Player, head: Point) => boolean): void => {
+	static move = (middleware: (id: Player, head: Point) => boolean): void => {
 		const snakes = SnakesUtils.get();
 
 		for (let i = 0; i < snakes.length; i++) {
@@ -36,7 +42,7 @@ export abstract class SnakesManager {
 			head.next = nextHead;
 			head = nextHead;
 
-			if (shouldMoveTail(id, head)) {
+			if (middleware(id, head)) {
 				actions.push(BinActions.moveToBin([tail]));
 
 				tail.next && (tail = tail.next);
@@ -85,24 +91,62 @@ export abstract class SnakesManager {
 	};
 
 	static removeSnakes = (ids: Player[]): void => {
-		const bin = [] as Point[];
 		const actions = [] as Action[];
 
 		for (let i = 0; i < ids.length; i++) {
 			const id = ids[i];
-			const snake = SnakesUtils.getById(id);
+			const { head } = SnakesUtils.getById(id);
+			const { actions: cutActions } = this.cutSnake(id, head);
 
-			let point: Point | undefined = snake.head;
-
-			while (point) {
-				bin.push(point);
-				point = point.prev;
-			}
-
-			actions.push(SnakesActions.removeSnake(id));
+			actions.push(SnakesActions.removeSnake(id), ...cutActions);
 		}
 
-		state.dispatch(...actions, BinActions.moveToBin(bin));
+		state.dispatch(...actions);
+	};
+
+	static hit = (snakeShotResult: PointWithId): ResultWitActions<HitResult> => {
+		const { id: victim, point: victimPoint } = snakeShotResult;
+		const actions = [] as Action[];
+		const isDead = !victimPoint.next;
+		const isHeadShot = !!(isDead && victimPoint.prev);
+
+		let damage = 1;
+
+		if (!isDead) {
+			const { result: cutRes, actions: cutActions } = this.cutSnake(victim, victimPoint);
+
+			damage = cutRes;
+			actions.push(...cutActions);
+		}
+
+		return {
+			result: { damage, isDead, isHeadShot },
+			actions
+		};
+	};
+
+	static cutSnake = (id: Player, startPoint: Point): ResultWitActions<number> => {
+		const bin = [] as Point[];
+		const actions = [] as Action[];
+		const nextTail = startPoint.next;
+		let trashPoint: Point | undefined = startPoint;
+
+		while (trashPoint) {
+			bin.push(trashPoint);
+			trashPoint = trashPoint.prev;
+		}
+
+		if (nextTail) {
+			nextTail.prev = undefined;
+			actions.push(SnakesActions.setTail(nextTail, id));
+		}
+
+		actions.push(BinActions.moveToBin(bin));
+
+		return {
+			result: bin.length,
+			actions
+		};
 	};
 
 	private static initSnake = (id: Player, direction: Direction, head: Point): void => {

@@ -1,7 +1,6 @@
-import { BODY_PART_WEIGHT, FRIENDLY_FIRE_WEIGHT, HEAD_SHOT_AWARD, KILL_AWARD } from '../../../utils/constants';
 import { Hlp } from '../../../utils';
-import { Bullet, PointWithId, Point } from '../../../utils/types';
-import { Action, ArenaActions, BinActions, BulletsActions, BulletsStore, SnakesActions, state } from '../../redux';
+import { Bullet } from '../../../utils/types';
+import { Action, BinActions, BulletsActions, BulletsStore, state } from '../../redux';
 
 export abstract class BulletsManager {
 	static move = (): void => {
@@ -9,13 +8,13 @@ export abstract class BulletsManager {
 		const bullets = state.get<BulletsStore>().bullets;
 
 		for (let i = 0; i < bullets.length; i++) {
-			const { id, playerId, point, direction } = bullets[i];
+			const { id, player, point, direction } = bullets[i];
 			const nextPoint = Hlp.nextPoint(point, direction);
 
 			point.prev = undefined;
 			nextPoint.prev = point;
 
-			const newBullet = { id, playerId, point: nextPoint, direction };
+			const newBullet = { id, player, point: nextPoint, direction };
 
 			state.dispatch(BulletsActions.setBullet(newBullet), BinActions.moveToBin([point]));
 			collisionActions.push(...this.checkCollision(newBullet));
@@ -31,46 +30,6 @@ export abstract class BulletsManager {
 		point.prev && bin.push(point.prev);
 
 		return [BulletsActions.removeBullet(id), BinActions.moveToBin(bin)];
-	};
-
-	static hit = (bullet: Bullet, snakeShotResult: PointWithId): boolean => {
-		const { id: victim, point: snakePoint } = snakeShotResult;
-		const { playerId: shooter } = bullet;
-		const bin = [] as Point[];
-		const actions = [...this.removeBullet(bullet)] as Action[];
-		const nextPoint = snakePoint.next;
-		const isDead = !nextPoint;
-		const isHeadShot = isDead && snakePoint.prev;
-		const nextTail = nextPoint || snakePoint;
-		let scoreDelta: number;
-
-		if (!isDead) {
-			let trashPoint: Point | undefined = snakePoint;
-
-			while (trashPoint) {
-				bin.push(trashPoint);
-				trashPoint = trashPoint.prev;
-			}
-
-			nextTail.prev = undefined;
-			actions.push(SnakesActions.setTail(nextTail, victim), BinActions.moveToBin(bin));
-		}
-
-		const bodyFactor = BODY_PART_WEIGHT * (victim === shooter ? -FRIENDLY_FIRE_WEIGHT : 1);
-
-		if (isHeadShot) {
-			scoreDelta = HEAD_SHOT_AWARD;
-		} else {
-			scoreDelta = Math.ceil((bin.length || 1) * bodyFactor);
-
-			if (isDead) {
-				scoreDelta += KILL_AWARD;
-			}
-		}
-
-		state.dispatch(...actions, ArenaActions.addCoins(scoreDelta, shooter));
-
-		return isDead;
 	};
 
 	static getBulletsSet = (width: number): Set<number> => {

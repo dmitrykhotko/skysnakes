@@ -33,7 +33,7 @@ export type PlayersStat = {
 
 export type Bullet = {
 	id: Id;
-	playerId: Player;
+	player: Player;
 	point: Point;
 	direction: Direction;
 };

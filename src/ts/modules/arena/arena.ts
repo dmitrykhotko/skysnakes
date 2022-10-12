@@ -1,4 +1,15 @@
-import { BULLET_SPEED, HEIGHT, RESPAWN_DELAY, SNAKE_SPEED, WIDTH } from '../../utils/constants';
+import {
+	BODY_PART_HIT_WEIGHT,
+	BODY_PART_RAM_WEIGHT,
+	BULLET_SPEED,
+	FRIENDLY_FIRE_WEIGHT,
+	HEAD_SHOT_AWARD,
+	HEIGHT,
+	KILL_AWARD,
+	RESPAWN_DELAY,
+	SNAKE_SPEED,
+	WIDTH
+} from '../../utils/constants';
 import { Player } from '../../utils/enums';
 import {
 	Action,
@@ -154,13 +165,15 @@ export class Arena {
 		victim && this.respawn(victim);
 	};
 
-	private moveSnakes = (): void => {
-		SnakesManager.move((id: Player, head: Point) => {
-			const success = this.faceCoin(head);
-			success && state.dispatch(ArenaActions.incCoins(id));
+	private moveSnakeMiddleware = (id: Player, head: Point): boolean => {
+		const success = this.faceCoin(head);
+		success && state.dispatch(ArenaActions.incScore(id));
 
-			return !success;
-		});
+		return !success;
+	};
+
+	private moveSnakes = (): void => {
+		SnakesManager.move(this.moveSnakeMiddleware);
 
 		const actions = [] as Action[];
 		const snakes = SnakesUtils.get();
@@ -168,19 +181,24 @@ export class Arena {
 
 		for (let i = 0; i < snakes.length; i++) {
 			const { id, head } = snakes[i];
+			const { result: facedSnake, actions: facedSnakeActions } = this.faceSnakeCheck(id, head);
 
-			if (SnakesManager.faceObject(head)) {
-				this.finish(id);
+			if (facedSnake) {
+				actions.push(...facedSnakeActions);
 				victims.push(id);
+
+				this.finish(id);
+
 				continue;
 			}
 
-			const { result: snakeIsOk, actions: adjustSnakeActions } = this.runStrategy(head, id, this.arenaStrategy);
-			actions.push(...adjustSnakeActions);
+			const { result: strategyResult, actions: strategyActions } = this.runStrategy(head, id, this.arenaStrategy);
+			actions.push(...strategyActions);
 
-			if (!snakeIsOk) {
-				this.finish(id);
+			if (!strategyResult) {
 				victims.push(id);
+				this.finish(id);
+
 				continue;
 			}
 		}
@@ -194,21 +212,71 @@ export class Arena {
 		victims.length && this.respawn(...victims);
 	};
 
+	private faceSnakeCheck = (id: Player, head: Point): ResultWitActions => {
+		const actions = [] as Action[];
+		const facedSnake = SnakesManager.faceObject(head);
+
+		if (!facedSnake) {
+			return { result: false, actions: [] };
+		}
+
+		const { id: facedPlayer, point: facedPoint } = facedSnake;
+
+		if (facedPlayer !== id) {
+			const { result: cutRes, actions: cutActions } = SnakesManager.cutSnake(facedPlayer, facedPoint);
+			actions.push(...cutActions, this.addScore(id, facedPlayer, cutRes, BODY_PART_RAM_WEIGHT));
+		}
+
+		return { result: true, actions };
+	};
+
+	private addScore = (
+		killer: Player,
+		victim: Player,
+		damage = 1,
+		bodyPartWeight = BODY_PART_HIT_WEIGHT,
+		isDead = false,
+		isHeadShot = false
+	): Action => {
+		const bodyFactor = bodyPartWeight * (killer === victim ? -FRIENDLY_FIRE_WEIGHT : 1);
+		let scoreDelta = 0;
+
+		if (isHeadShot) {
+			scoreDelta = HEAD_SHOT_AWARD;
+		} else {
+			scoreDelta = Math.ceil((damage || 1) * bodyFactor);
+			isDead && (scoreDelta += KILL_AWARD);
+		}
+
+		console.log('damage: ', damage);
+		console.log('scoreDelta: ', scoreDelta);
+
+		return ArenaActions.addScore(scoreDelta, killer);
+	};
+
 	private checkHits = (): Player | undefined => {
 		const bullets = state.get<BulletsStore>().bullets;
 
 		for (let i = 0; i < bullets.length; i++) {
 			const bullet = bullets[i];
-			const { point } = bullet;
-			const snakeShotResult = SnakesManager.faceObject(point, false);
+			const { player: killer, point: bulletPoint } = bullet;
+			const snakeShotResult = SnakesManager.faceObject(bulletPoint, false);
 
 			if (!snakeShotResult) {
 				continue;
 			}
 
-			const isHit = BulletsManager.hit(bullet, snakeShotResult);
+			const { id: victim } = snakeShotResult;
+			const {
+				result: { damage, isDead, isHeadShot },
+				actions: hitActions
+			} = SnakesManager.hit(snakeShotResult);
 
-			if (isHit) {
+			const addScoreAction = this.addScore(killer, victim, damage, BODY_PART_HIT_WEIGHT, isDead, isHeadShot);
+
+			state.dispatch(...BulletsManager.removeBullet(bullet), ...hitActions, addScoreAction);
+
+			if (isDead) {
 				const playerId = snakeShotResult.id;
 
 				this.finish(playerId);
