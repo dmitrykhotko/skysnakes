@@ -15,7 +15,7 @@ export const LINE_HEIGHT = 40;
 
 export const SNAKE_LENGTH = 30;
 
-export const GAME_SPEED = 30; // Valid values are 60,30,20,15,10...
+export const FPS = 30; // Valid values are 60,30,20,15,10...
 export const SNAKE_SPEED = 1;
 export const BULLET_SPEED = 2;
 

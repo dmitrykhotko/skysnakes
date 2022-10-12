@@ -1,20 +1,33 @@
-import { GAME_SPEED } from '../../utils/constants';
+import { FPS } from '../../utils/constants';
 import { BaseObservable } from '../observable/baseObservable';
 
 export class Timer extends BaseObservable {
-	private frameMinTime: number;
-	private intervalId!: NodeJS.Timer;
+	private interval: number;
+	private lastFrameTime = 0;
+	private inProgress = true;
 
-	constructor(framesPerSecond = GAME_SPEED) {
+	constructor(fps = FPS) {
 		super();
-		this.frameMinTime = (1000 / 60) * (60 / framesPerSecond) - (1000 / 60) * 0.5;
+		this.interval = 1000 / fps;
 	}
 
 	start = (): void => {
-		this.intervalId = setInterval(requestAnimationFrame.bind(null, this.notify), this.frameMinTime);
+		this.inProgress = true;
+		requestAnimationFrame(this.animate);
 	};
 
 	stop = (): void => {
-		this.intervalId && clearInterval(this.intervalId);
+		this.inProgress = false;
+	};
+
+	private animate = (time: number): void => {
+		const delta = time - this.lastFrameTime;
+
+		this.inProgress && requestAnimationFrame(this.animate);
+
+		if (delta > this.interval) {
+			this.lastFrameTime = time - (delta % this.interval);
+			this.notify();
+		}
 	};
 }
