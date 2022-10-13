@@ -39,12 +39,7 @@ export const RESET_GAME = 'COMMON_ACTIONS/RESET_GAME';
 
 //// ARENA ACTIONS
 export const SET_COIN = 'ARENA/SET_COIN';
-export const INC_SCORE = 'ARENA/INC_SCORE';
-export const ADD_SCORE = 'ARENA/ADD_SCORE';
 export const SET_IN_PROGRESS = 'ARENA/SET_IN_PROGRESS';
-export const SET_WINNERS = 'ARENA/SET_WINNERS';
-export const SET_SCORE = 'ARENA/SET_SCORE';
-export const DEC_LIVES = 'ARENA/DEC_LIVES';
 
 //// USER SETTINGS ACTIONS
 
@@ -78,3 +73,11 @@ export const RESET_BULLETS = 'BULLETS/RESET_BULLETS';
 
 export const MOVE_TO_BIN = 'BIN/MOVE_TO_BIN';
 export const EMPTY_BIN = 'BIN/EMPTY_BIN';
+
+//// STAT ACTIONS
+
+export const INC_SCORE = 'STAT/INC_SCORE';
+export const ADD_SCORE = 'STAT/ADD_SCORE';
+export const SET_WINNERS = 'STAT/SET_WINNERS';
+export const SET_SCORE = 'STAT/SET_SCORE';
+export const DEC_LIVES = 'STAT/DEC_LIVES';

@@ -10,7 +10,9 @@ import {
 	state,
 	BulletsActions,
 	Store,
-	BinStore
+	BinStore,
+	CommonActions,
+	StatStore
 } from '../redux';
 import { Arena } from '../arena/arena';
 import { Observer } from '../observable/observer';
@@ -26,7 +28,8 @@ import {
 import { GameState, PlayersStat } from '../../utils/types';
 import { NormalStrategy } from '../arena/strategies';
 import { Hlp, SnakesUtils } from '../../utils';
-0;
+import { StatManager } from '../stat/statManager';
+
 export class Controller {
 	private arena!: Arena;
 	private renderer: Renderer;
@@ -57,7 +60,6 @@ export class Controller {
 		this.arena.step();
 
 		const arenaState = this.getArenaData();
-
 		this.renderer.render(arenaState);
 
 		if (!arenaState.inProgress) {
@@ -66,24 +68,37 @@ export class Controller {
 	}
 
 	private getArenaData = (): GameState => {
-		const { arena, snakes, bullets, bin } = state.get<ArenaStore & SnakesStore & BulletsStore & BinStore>();
+		const { arena, snakes, bullets, bin, stat } = state.get<
+			ArenaStore & SnakesStore & BulletsStore & BinStore & StatStore
+		>();
 
 		return {
 			...arena,
 			snakes,
 			bullets,
 			bin,
-			winners: [...arena.winners].sort(),
-			score: [...this.getPlayersStat(arena.playersStat)].sort((p1, p2) => p1.id - p2.id)
+			winners: [...stat.winners].sort(),
+			score: [...this.getPlayersStat(stat.playersStat)].sort((p1, p2) => p1.id - p2.id)
 		} as GameState;
 	};
 
 	private start = (reset = false): void => {
 		const { playerMode, arenaType, drawGrid, lives } = state.get<SettingsStore>().settings;
+		const { playersStat, winners } = state.get<StatStore>().stat;
 		const snakesInitial = toDirectionsAndPlayers[playerMode];
+		const resetArena = playersStat.length !== snakesInitial.length || winners.length || reset;
+
+		state.dispatch(resetArena ? CommonActions.resetGame() : BulletsActions.reset());
+		resetArena &&
+			state.dispatch(
+				...StatManager.initScore(
+					snakesInitial.map(({ id }) => id),
+					lives
+				)
+			);
 
 		this.renderer.reset(drawGrid);
-		this.arena.start(snakesInitial, lives, reset, new arenaStrategies[arenaType](), new NormalStrategy());
+		this.arena.start(snakesInitial, new arenaStrategies[arenaType](), new NormalStrategy());
 
 		this.onStart();
 	};

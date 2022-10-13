@@ -8,6 +8,7 @@ import { SettingsReducer } from './reducers/instances/settingsReducer';
 import { SnakesReducer } from './reducers/instances/snakesReducer';
 import { BulletsReducer } from './reducers/instances/bulletsReducer';
 import { BinReducer } from './reducers/instances/binReducer';
+import { StatReducer } from './reducers/instances/statReducer';
 import { Reducer } from './reducers/reducer';
 import { ReducerCollection } from './reducers/reducerCollection';
 
@@ -94,6 +95,7 @@ const reducer = new ReducerCollection(
 	InputReducer,
 	SnakesReducer,
 	BulletsReducer,
-	BinReducer
+	BinReducer,
+	StatReducer
 );
 export const state = new State(reducer);

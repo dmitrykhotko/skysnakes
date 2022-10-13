@@ -7,6 +7,7 @@ export { InputReducer, InputStore, InputState } from './reducers/instances/input
 export { SnakesReducer, SnakesStore, SnakeState } from './reducers/instances/snakesReducer';
 export { BulletsReducer, BulletsStore, BulletsState } from './reducers/instances/bulletsReducer';
 export { BinReducer, BinStore, BinState } from './reducers/instances/binReducer';
+export { StatReducer, StatStore, StatState } from './reducers/instances/statReducer';
 export { ReducerCollection } from './reducers/reducerCollection';
 
 export { Action } from './actions/action';
@@ -17,3 +18,4 @@ export { InputActions } from './actions/actionsCreators/inputActions';
 export { SnakesActions } from './actions/actionsCreators/snakesActions';
 export { BulletsActions } from './actions/actionsCreators/bulletsActions';
 export { BinActions } from './actions/actionsCreators/binActions';
+export { StatActions } from './actions/actionsCreators/statActions';
