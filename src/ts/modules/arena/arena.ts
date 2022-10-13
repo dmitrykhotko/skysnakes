@@ -10,7 +10,7 @@ import {
 	SNAKE_SPEED,
 	WIDTH
 } from '../../utils/constants';
-import { Player } from '../../utils/enums';
+import { DamageType, Player } from '../../utils/enums';
 import {
 	Action,
 	ArenaActions,
@@ -224,32 +224,34 @@ export class Arena {
 
 		if (facedPlayer !== id) {
 			const { result: cutRes, actions: cutActions } = SnakesManager.cutSnake(facedPlayer, facedPoint);
-			actions.push(...cutActions, this.addScore(id, facedPlayer, cutRes, BODY_PART_RAM_WEIGHT));
+			actions.push(...cutActions, this.addScore(id, facedPlayer, cutRes));
 		}
 
 		return { result: true, actions };
 	};
 
-	private addScore = (
-		killer: Player,
-		victim: Player,
-		damage = 1,
-		bodyPartWeight = BODY_PART_HIT_WEIGHT,
-		isDead = false,
-		isHeadShot = false
-	): Action => {
-		const bodyFactor = bodyPartWeight * (killer === victim ? -FRIENDLY_FIRE_WEIGHT : 1);
+	private addScore = (killer: Player, victim: Player, damage = 1, damageType = DamageType.ram): Action => {
+		let bodyPartWeight = 1;
 		let scoreDelta = 0;
 
-		if (isHeadShot) {
-			scoreDelta = HEAD_SHOT_AWARD;
-		} else {
-			scoreDelta = Math.ceil((damage || 1) * bodyFactor);
-			isDead && (scoreDelta += KILL_AWARD);
+		switch (damageType) {
+			case DamageType.death:
+				scoreDelta += KILL_AWARD;
+				break;
+			case DamageType.headShot:
+				scoreDelta += HEAD_SHOT_AWARD;
+				break;
+			case DamageType.hit:
+				bodyPartWeight = BODY_PART_HIT_WEIGHT;
+				break;
+			case DamageType.ram:
+			default:
+				bodyPartWeight = BODY_PART_RAM_WEIGHT;
+				break;
 		}
 
-		console.log('damage: ', damage);
-		console.log('scoreDelta: ', scoreDelta);
+		const bodyFactor = bodyPartWeight * (killer === victim ? -FRIENDLY_FIRE_WEIGHT : 1);
+		scoreDelta += Math.ceil(damage * bodyFactor);
 
 		return ArenaActions.addScore(scoreDelta, killer);
 	};
@@ -272,7 +274,8 @@ export class Arena {
 				actions: hitActions
 			} = SnakesManager.hit(snakeShotResult);
 
-			const addScoreAction = this.addScore(killer, victim, damage, BODY_PART_HIT_WEIGHT, isDead, isHeadShot);
+			const damageType = isHeadShot ? DamageType.headShot : isDead ? DamageType.death : DamageType.hit;
+			const addScoreAction = this.addScore(killer, victim, damage, damageType);
 
 			state.dispatch(...BulletsManager.removeBullet(bullet), ...hitActions, addScoreAction);
 

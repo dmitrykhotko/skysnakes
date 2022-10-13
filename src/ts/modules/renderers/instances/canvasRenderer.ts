@@ -4,13 +4,13 @@ import { GameState, Point } from '../../../utils/types';
 import { BaseRenderer } from './baseRenderer';
 
 const colors = {
-	[DrawingObject.empty]: '#E8F8F5',
-	[DrawingObject.head1]: '#34495E',
-	[DrawingObject.head2]: '#229954',
-	[DrawingObject.body]: '#E67E22',
-	[DrawingObject.coin]: '#F1C40F',
-	[DrawingObject.grid]: '#758384',
-	[DrawingObject.bullet]: 'red'
+	[DrawingObject.Empty]: '#E8F8F5',
+	[DrawingObject.Head1]: '#34495E',
+	[DrawingObject.Head2]: '#229954',
+	[DrawingObject.Body]: '#E67E22',
+	[DrawingObject.Coin]: '#F1C40F',
+	[DrawingObject.Grid]: '#758384',
+	[DrawingObject.Bullet]: 'red'
 };
 
 const defaultProps = {
@@ -80,7 +80,7 @@ export class CanvasRenderer extends BaseRenderer {
 		const cX = x * this.cellSize;
 		const cY = y * this.cellSize;
 
-		if (type !== DrawingObject.empty) {
+		if (type !== DrawingObject.Empty) {
 			this.ctx.fillStyle = colors[type];
 			this.ctx.fillRect(cX, cY, this.cellSize, this.cellSize);
 		} else {
@@ -88,7 +88,7 @@ export class CanvasRenderer extends BaseRenderer {
 			this.ctx.fillRect(cX, cY, this.cellSize, this.cellSize);
 
 			if (this.drawGrid === DrawGrid.Yes) {
-				this.ctx.strokeStyle = colors[DrawingObject.grid];
+				this.ctx.strokeStyle = colors[DrawingObject.Grid];
 				this.ctx.strokeRect(cX, cY, this.cellSize, this.cellSize);
 			}
 		}

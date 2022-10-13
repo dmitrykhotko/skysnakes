@@ -26,7 +26,7 @@ export abstract class BaseRenderer extends Renderer {
 
 		this.renderSnakes(snakes);
 		this.renderPlayerInfo(score, winners);
-		this.renderCell(state.coin, DrawingObject.coin);
+		this.renderCell(state.coin, DrawingObject.Coin);
 		this.renderBullets(bullets);
 		this.emptyBin(bin);
 	}
@@ -43,7 +43,7 @@ export abstract class BaseRenderer extends Renderer {
 	private renderMap = (): void => {
 		for (let i = 0; i < this.width; i++) {
 			for (let j = 0; j < this.height; j++) {
-				this.renderCell({ x: i, y: j }, DrawingObject.empty);
+				this.renderCell({ x: i, y: j }, DrawingObject.Empty);
 			}
 		}
 	};
@@ -78,11 +78,11 @@ export abstract class BaseRenderer extends Renderer {
 			let current = tail;
 
 			while (current !== head) {
-				this.renderCell(current, DrawingObject.body);
+				this.renderCell(current, DrawingObject.Body);
 				current.next && (current = current.next);
 			}
 
-			const headType = id === Player.P1 ? DrawingObject.head1 : DrawingObject.head2;
+			const headType = id === Player.P1 ? DrawingObject.Head1 : DrawingObject.Head2;
 			this.renderCell(current, headType);
 		}
 	};
@@ -91,7 +91,7 @@ export abstract class BaseRenderer extends Renderer {
 		// TODO: render bullet tail
 		for (let i = 0; i < bulletsArr.length; i++) {
 			const { point } = bulletsArr[i];
-			this.renderCell(point, DrawingObject.bullet);
+			this.renderCell(point, DrawingObject.Bullet);
 		}
 	};
 
@@ -101,7 +101,7 @@ export abstract class BaseRenderer extends Renderer {
 		}
 
 		for (let i = 0; i < bin.length; i++) {
-			this.renderCell(bin[i], DrawingObject.empty);
+			this.renderCell(bin[i], DrawingObject.Empty);
 		}
 
 		state.dispatch(BinActions.emptyBin());

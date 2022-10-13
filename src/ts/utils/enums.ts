@@ -71,11 +71,18 @@ export enum DrawGrid {
 }
 
 export enum DrawingObject {
-	empty = 1,
-	head1 = 2,
-	head2 = 3,
-	body = 4,
-	coin = 5,
-	grid = 6,
-	bullet = 7
+	Empty = 1,
+	Head1 = 2,
+	Head2 = 3,
+	Body = 4,
+	Coin = 5,
+	Grid = 6,
+	Bullet = 7
+}
+
+export enum DamageType {
+	hit = 1,
+	headShot = 2,
+	death = 3,
+	ram = 4
 }

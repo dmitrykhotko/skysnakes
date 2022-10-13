@@ -5,12 +5,6 @@ import { PointWithId, Point, DirectionWithId, ResultWitActions } from '../../../
 import { Action, BinActions, SnakesActions, state } from '../../redux';
 import { SnakeState } from '../../redux/reducers/instances/snakesReducer';
 
-export type HitResult = {
-	damage: number;
-	isDead: boolean;
-	isHeadShot: boolean;
-};
-
 export abstract class SnakesManager {
 	private static directionWeights = {
 		[Direction.Up]: -1,
@@ -104,7 +98,13 @@ export abstract class SnakesManager {
 		state.dispatch(...actions);
 	};
 
-	static hit = (snakeShotResult: PointWithId): ResultWitActions<HitResult> => {
+	static hit = (
+		snakeShotResult: PointWithId
+	): ResultWitActions<{
+		damage: number;
+		isDead: boolean;
+		isHeadShot: boolean;
+	}> => {
 		const { id: victim, point: victimPoint } = snakeShotResult;
 		const actions = [] as Action[];
 		const isDead = !victimPoint.next;
@@ -112,7 +112,9 @@ export abstract class SnakesManager {
 
 		let damage = 1;
 
-		if (!isDead) {
+		if (isDead) {
+			damage = this.snakeLen(victim);
+		} else {
 			const { result: cutRes, actions: cutActions } = this.cutSnake(victim, victimPoint);
 
 			damage = cutRes;
@@ -123,6 +125,18 @@ export abstract class SnakesManager {
 			result: { damage, isDead, isHeadShot },
 			actions
 		};
+	};
+
+	static snakeLen = (id: Player): number => {
+		const { head } = SnakesUtils.getById(id);
+		let point: Point | undefined = head;
+		let len = 0;
+
+		while (point) {
+			++len && (point = point.prev);
+		}
+
+		return len;
 	};
 
 	static cutSnake = (id: Player, startPoint: Point): ResultWitActions<number> => {
