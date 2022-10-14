@@ -21,14 +21,13 @@ export const BULLET_SPEED = 2;
 
 export const HEAD_SHOT_AWARD = 25;
 export const KILL_AWARD = 10;
-export const COIN_WEIGHT = 1;
 export const BODY_PART_HIT_WEIGHT = 0.5;
 export const BODY_PART_RAM_WEIGHT = 0.25;
 export const FRIENDLY_FIRE_WEIGHT = 0.5;
 
 export const RESPAWN_DELAY = 30;
 
-export const LIVES = 100;
+export const LIVES = 2;
 export const PLAYER_MODE = PlayerMode.Multiplayer;
 
 // ACTIONS

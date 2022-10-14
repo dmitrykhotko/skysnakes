@@ -56,8 +56,11 @@ export abstract class StatReducer extends Reducer<StatStore> {
 	private static changeStat = (id: Player, store: StatStore, propName: string, value = 1): Store => {
 		const { stat } = store;
 		const { playersStat } = stat;
-
 		const targetStat = Hlp.getById(id, playersStat);
+		const playersStatNew = [
+			...Hlp.filterById(id, playersStat),
+			{ ...targetStat, [propName]: targetStat[propName as keyof PlayersStat] + value }
+		].sort((p1, p2) => p1.id - p2.id);
 
 		if (!targetStat) {
 			return store;
@@ -67,10 +70,7 @@ export abstract class StatReducer extends Reducer<StatStore> {
 			...store,
 			stat: {
 				...stat,
-				playersStat: [
-					...Hlp.filterById(id, playersStat),
-					{ ...targetStat, [propName]: targetStat[propName as keyof PlayersStat] + value }
-				]
+				playersStat: playersStatNew
 			}
 		};
 	};

@@ -22,9 +22,9 @@ export abstract class BulletsReducer extends Reducer<BulletsStore> {
 
 		switch (type) {
 			case SET_BULLET:
-				return this.setBullet(state, action);
+				return this.set(state, action);
 			case REMOVE_BULLET:
-				return this.removeBullet(state, action);
+				return this.remove(state, action);
 			case RESET_BULLETS:
 			case RESET_GAME:
 				return { ...state, ...this.initialState };
@@ -33,7 +33,7 @@ export abstract class BulletsReducer extends Reducer<BulletsStore> {
 		}
 	};
 
-	private static setBullet = (state: Store, action: Action): BulletsStore => {
+	private static set = (state: Store, action: Action): BulletsStore => {
 		const bulletsState = state as BulletsStore;
 		const { value } = action as SetValueAction<Bullet>;
 
@@ -43,7 +43,7 @@ export abstract class BulletsReducer extends Reducer<BulletsStore> {
 		};
 	};
 
-	private static removeBullet = (state: Store, action: Action): BulletsStore => {
+	private static remove = (state: Store, action: Action): BulletsStore => {
 		const bulletsState = state as BulletsStore;
 		const { value } = action as SetValueAction<Id>;
 

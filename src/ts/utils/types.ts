@@ -6,7 +6,7 @@ export type GameState = {
 	coin: Point;
 	snakes: SnakeData[];
 	bullets: Bullet[];
-	score: PlayersStat[];
+	playersStat: PlayersStat[];
 	winners: Player[];
 	bin: Point[];
 };

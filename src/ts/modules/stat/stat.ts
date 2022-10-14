@@ -9,12 +9,12 @@ import {
 import { DamageType, Player } from '../../utils/enums';
 import { Action, ArenaActions, StatActions, state, StatStore } from '../redux';
 
-export abstract class StatManager {
+export abstract class Stat {
 	static init = (): void => {
 		state.subscribe(this.judge, DEC_LIVES);
 	};
 
-	static initScore = (ids: Player[], lives: number): Action[] => {
+	static reset = (ids: Player[], lives: number): Action[] => {
 		return [StatActions.setScore(ids.map(id => ({ id, lives, score: 0 }))), StatActions.setWinners([])];
 	};
 
@@ -58,4 +58,4 @@ export abstract class StatManager {
 	};
 }
 
-StatManager.init();
+Stat.init();

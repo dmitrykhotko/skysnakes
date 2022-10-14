@@ -1,11 +1,11 @@
 import { SNAKE_LENGTH } from '../../../utils/constants';
 import { Direction, Player } from '../../../utils/enums';
-import { Hlp, SnakesUtils } from '../../../utils';
+import { Hlp } from '../../../utils';
 import { PointWithId, Point, DirectionWithId, ResultWitActions } from '../../../utils/types';
 import { Action, BinActions, SnakesActions, state } from '../../redux';
-import { SnakeState } from '../../redux/reducers/instances/snakesReducer';
+import { SnakesStore, SnakeState } from '../../redux/reducers/instances/snakesReducer';
 
-export abstract class SnakesManager {
+export abstract class Snakes {
 	private static directionWeights = {
 		[Direction.Up]: -1,
 		[Direction.Down]: 1,
@@ -13,14 +13,18 @@ export abstract class SnakesManager {
 		[Direction.Right]: 2
 	};
 
-	static initSnakes = (snakesInitial: DirectionWithId[], width: number, height: number): void => {
+	static get = (): SnakeState[] => state.get<SnakesStore>().snakes;
+
+	static getById = (id: Player): SnakeState => Hlp.getById(id, this.get());
+
+	static init = (snakesInitial: DirectionWithId[], width: number, height: number): void => {
 		snakesInitial.forEach(({ id, direction }) => {
-			this.initSnake(id, direction, this.getStartPoint(direction, width, height));
+			this.create(id, direction, this.getStartPoint(direction, width, height));
 		});
 	};
 
 	static move = (middleware: (id: Player, head: Point) => boolean): void => {
-		const snakes = SnakesUtils.get();
+		const snakes = this.get();
 
 		for (let i = 0; i < snakes.length; i++) {
 			const snake = snakes[i];
@@ -48,7 +52,7 @@ export abstract class SnakesManager {
 	};
 
 	static faceObject = (object: Point, skipHead = true): PointWithId | undefined => {
-		const snakes = SnakesUtils.get();
+		const snakes = this.get();
 
 		for (let i = 0; i < snakes.length; i++) {
 			const { id, head } = snakes[i];
@@ -68,9 +72,9 @@ export abstract class SnakesManager {
 		}
 	};
 
-	static getSnakesSet = (width: number): Set<number> => {
+	static getSet = (width: number): Set<number> => {
 		const set: Set<number> = new Set<number>();
-		const snakes = SnakesUtils.get();
+		const snakes = this.get();
 
 		for (let i = 0; i < snakes.length; i++) {
 			let point: Point | undefined = snakes[i].head;
@@ -84,13 +88,13 @@ export abstract class SnakesManager {
 		return set;
 	};
 
-	static removeSnakes = (ids: Player[]): void => {
+	static remove = (ids: Player[]): void => {
 		const actions = [] as Action[];
 
 		for (let i = 0; i < ids.length; i++) {
 			const id = ids[i];
-			const { head } = SnakesUtils.getById(id);
-			const { actions: cutActions } = this.cutSnake(id, head);
+			const { head } = this.getById(id);
+			const { actions: cutActions } = this.cut(id, head);
 
 			actions.push(SnakesActions.removeSnake(id), ...cutActions);
 		}
@@ -115,7 +119,7 @@ export abstract class SnakesManager {
 		if (isDead) {
 			damage = this.snakeLen(victim);
 		} else {
-			const { result: cutRes, actions: cutActions } = this.cutSnake(victim, victimPoint);
+			const { result: cutRes, actions: cutActions } = this.cut(victim, victimPoint);
 
 			damage = cutRes;
 			actions.push(...cutActions);
@@ -128,7 +132,7 @@ export abstract class SnakesManager {
 	};
 
 	static snakeLen = (id: Player): number => {
-		const { head } = SnakesUtils.getById(id);
+		const { head } = this.getById(id);
 		let point: Point | undefined = head;
 		let len = 0;
 
@@ -139,7 +143,7 @@ export abstract class SnakesManager {
 		return len;
 	};
 
-	static cutSnake = (id: Player, startPoint: Point): ResultWitActions<number> => {
+	static cut = (id: Player, startPoint: Point): ResultWitActions<number> => {
 		const bin = [] as Point[];
 		const actions = [] as Action[];
 		const nextTail = startPoint.next;
@@ -163,12 +167,12 @@ export abstract class SnakesManager {
 		};
 	};
 
-	private static initSnake = (id: Player, direction: Direction, head: Point): void => {
-		const tail = this.initSnakeBody(head, SNAKE_LENGTH, direction);
+	private static create = (id: Player, direction: Direction, head: Point): void => {
+		const tail = this.initBody(head, SNAKE_LENGTH, direction);
 		state.dispatch(SnakesActions.setSnake({ id, head, tail, direction }));
 	};
 
-	private static initSnakeBody = (head: Point, length: number, direction: Direction): Point => {
+	private static initBody = (head: Point, length: number, direction: Direction): Point => {
 		const D = Direction;
 		const xStep = direction === D.Left ? 1 : direction === D.Right ? -1 : 0;
 		const yStep = direction === D.Up ? 1 : direction === D.Down ? -1 : 0;

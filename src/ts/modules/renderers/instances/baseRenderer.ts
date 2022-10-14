@@ -17,7 +17,7 @@ export abstract class BaseRenderer extends Renderer {
 	}
 
 	render(state: GameState): void {
-		const { snakes, score, winners, bullets, bin } = state;
+		const { snakes, playersStat, winners, bullets, bin } = state;
 
 		if (!this.isInitialized) {
 			this.isInitialized = true;
@@ -25,7 +25,7 @@ export abstract class BaseRenderer extends Renderer {
 		}
 
 		this.renderSnakes(snakes);
-		this.renderPlayerInfo(score, winners);
+		this.renderPlayersStat(playersStat, winners);
 		this.renderCell(state.coin, DrawingObject.Coin);
 		this.renderBullets(bullets);
 		this.emptyBin(bin);
@@ -48,7 +48,7 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	};
 
-	private renderPlayerInfo = (wScore: PlayersStat[], winners: Player[]): void => {
+	private renderPlayersStat = (playersStat: PlayersStat[], winners: Player[]): void => {
 		let lineNumber = 1;
 
 		if (winners.length) {
@@ -61,8 +61,8 @@ export abstract class BaseRenderer extends Renderer {
 			lineNumber += 2;
 		}
 
-		for (let i = 0; i < wScore.length; i++) {
-			const { id, lives, score } = wScore[i];
+		for (let i = 0; i < playersStat.length; i++) {
+			const { id, lives, score } = playersStat[i];
 
 			this.renderTextLine(`Player: ${Player[id]}`, lineNumber++);
 			this.renderTextLine(`Lives: ${lives}`, lineNumber++);

@@ -1,4 +1,4 @@
-import { COIN_WEIGHT, SET_INPUT, SET_RESET, SET_START } from '../../utils/constants';
+import { SET_INPUT, SET_RESET, SET_START } from '../../utils/constants';
 import { ControlInput, FireInput, MoveInput } from '../../utils/enums';
 import {
 	ArenaStore,
@@ -25,10 +25,12 @@ import {
 	inputToIdDirection,
 	toDirectionsAndPlayers
 } from './utils';
-import { GameState, PlayersStat } from '../../utils/types';
+import { GameState } from '../../utils/types';
 import { NormalStrategy } from '../arena/strategies';
-import { Hlp, SnakesUtils } from '../../utils';
-import { StatManager } from '../stat/statManager';
+import { Hlp } from '../../utils';
+import { Snakes } from '../arena/characters/snakes';
+import { Bullets } from '../arena/characters/bullets';
+import { Stat } from '../stat/stat';
 
 export class Controller {
 	private arena!: Arena;
@@ -73,12 +75,11 @@ export class Controller {
 		>();
 
 		return {
-			...arena,
 			snakes,
 			bullets,
 			bin,
-			winners: [...stat.winners].sort(),
-			score: [...this.getPlayersStat(stat.playersStat)].sort((p1, p2) => p1.id - p2.id)
+			...arena,
+			...stat
 		} as GameState;
 	};
 
@@ -91,7 +92,7 @@ export class Controller {
 		state.dispatch(resetArena ? CommonActions.resetGame() : BulletsActions.reset());
 		resetArena &&
 			state.dispatch(
-				...StatManager.initScore(
+				...Stat.reset(
 					snakesInitial.map(({ id }) => id),
 					lives
 				)
@@ -136,7 +137,7 @@ export class Controller {
 	private handleDirectionChange = (store: Store): void => {
 		const { playerInput } = (store as InputStore).input;
 		const { id, direction } = inputToIdDirection[playerInput as MoveInput];
-		const snake = SnakesUtils.getById(id);
+		const snake = Snakes.getById(id);
 
 		snake && state.dispatch(SnakesActions.newDirection(direction, id));
 	};
@@ -144,32 +145,13 @@ export class Controller {
 	private handleFire = (store: Store): void => {
 		const { playerInput } = (store as InputStore).input;
 		const id = fireInputToPlayerId[playerInput as FireInput];
-		const snake = SnakesUtils.getById(id);
+		const snake = Snakes.getById(id);
 
 		if (!snake) {
 			return;
 		}
 
 		const { head, direction } = snake;
-
-		state.dispatch(
-			BulletsActions.setBullet({
-				id: Hlp.generateId(),
-				player: id,
-				point: Hlp.nextPoint(head, direction),
-				direction
-			})
-		);
-	};
-
-	private getPlayersStat = (playersStat: PlayersStat[]): PlayersStat[] => {
-		const wScore = [] as PlayersStat[];
-
-		for (let i = 0; i < playersStat.length; i++) {
-			const { id, lives, score } = playersStat[i];
-			wScore.push({ id, lives, score: score * COIN_WEIGHT });
-		}
-
-		return wScore;
+		Bullets.create(id, Hlp.nextPoint(head, direction), direction);
 	};
 }

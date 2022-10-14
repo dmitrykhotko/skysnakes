@@ -1,8 +1,9 @@
 import { Hlp } from '../../../utils';
-import { Bullet } from '../../../utils/types';
+import { Direction, Player } from '../../../utils/enums';
+import { Bullet, Point } from '../../../utils/types';
 import { Action, BinActions, BulletsActions, BulletsStore, state } from '../../redux';
 
-export abstract class BulletsManager {
+export abstract class Bullets {
 	static move = (): void => {
 		const collisionActions = [] as Action[];
 		const bullets = state.get<BulletsStore>().bullets;
@@ -23,16 +24,27 @@ export abstract class BulletsManager {
 		state.dispatch(...collisionActions);
 	};
 
-	static removeBullet = (bullet: Bullet): Action[] => {
+	static create = (player: Player, point: Point, direction: Direction): void => {
+		state.dispatch(
+			BulletsActions.setBullet({
+				id: Hlp.generateId(),
+				player,
+				point,
+				direction
+			})
+		);
+	};
+
+	static remove = (bullet: Bullet): Action[] => {
 		const { id, point } = bullet;
 		const bin = [point];
 
 		point.prev && bin.push(point.prev);
 
-		return [BulletsActions.removeBullet(id), BinActions.moveToBin(bin)];
+		return [BulletsActions.remove(id), BinActions.moveToBin(bin)];
 	};
 
-	static getBulletsSet = (width: number): Set<number> => {
+	static getSet = (width: number): Set<number> => {
 		const set: Set<number> = new Set<number>();
 		const bullets = state.get<BulletsStore>().bullets;
 
@@ -65,11 +77,11 @@ export abstract class BulletsManager {
 			}
 
 			if (!result) {
-				actions.push(...this.removeBullet(bullet));
+				actions.push(...this.remove(bullet));
 				result = true;
 			}
 
-			actions.push(...this.removeBullet(currBullet));
+			actions.push(...this.remove(currBullet));
 		}
 
 		return actions;
