@@ -1,5 +1,5 @@
 import { BULLET_SPEED, HEIGHT, RESPAWN_DELAY, SNAKE_SPEED, WIDTH } from '../../utils/constants';
-import { DamageType, Player } from '../../utils/enums';
+import { DamageType, GameStatus, Player } from '../../utils/enums';
 import { Action, ArenaActions, ArenaStore, ArenaState, BulletsStore, state, StatActions } from '../redux';
 import { Point, ResultWitActions, DirectionWithId, Id, PointWithId } from '../../utils/types';
 import { Snakes } from './characters/snakes';
@@ -54,7 +54,7 @@ export class Arena {
 	}
 
 	start = (snakesInitial: DirectionWithId[], arenaStrategy?: ArenaStrategy, bulletStrategy?: ArenaStrategy): void => {
-		const actions = [this.setCoin(), ArenaActions.setInProgress(true)];
+		const actions = [this.setCoin(), ArenaActions.setGameStatus(GameStatus.InProgress)];
 
 		this.steps = 0;
 		this.snakesInitial = snakesInitial;
@@ -99,8 +99,8 @@ export class Arena {
 	};
 
 	private callIfInProgress = (callMe: someFunc, ...params: unknown[]): unknown => {
-		const { inProgress } = this.getState();
-		return inProgress ? callMe(...params) : undefined;
+		const { gameStatus } = this.getState();
+		return gameStatus === GameStatus.InProgress ? callMe(...params) : undefined;
 	};
 
 	private moveBullets = (): void => {

@@ -2,7 +2,7 @@ import { Action, SetValueAction } from '../..';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
 import { Bullet, Id } from '../../../../utils/types';
-import { REMOVE_BULLET, RESET_GAME, RESET_BULLETS, SET_BULLET } from '../../../../utils/constants';
+import { REMOVE_BULLET, GAME_RESET, RESET_BULLETS, SET_BULLET } from '../../../../utils/constants';
 
 export type BulletsState = Bullet[];
 
@@ -26,7 +26,7 @@ export abstract class BulletsReducer extends Reducer<BulletsStore> {
 			case REMOVE_BULLET:
 				return this.remove(state, action);
 			case RESET_BULLETS:
-			case RESET_GAME:
+			case GAME_RESET:
 				return { ...state, ...this.initialState };
 			default:
 				return state;

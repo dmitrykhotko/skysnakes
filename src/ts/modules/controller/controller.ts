@@ -1,5 +1,5 @@
-import { SET_INPUT, SET_RESET, SET_START } from '../../utils/constants';
-import { ControlInput, FireInput, MoveInput } from '../../utils/enums';
+import { GAME_PAUSE, GAME_START, SET_INPUT } from '../../utils/constants';
+import { ControlInput, FireInput, GameStatus, MoveInput } from '../../utils/enums';
 import {
 	ArenaStore,
 	BulletsStore,
@@ -8,11 +8,12 @@ import {
 	SnakesActions,
 	SnakesStore,
 	state,
-	BulletsActions,
 	Store,
 	BinStore,
 	CommonActions,
-	StatStore
+	StatStore,
+	ArenaActions,
+	Action
 } from '../redux';
 import { Arena } from '../arena/arena';
 import { Observer } from '../observable/observer';
@@ -55,7 +56,7 @@ export class Controller {
 		this.arena = new Arena({ width: this.width, height: this.height });
 		this.subscribe();
 
-		autostart && this.start(true);
+		autostart && this.start();
 	}
 
 	notify(): void {
@@ -64,10 +65,16 @@ export class Controller {
 		const arenaState = this.getArenaData();
 		this.renderer.render(arenaState);
 
-		if (!arenaState.inProgress) {
+		if (arenaState.gameStatus !== GameStatus.InProgress) {
 			return this.onFinish();
 		}
 	}
+
+	private subscribe = (): void => {
+		state.subscribe(this.handleInput as Observer, SET_INPUT);
+		state.subscribe(this.handleControlInput as Observer, GAME_START);
+		state.subscribe(this.handleControlInput as Observer, GAME_PAUSE);
+	};
 
 	private getArenaData = (): GameState => {
 		const { arena, snakes, bullets, bin, stat } = state.get<
@@ -83,20 +90,17 @@ export class Controller {
 		} as GameState;
 	};
 
-	private start = (reset = false): void => {
+	private start = (): void => {
 		const { playerMode, arenaType, drawGrid, lives } = state.get<SettingsStore>().settings;
-		const { playersStat, winners } = state.get<StatStore>().stat;
 		const snakesInitial = toDirectionsAndPlayers[playerMode];
-		const resetArena = playersStat.length !== snakesInitial.length || winners.length || reset;
 
-		state.dispatch(resetArena ? CommonActions.resetGame() : BulletsActions.reset());
-		resetArena &&
-			state.dispatch(
-				...Stat.reset(
-					snakesInitial.map(({ id }) => id),
-					lives
-				)
-			);
+		state.dispatch(CommonActions.resetGame());
+		state.dispatch(
+			...Stat.reset(
+				snakesInitial.map(({ id }) => id),
+				lives
+			)
+		);
 
 		this.renderer.reset(drawGrid);
 		this.arena.start(snakesInitial, new arenaStrategies[arenaType](), new NormalStrategy());
@@ -104,18 +108,34 @@ export class Controller {
 		this.onStart();
 	};
 
-	private reset = (): void => {
-		this.start(true);
-	};
+	private pauseContinue = (): void => {
+		const { gameStatus } = state.get<ArenaStore>().arena;
+		let action: Action | undefined;
 
-	private subscribe = (): void => {
-		state.subscribe(this.handleInput as Observer, SET_INPUT);
-		state.subscribe(this.handleControlInput as Observer, SET_START);
-		state.subscribe(this.handleControlInput as Observer, SET_RESET);
+		switch (gameStatus) {
+			case GameStatus.InProgress:
+				action = ArenaActions.setGameStatus(GameStatus.Pause);
+				this.onFinish();
+				break;
+			case GameStatus.Pause:
+				action = ArenaActions.setGameStatus(GameStatus.InProgress);
+				this.onStart();
+				break;
+			default:
+				break;
+		}
+
+		action && state.dispatch(action);
+		this.renderer.focus();
 	};
 
 	private handleInput = (store: InputStore): void => {
 		const { playerInput } = store.input;
+		const { gameStatus } = state.get<ArenaStore>().arena;
+
+		if (gameStatus !== GameStatus.InProgress) {
+			return;
+		}
 
 		MoveInput[playerInput] && this.handleDirectionChange(store);
 		FireInput[playerInput] && this.handleFire(store);
@@ -124,10 +144,10 @@ export class Controller {
 	private handleControlInput = (store: InputStore): void => {
 		switch (store.input.controlInput) {
 			case ControlInput.Start:
-				this.start(false);
+				this.start();
 				break;
-			case ControlInput.Reset:
-				this.reset();
+			case ControlInput.Pause:
+				this.pauseContinue();
 				break;
 			default:
 				break;

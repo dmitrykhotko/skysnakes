@@ -1,5 +1,11 @@
 // get rid of defining enum values
 
+export enum GameStatus {
+	InProgress = 1,
+	Pause = 2,
+	Stop = 3
+}
+
 export enum Direction {
 	Up = 1,
 	Down = 2,
@@ -32,7 +38,7 @@ export enum FireInput {
 
 export enum ControlInput {
 	Start = 11,
-	Reset = 12,
+	Pause = 12,
 	Empty = 13
 }
 

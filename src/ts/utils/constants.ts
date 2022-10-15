@@ -34,11 +34,11 @@ export const PLAYER_MODE = PlayerMode.Multiplayer;
 
 //// COMMON_ACTIONS
 
-export const RESET_GAME = 'COMMON_ACTIONS/RESET_GAME';
+export const GAME_RESET = 'COMMON_ACTIONS/GAME_RESET';
 
 //// ARENA ACTIONS
 export const SET_COIN = 'ARENA/SET_COIN';
-export const SET_IN_PROGRESS = 'ARENA/SET_IN_PROGRESS';
+export const SET_GAME_STATUS = 'ARENA/SET_GAME_STATUS';
 
 //// USER SETTINGS ACTIONS
 
@@ -51,8 +51,8 @@ export const SET_LIVES = 'USER_SETTINGS/SET_LIVES';
 
 // export const SET_DIRECTION = 'INPUT/SET_DIRECTION';
 export const SET_INPUT = 'INPUT/SET_INPUT';
-export const SET_START = 'INPUT/SET_START';
-export const SET_RESET = 'INPUT/SET_RESET';
+export const GAME_START = 'INPUT/GAME_START';
+export const GAME_PAUSE = 'INPUT/GAME_PAUSE';
 
 //// SNAKES ACTIONS
 

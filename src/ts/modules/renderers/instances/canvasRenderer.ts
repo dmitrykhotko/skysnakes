@@ -72,6 +72,10 @@ export class CanvasRenderer extends BaseRenderer {
 		this.focus();
 	};
 
+	focus = (): void => {
+		this.element.focus();
+	};
+
 	protected renderCell = ({ x, y }: Point, type: DrawingObject): void => {
 		if (x >= this.width || y >= this.height) {
 			return;
@@ -125,9 +129,5 @@ export class CanvasRenderer extends BaseRenderer {
 
 		event.preventDefault();
 		this.input(playerInput);
-	};
-
-	private focus = (): void => {
-		this.element.focus();
 	};
 }

@@ -1,13 +1,15 @@
-import { Action, ArenaActions, InputActions, SettingsStore, state } from '../redux';
+import { Action, InputActions, SettingsStore, state } from '../redux';
 import { SettingsActions } from '../redux/actions/actionsCreators/settingsActions';
 
+const pauseContinueLabels = ['Pause', 'Continue'];
+type onClickHandler = (...params: unknown[]) => void;
+
 export abstract class SettingsProvider {
-	public static init = (controlPanel: HTMLElement): void => {
+	static init = (controlPanel: HTMLElement): void => {
 		const { playerMode, arenaType, drawGrid, lives } = state.get<SettingsStore>().settings;
 
-		this.initButton('.js-Snake__Start', controlPanel, () => state.dispatch(InputActions.setStart()));
-		this.initButton('.js-Snake__Reset', controlPanel, () => state.dispatch(InputActions.setReset()));
-		this.initButton('.js-Snake__Stop', controlPanel, () => state.dispatch(ArenaActions.setInProgress(false)));
+		this.initButton('.js-Snake__Start', controlPanel, () => state.dispatch(InputActions.gameStart()));
+		this.initButton('.js-Snake__Pause', controlPanel, this.pauseContinue as onClickHandler);
 
 		this.setRadioValue('playerMode', playerMode, controlPanel);
 		this.setRadioValue('arenaType', arenaType, controlPanel);
@@ -25,9 +27,18 @@ export abstract class SettingsProvider {
 		});
 	};
 
-	private static initButton = (selector: string, controlPanel: HTMLElement, onClick: () => void): void => {
+	private static initButton = (selector: string, controlPanel: HTMLElement, onClick: onClickHandler): void => {
 		const button = controlPanel.querySelector(selector);
 		button?.addEventListener('click', onClick);
+	};
+
+	private static pauseContinue = (e: MouseEvent): void => {
+		const button = e.target as HTMLButtonElement;
+		const label = button.innerHTML;
+		const [newLabel] = pauseContinueLabels.filter(item => item !== label);
+
+		button.innerHTML = newLabel;
+		state.dispatch(InputActions.gamePause());
 	};
 
 	private static setRadioValue = (name: string, value: string, controlPanel: HTMLElement): void => {

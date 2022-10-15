@@ -1,5 +1,5 @@
 import { Action, SetValueAction } from '../..';
-import { RESET_GAME, SET_INPUT, SET_RESET, SET_START } from '../../../../utils/constants';
+import { GAME_RESET, SET_INPUT, GAME_START, GAME_PAUSE } from '../../../../utils/constants';
 import { ControlInput, MoveInput } from '../../../../utils/enums';
 import { PlayerInput } from '../../../../utils/types';
 import { Store } from '../../state';
@@ -27,29 +27,23 @@ export abstract class InputReducer extends Reducer<InputStore> {
 
 	static reduce = (state: Store, action: Action): Store => {
 		const { type } = action;
-		const buildPlayerInputState = (pName: keyof InputState): Store =>
-			setValue(state as InputStore, action, 'input', pName);
 
 		switch (type) {
 			case SET_INPUT:
-				return buildPlayerInputState('playerInput');
-			case SET_START:
-			case SET_RESET:
-				return this.startReset(state, action);
-			case RESET_GAME:
+				return setValue(state as InputStore, action, 'input', 'playerInput');
+			case GAME_PAUSE:
+			case GAME_START:
+				return {
+					...state,
+					input: {
+						moveInput: this.initialState.input.playerInput,
+						controlInput: (action as SetValueAction<ControlInput>).value
+					}
+				};
+			case GAME_RESET:
 				return { ...state, ...this.initialState };
 			default:
 				return state;
 		}
-	};
-
-	private static startReset = (state: Store, action: Action): Store => {
-		return {
-			...state,
-			input: {
-				moveInput: this.initialState.input.playerInput,
-				controlInput: (action as SetValueAction<ControlInput>).value
-			}
-		};
 	};
 }

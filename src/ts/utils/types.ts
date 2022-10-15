@@ -1,8 +1,8 @@
 import { Action } from '../modules/redux';
-import { Strategy, PlayerMode, DrawGrid, Direction, MoveInput, FireInput, Player } from './enums';
+import { Direction, MoveInput, FireInput, Player, GameStatus } from './enums';
 
 export type GameState = {
-	inProgress: boolean;
+	gameStatus: GameStatus;
 	coin: Point;
 	snakes: SnakeData[];
 	bullets: Bullet[];

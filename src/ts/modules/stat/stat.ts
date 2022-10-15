@@ -6,7 +6,7 @@ import {
 	HEAD_SHOT_AWARD,
 	KILL_AWARD
 } from '../../utils/constants';
-import { DamageType, Player } from '../../utils/enums';
+import { DamageType, GameStatus, Player } from '../../utils/enums';
 import { Action, ArenaActions, StatActions, state, StatStore } from '../redux';
 
 export type AddScoreProps = {
@@ -74,7 +74,7 @@ export abstract class Stat {
 		const maxScore = Math.max(...playersStat.map(({ score }) => score));
 		const winners = playersStat.filter(stat => stat.score === maxScore).map(({ id }) => id);
 
-		winners.length && state.dispatch(ArenaActions.setInProgress(false), StatActions.setWinners(winners));
+		winners.length && state.dispatch(ArenaActions.setGameStatus(GameStatus.Stop), StatActions.setWinners(winners));
 	};
 }
 
