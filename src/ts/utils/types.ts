@@ -1,16 +1,6 @@
 import { Action } from '../modules/redux';
 import { Direction, MoveInput, FireInput, Player, GameStatus } from './enums';
 
-export type GameState = {
-	gameStatus: GameStatus;
-	coin: Point;
-	snakes: SnakeData[];
-	bullets: Bullet[];
-	playersStat: PlayersStat[];
-	winners: Player[];
-	bin: Point[];
-};
-
 export type Point = {
 	x: number;
 	y: number;
@@ -24,6 +14,8 @@ export type SnakeData = {
 	tail: Point;
 	direction: Direction;
 };
+
+export type Id = number;
 
 export type PlayersStat = {
 	id: Id;
@@ -40,7 +32,15 @@ export type Bullet = {
 
 export type PlayerInput = FireInput | MoveInput;
 
-export type Id = number;
+export type GameState = {
+	gameStatus: GameStatus;
+	coin: Point;
+	snakes: SnakeData[];
+	bullets: Bullet[];
+	playersStat: PlayersStat[];
+	winners: Player[];
+	bin: Point[];
+};
 
 export type PointWithId = { point: Point; id: Id };
 
@@ -52,5 +52,5 @@ export type ResultWitActions<T = boolean> = {
 };
 
 export interface ObjectWithId {
-	id: Id
+	id: Id;
 }

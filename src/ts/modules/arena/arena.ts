@@ -1,4 +1,4 @@
-import { BULLET_SPEED, HEIGHT, RESPAWN_DELAY, SNAKE_SPEED, WIDTH } from '../../utils/constants';
+import { BULLET_SPEED, RESPAWN_DELAY, SNAKE_SPEED } from '../../utils/constants';
 import { DamageType, GameStatus, Player } from '../../utils/enums';
 import { Action, ArenaActions, ArenaStore, ArenaState, BulletsStore, state, StatActions } from '../redux';
 import { Point, ResultWitActions, DirectionWithId, Id, PointWithId } from '../../utils/types';
@@ -9,8 +9,8 @@ import { Hlp } from '../../utils';
 import { Stat } from '../stat/stat';
 
 export type ArenaProps = {
-	width?: number;
-	height?: number;
+	width: number;
+	height: number;
 	snakeSpeed?: number;
 	bulletSpeed?: number;
 };
@@ -18,8 +18,6 @@ export type ArenaProps = {
 type someFunc = (...params: unknown[]) => unknown;
 
 const defaultProps = {
-	width: WIDTH,
-	height: HEIGHT,
 	snakeSpeed: SNAKE_SPEED,
 	bulletSpeed: BULLET_SPEED
 };

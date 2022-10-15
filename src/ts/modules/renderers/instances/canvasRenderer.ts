@@ -1,6 +1,6 @@
-import { CELL_SIZE, HEIGHT, LINE_HEIGHT, TEXT_AREA_WIDTH, WIDTH } from '../../../utils/constants';
-import { DrawGrid, DrawingObject, KeyCode } from '../../../utils/enums';
-import { GameState, Point } from '../../../utils/types';
+import { CELL_SIZE, LINE_HEIGHT } from '../../../utils/constants';
+import { DrawGrid, DrawingObject, KeyCode, Player } from '../../../utils/enums';
+import { PlayersStat, Point, SnakeData } from '../../../utils/types';
 import { BaseRenderer } from './baseRenderer';
 
 const colors = {
@@ -10,34 +10,31 @@ const colors = {
 	[DrawingObject.Body]: '#E67E22',
 	[DrawingObject.Coin]: '#F1C40F',
 	[DrawingObject.Grid]: '#758384',
-	[DrawingObject.Bullet]: 'red'
+	[DrawingObject.Bullet]: '#ff3300',
+	[DrawingObject.ServiceArea]: 'yellow'
 };
 
 const defaultProps = {
-	textAreaWidth: TEXT_AREA_WIDTH,
 	drawGrid: DrawGrid.No,
-	width: WIDTH,
-	height: HEIGHT,
 	cellSize: CELL_SIZE,
 	lineHeight: LINE_HEIGHT
 };
 
 export type CanvasRendererProps = {
-	element: HTMLElement;
-	textAreaWidth?: number;
+	presenterEl: HTMLCanvasElement;
+	serviceInfoEl: HTMLCanvasElement;
 	drawGrid?: DrawGrid;
-	width?: number;
-	height?: number;
+	width: number;
+	height: number;
 	cellSize?: number;
 	lineHeight?: number;
 };
 
 export class CanvasRenderer extends BaseRenderer {
-	private element: HTMLElement;
-	private textAreaWidth: number;
-	private ctx!: CanvasRenderingContext2D;
-	private arenaWidth: number;
-	private arenaHeight: number;
+	private presenterEl: HTMLCanvasElement;
+	private serviceInfoEl: HTMLCanvasElement;
+	private presenterCtx!: CanvasRenderingContext2D;
+	private serviceInfoCtx!: CanvasRenderingContext2D;
 	private cellSize: number;
 	private lineHeight: number;
 
@@ -48,32 +45,28 @@ export class CanvasRenderer extends BaseRenderer {
 		super(width, height);
 
 		({
-			element: this.element,
-			textAreaWidth: this.textAreaWidth,
+			presenterEl: this.presenterEl,
+			serviceInfoEl: this.serviceInfoEl,
 			drawGrid: this.drawGrid,
 			cellSize: this.cellSize,
 			lineHeight: this.lineHeight
 		} = cProps);
 
-		this.arenaWidth = this.width * this.cellSize;
-		this.arenaHeight = this.height * this.cellSize;
-
 		this.init();
 	}
 
-	override render(state: GameState): void {
-		this.ctx.clearRect(this.arenaWidth + 1, 0, this.textAreaWidth, this.arenaHeight);
-		super.render(state);
-	}
-
-	override reset = (drawGrid: DrawGrid): void => {
-		super.reset(drawGrid);
-		this.ctx.clearRect(this.arenaWidth + 1, 0, this.textAreaWidth, this.arenaHeight);
-		this.focus();
+	focus = (): void => {
+		this.presenterEl.focus();
 	};
 
-	focus = (): void => {
-		this.element.focus();
+	protected override renderServiceInfo(playersStat: PlayersStat[], winners: Player[], snakes: SnakeData[]): void {
+		this.serviceInfoCtx.clearRect(0, 0, this.serviceInfoEl.width, this.serviceInfoEl.height);
+		super.renderServiceInfo(playersStat, winners, snakes);
+	}
+
+	protected renderRect = ({ x, y }: Point, w: number, h: number, type: DrawingObject): void => {
+		this.presenterCtx.fillStyle = colors[type];
+		this.presenterCtx.fillRect(x, y, w * this.cellSize, h * this.cellSize);
 	};
 
 	protected renderCell = ({ x, y }: Point, type: DrawingObject): void => {
@@ -85,39 +78,65 @@ export class CanvasRenderer extends BaseRenderer {
 		const cY = y * this.cellSize;
 
 		if (type !== DrawingObject.Empty) {
-			this.ctx.fillStyle = colors[type];
-			this.ctx.fillRect(cX, cY, this.cellSize, this.cellSize);
+			this.presenterCtx.fillStyle = colors[type];
+			this.presenterCtx.fillRect(cX, cY, this.cellSize, this.cellSize);
 		} else {
-			this.ctx.fillStyle = colors[type];
-			this.ctx.fillRect(cX, cY, this.cellSize, this.cellSize);
+			this.presenterCtx.fillStyle = colors[type];
+			this.presenterCtx.fillRect(cX, cY, this.cellSize, this.cellSize);
 
 			if (this.drawGrid === DrawGrid.Yes) {
-				this.ctx.strokeStyle = colors[DrawingObject.Grid];
-				this.ctx.strokeRect(cX, cY, this.cellSize, this.cellSize);
+				this.presenterCtx.strokeStyle = colors[DrawingObject.Grid];
+				this.presenterCtx.strokeRect(cX, cY, this.cellSize, this.cellSize);
 			}
 		}
 	};
 
-	protected renderTextLine = (text: string, lineNumber: number): void => {
-		this.ctx.fillStyle = 'blue';
-		this.ctx.font = `${this.lineHeight * 0.75}px serif`;
-		this.ctx.fillText(text, this.arenaWidth + this.cellSize, this.lineHeight * lineNumber);
+	protected renderServiceTextLine = (text: string, lineNumber: number): void => {
+		this.renderTextLine(text, lineNumber, this.serviceInfoCtx);
+	};
+
+	protected renderPresenterLine = (text: string, lineNumber: number): void => {
+		this.renderTextLine(text, lineNumber, this.presenterCtx);
+	};
+
+	private renderTextLine = (text: string, lineNumber: number, ctx: CanvasRenderingContext2D): void => {
+		ctx.fillStyle = 'blue';
+		ctx.font = `${this.lineHeight * 0.75}px serif`;
+		ctx.fillText(text, this.cellSize, this.lineHeight * lineNumber);
 	};
 
 	private init = (): void => {
-		const canvas = this.element as HTMLCanvasElement;
-		const ctx = canvas.getContext('2d');
+		const { width: serviceInfoElWidth } = this.serviceInfoEl.getBoundingClientRect();
+		const presenterCtx = this.initCanvas(this.presenterEl, this.width, this.height);
+		const serviceInfoCtx = this.initCanvas(
+			this.serviceInfoEl,
+			serviceInfoElWidth * window.devicePixelRatio,
+			this.height,
+			true
+		);
 
-		if (!ctx) {
+		if (!(presenterCtx && serviceInfoCtx)) {
 			return;
 		}
 
-		this.ctx = ctx;
+		this.presenterCtx = presenterCtx;
+		this.serviceInfoCtx = serviceInfoCtx;
 
-		canvas.width = this.arenaWidth + this.textAreaWidth;
-		canvas.height = this.arenaHeight;
+		this.presenterEl.addEventListener('keydown', this.onKeyDown);
+	};
 
-		this.element.addEventListener('keydown', this.onKeyDown);
+	private initCanvas = (
+		canvas: HTMLCanvasElement,
+		width: number,
+		height: number,
+		alpha = false
+	): CanvasRenderingContext2D | null => {
+		const ctx = canvas.getContext('2d', { alpha });
+
+		canvas.width = width;
+		canvas.height = height;
+
+		return ctx;
 	};
 
 	private onKeyDown = (event: KeyboardEvent): void => {

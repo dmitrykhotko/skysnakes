@@ -12,70 +12,9 @@
 </head>
 
 <body class="Snake">
-  <h1>Snake</h1>
-  <section class="Snake__Settings js-Snake__Settings">
-    <div class="Snake__GameSettings">
-      <fieldset class="Snake__SettingsArea">
-        <legend>Players:</legend>
-  
-        <span>
-          <input type="radio" id="singlePlayerMode" name="playerMode" value="single" checked>
-          <label for="singlePlayerMode">single</label>
-        </span>
-  
-        <span>
-          <input type="radio" id="multiPlayerMode" name="playerMode" value="multi">
-          <label for="multiPlayerMode">multi</label>
-        </span>
-      </fieldset>
-  
-      <fieldset class="Snake__SettingsArea">
-        <legend>Arena mode:</legend>
-  
-        <span>
-          <input type="radio" id="normalArenaType" name="arenaType" value="normal">
-          <label for="normalArenaType">normal</label>
-        </span>
-  
-        <span>
-          <input type="radio" id="softArenaType" name="arenaType" value="soft">
-          <label for="softArenaType">soft</label>
-        </span>
-  
-        <span>
-          <input type="radio" id="transparentArenaType" name="arenaType" value="transparent" checked>
-          <label for="transparentArenaType">transparent</label>
-        </span>
-      </fieldset>
-
-      <fieldset class="Snake__SettingsArea">
-        <legend>Show grid:</legend>
-  
-        <span>
-          <input type="radio" id="yesDrawGrid" name="drawGrid" value="yes">
-          <label for="yesDrawGrid">yes</label>
-        </span>
-  
-        <span>
-          <input type="radio" id="noDrawGrid" name="drawGrid" value="no" checked>
-          <label for="noDrawGrid">no</label>
-        </span>
-      </fieldset>
-
-      <div>
-        <label for="tentacles">Lives:</label>
-        <input class="js-Snake__Lives" type="number" id="tentacles" name="tentacles" min="1" value="2">
-      </div>
-    </div>
-
-    <div class="Snake__ControlButtons">
-      <button class="js-Snake__Start">Start</button>
-      <button class="js-Snake__Pause">Pause</button>
-    </div>
-  </section>
-
   <section class="Arena">
-    <canvas class="Snake__CanvasPresenter js-Snake__CanvasPresenter" tabindex="1"></canvas>
+    <canvas class="Snake__Presenter js-Snake__Presenter" tabindex="1"></canvas>
+    <canvas class="Snake__ServiceInfo js-Snake__ServiceInfo"></canvas>
   </section>
   <script type="text/javascript" src="/js/index.js"></script>
 </body>

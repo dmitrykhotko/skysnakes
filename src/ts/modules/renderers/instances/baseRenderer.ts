@@ -10,52 +10,44 @@ export abstract class BaseRenderer extends Renderer {
 
 	protected abstract renderCell: (point: Point, type: DrawingObject) => void;
 
-	protected abstract renderTextLine: (string: string, lineNumber: number) => void;
+	protected abstract renderRect: (point: Point, w: number, h: number, type: DrawingObject) => void;
+
+	protected abstract renderPresenterLine: (string: string, lineNumber: number) => void;
+
+	protected abstract renderServiceTextLine: (string: string, lineNumber: number) => void;
 
 	constructor(protected width: number, protected height: number) {
 		super();
 	}
 
-	render(state: GameState): void {
+	render = (state: GameState): void => {
 		const { snakes, playersStat, winners, bullets, bin } = state;
 
 		if (!this.isInitialized) {
-			this.isInitialized = true;
 			this.renderMap();
 		}
 
 		this.renderSnakes(snakes);
-		this.renderPlayersStat(playersStat, winners);
 		this.renderCell(state.coin, DrawingObject.Coin);
 		this.renderBullets(bullets);
+		this.renderServiceInfo(playersStat, winners, snakes);
 		this.emptyBin(bin);
-	}
 
-	reset(drawGrid: DrawGrid): void {
-		this.drawGrid = drawGrid;
-		this.isInitialized = false;
-	}
+		!this.isInitialized && (this.isInitialized = true);
+	};
 
 	protected input = (input: PlayerInput): void => {
 		state.dispatch(InputActions.setInput(input));
 	};
 
-	private renderMap = (): void => {
-		for (let i = 0; i < this.width; i++) {
-			for (let j = 0; j < this.height; j++) {
-				this.renderCell({ x: i, y: j }, DrawingObject.Empty);
-			}
-		}
-	};
-
-	private renderPlayersStat = (playersStat: PlayersStat[], winners: Player[]): void => {
+	protected renderServiceInfo(playersStat: PlayersStat[], winners: Player[], snakes: SnakeData[]): void {
 		let lineNumber = 1;
 
 		if (winners.length) {
-			this.renderTextLine('WINNERS:', lineNumber++);
+			this.renderServiceTextLine('WINNERS:', lineNumber++);
 
 			for (let i = 0; i < winners.length; i++) {
-				this.renderTextLine(`${Player[winners[i]]}`, lineNumber++);
+				this.renderServiceTextLine(`${Player[winners[i]]}`, lineNumber++);
 			}
 
 			lineNumber += 2;
@@ -64,26 +56,53 @@ export abstract class BaseRenderer extends Renderer {
 		for (let i = 0; i < playersStat.length; i++) {
 			const { id, lives, score } = playersStat[i];
 
-			this.renderTextLine(`Player: ${Player[id]}`, lineNumber++);
-			this.renderTextLine(`Lives: ${lives}`, lineNumber++);
-			this.renderTextLine(`Score: ${score}`, lineNumber);
+			this.renderServiceTextLine(`Player: ${Player[id]}`, lineNumber++);
+			this.renderServiceTextLine(`Lives: ${lives}`, lineNumber++);
+			this.renderServiceTextLine(`Score: ${score}`, lineNumber);
 
 			lineNumber += 2;
+		}
+
+		for (let i = 0; i < snakes.length; i++) {
+			const {
+				head: { x, y },
+				id
+			} = snakes[i];
+
+			this.renderServiceTextLine(`HEAD ${Player[id]}: x: ${x}, y: ${y}`, lineNumber++);
+		}
+	}
+
+	private renderMap = (): void => {
+		if (this.drawGrid === DrawGrid.Yes) {
+			for (let i = 0; i < this.width; i++) {
+				for (let j = 0; j < this.height; j++) {
+					this.renderCell({ x: i, y: j }, DrawingObject.Empty);
+				}
+			}
+		} else {
+			this.renderRect({ x: 0, y: 0 }, this.width, this.height, DrawingObject.Empty);
 		}
 	};
 
 	private renderSnakes = (snakes: SnakeData[]): void => {
 		for (let i = 0; i < snakes.length; i++) {
 			const { id, head, tail } = snakes[i];
-			let current = tail;
-
-			while (current !== head) {
-				this.renderCell(current, DrawingObject.Body);
-				current.next && (current = current.next);
-			}
-
 			const headType = id === Player.P1 ? DrawingObject.Head1 : DrawingObject.Head2;
-			this.renderCell(current, headType);
+
+			if (!this.isInitialized) {
+				let current: Point | undefined = tail;
+
+				while (current) {
+					this.renderCell(current, headType);
+					current = current.next;
+				}
+			} else {
+				head.prev && this.renderCell(head.prev, DrawingObject.Body);
+				head.prev && this.renderCell(head.prev, headType);
+
+				this.renderCell(head, headType);
+			}
 		}
 	};
 

@@ -6,12 +6,8 @@ export const TRACE_STATE = false;
 
 // GAME DEFAULTS
 
-export const WIDTH = 120;
-export const HEIGHT = 60;
-
-export const TEXT_AREA_WIDTH = 200;
-export const CELL_SIZE = 25;
-export const LINE_HEIGHT = 40;
+export const CELL_SIZE = 15;
+export const LINE_HEIGHT = 60;
 
 export const SNAKE_LENGTH = 30;
 

@@ -36,6 +36,10 @@ export enum FireInput {
 	LFire = 10
 }
 
+export enum ServiceInput {
+	Escape = 11
+}
+
 export enum ControlInput {
 	Start = 11,
 	Pause = 12,
@@ -52,7 +56,8 @@ export enum KeyCode {
 	KeyA = MoveInput.LLeft,
 	KeyD = MoveInput.LRight,
 	Tab = FireInput.LFire,
-	Space = FireInput.RFire
+	Space = FireInput.RFire,
+	Escape = ServiceInput.Escape
 }
 
 export enum Player {
@@ -83,7 +88,8 @@ export enum DrawingObject {
 	Body = 4,
 	Coin = 5,
 	Grid = 6,
-	Bullet = 7
+	Bullet = 7,
+	ServiceArea = 8
 }
 
 export enum DamageType {

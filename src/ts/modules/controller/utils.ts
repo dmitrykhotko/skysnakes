@@ -1,4 +1,3 @@
-import { HEIGHT, WIDTH } from '../../utils/constants';
 import { FireInput, Strategy, Direction, MoveInput, Player, PlayerMode } from '../../utils/enums';
 import { NormalStrategy, SoftWallsStrategy, TransparentWallsStrategy } from '../arena/strategies';
 import { Renderer } from '../renderers/renderer';
@@ -8,8 +7,8 @@ const { P1, P2 } = Player;
 
 export type ControllerProps = {
 	renderer: Renderer;
-	width?: number;
-	height?: number;
+	width: number;
+	height: number;
 	autostart?: boolean;
 	onStart: () => void;
 	onFinish: () => void;
@@ -41,8 +40,6 @@ export const arenaStrategies = {
 };
 
 export const defaultProps = {
-	width: WIDTH,
-	height: HEIGHT,
 	autostart: false
 };
 

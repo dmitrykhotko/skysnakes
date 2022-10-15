@@ -1,5 +1,5 @@
 import { GAME_PAUSE, GAME_START, SET_INPUT } from '../../utils/constants';
-import { ControlInput, FireInput, GameStatus, MoveInput } from '../../utils/enums';
+import { ControlInput, FireInput, GameStatus, MoveInput, ServiceInput } from '../../utils/enums';
 import {
 	ArenaStore,
 	BulletsStore,
@@ -91,7 +91,7 @@ export class Controller {
 	};
 
 	private start = (): void => {
-		const { playerMode, arenaType, drawGrid, lives } = state.get<SettingsStore>().settings;
+		const { playerMode, arenaType, lives } = state.get<SettingsStore>().settings;
 		const snakesInitial = toDirectionsAndPlayers[playerMode];
 
 		state.dispatch(CommonActions.resetGame());
@@ -102,8 +102,8 @@ export class Controller {
 			)
 		);
 
-		this.renderer.reset(drawGrid);
 		this.arena.start(snakesInitial, new arenaStrategies[arenaType](), new NormalStrategy());
+		this.renderer.focus();
 
 		this.onStart();
 	};
@@ -130,15 +130,16 @@ export class Controller {
 	};
 
 	private handleInput = (store: InputStore): void => {
-		const { playerInput } = store.input;
+		const { playerInput: input } = store.input;
 		const { gameStatus } = state.get<ArenaStore>().arena;
 
 		if (gameStatus !== GameStatus.InProgress) {
 			return;
 		}
 
-		MoveInput[playerInput] && this.handleDirectionChange(store);
-		FireInput[playerInput] && this.handleFire(store);
+		MoveInput[input] && this.handleDirectionChange(store);
+		FireInput[input] && this.handleFire(store);
+		ServiceInput[input] && this.pauseContinue();
 	};
 
 	private handleControlInput = (store: InputStore): void => {
