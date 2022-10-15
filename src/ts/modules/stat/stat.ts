@@ -1,6 +1,7 @@
 import {
 	BODY_PART_HIT_WEIGHT,
 	BODY_PART_RAM_WEIGHT,
+	COIN_AWARD,
 	DEC_LIVES,
 	FRIENDLY_FIRE_WEIGHT,
 	HEAD_SHOT_AWARD,
@@ -33,7 +34,7 @@ export abstract class Stat {
 		return [StatActions.setScore(ids.map(id => ({ id, lives, score: 0 }))), StatActions.setWinners([])];
 	};
 
-	static addScore = (props: AddScoreProps): Action[] => {
+	static setDamage = (props: AddScoreProps): Action[] => {
 		const { killer, victim, damage, damageType, symDamage } = { ...addScoreDefaultProps, ...props };
 		const isFriendlyFire = killer === victim;
 
@@ -63,6 +64,10 @@ export abstract class Stat {
 		symDamage && actions.push(StatActions.addScore(-Math.ceil(scoreDelta * SYM_DAMAGE_WEIGHT), victim));
 
 		return actions;
+	};
+
+	static faceCoin = (id: Player): void => {
+		state.dispatch(StatActions.addScore(COIN_AWARD, id));
 	};
 
 	private static judge = (): void => {

@@ -15,6 +15,7 @@ export const FPS = 30; // Valid values are 60,30,20,15,10...
 export const SNAKE_SPEED = 1;
 export const BULLET_SPEED = 2;
 
+export const COIN_AWARD = 5;
 export const HEAD_SHOT_AWARD = 25;
 export const KILL_AWARD = 10;
 export const BODY_PART_HIT_WEIGHT = 0.5;

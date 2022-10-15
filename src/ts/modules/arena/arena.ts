@@ -129,7 +129,7 @@ export class Arena {
 	private moveSnakeMiddleware = (id: Player, head: Point): boolean => {
 		const success = this.checkCoinFound(head);
 
-		success && state.dispatch(StatActions.incScore(id));
+		success && Stat.faceCoin(id);
 		return !success;
 	};
 
@@ -196,12 +196,12 @@ export class Arena {
 			killerDamage = Snakes.len(killer);
 
 			actions.push(
-				...Stat.addScore({ killer, victim, damage: victimDamage - killerDamage }),
-				...Stat.addScore({ killer: victim, victim: killer, damage: killerDamage - victimDamage })
+				...Stat.setDamage({ killer, victim, damage: victimDamage - killerDamage }),
+				...Stat.setDamage({ killer: victim, victim: killer, damage: killerDamage - victimDamage })
 			);
 		} else {
 			killerDamage = Snakes.len(killer);
-			actions.push(...Stat.addScore({ killer, victim: killer, damage: killerDamage }));
+			actions.push(...Stat.setDamage({ killer, victim: killer, damage: killerDamage }));
 		}
 
 		return { result: cutIt, actions };
@@ -226,7 +226,7 @@ export class Arena {
 			} = Snakes.hit(snakeShotResult);
 
 			const damageType = isHeadShot ? DamageType.headShot : isDead ? DamageType.death : DamageType.hit;
-			const addScoreActions = Stat.addScore({ killer, victim, damage, damageType, symDamage: true });
+			const addScoreActions = Stat.setDamage({ killer, victim, damage, damageType, symDamage: true });
 
 			state.dispatch(...Bullets.remove(bullet), ...hitActions, ...addScoreActions);
 
