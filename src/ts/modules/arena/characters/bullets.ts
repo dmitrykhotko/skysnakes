@@ -63,6 +63,7 @@ export abstract class Bullets {
 		} = bullet;
 		const actions = [] as Action[];
 		const bullets = state.get<BulletsStore>().bullets;
+
 		let result = false;
 
 		for (let i = 0; i < bullets.length; i++) {

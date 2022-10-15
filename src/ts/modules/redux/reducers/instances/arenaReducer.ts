@@ -27,6 +27,7 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 	static reduce = (state: Store, action: Action): Store => {
 		const { type } = action;
 		const arenaStore = state as ArenaStore;
+
 		let propName: string;
 
 		switch (type) {

@@ -15,7 +15,6 @@ export abstract class BaseWallsStrategy extends ArenaStrategy {
 
 	private getPosition = (point: Point, width: number, height: number): Position | undefined => {
 		const { x, y } = point;
-
 		let pos: Position;
 
 		if (!!~x && !!~y && x !== width && y !== height) {

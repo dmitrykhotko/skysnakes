@@ -20,6 +20,7 @@ export abstract class BinReducer extends Reducer<BinStore> {
 	static reduce = (state: Store, action: Action): Store => {
 		const { type } = action;
 		const binStore = state as BinStore;
+
 		let bin: BinState;
 
 		switch (type) {

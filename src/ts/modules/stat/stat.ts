@@ -9,6 +9,20 @@ import {
 import { DamageType, Player } from '../../utils/enums';
 import { Action, ArenaActions, StatActions, state, StatStore } from '../redux';
 
+export type AddScoreProps = {
+	killer: Player;
+	victim: Player;
+	damage?: number;
+	damageType?: DamageType;
+	symDamage?: boolean;
+};
+
+const addScoreDefaultProps = {
+	damage: 1,
+	damageType: DamageType.ram,
+	symDamage: false
+};
+
 export abstract class Stat {
 	static init = (): void => {
 		state.subscribe(this.judge, DEC_LIVES);
@@ -18,16 +32,19 @@ export abstract class Stat {
 		return [StatActions.setScore(ids.map(id => ({ id, lives, score: 0 }))), StatActions.setWinners([])];
 	};
 
-	static addScore = (killer: Player, victim: Player, damage = 1, damageType = DamageType.ram): Action => {
+	static addScore = (props: AddScoreProps): Action[] => {
+		const { killer, victim, damage, damageType, symDamage } = { ...addScoreDefaultProps, ...props };
+		const isFriendlyFire = killer === victim;
+
 		let bodyPartWeight = 1;
-		let scoreDelta = 0;
+		let awards = 0;
 
 		switch (damageType) {
 			case DamageType.death:
-				scoreDelta += KILL_AWARD;
+				awards += KILL_AWARD;
 				break;
 			case DamageType.headShot:
-				scoreDelta += HEAD_SHOT_AWARD;
+				awards += HEAD_SHOT_AWARD;
 				break;
 			case DamageType.hit:
 				bodyPartWeight = BODY_PART_HIT_WEIGHT;
@@ -38,10 +55,13 @@ export abstract class Stat {
 				break;
 		}
 
-		const bodyFactor = bodyPartWeight * (killer === victim ? -FRIENDLY_FIRE_WEIGHT : 1);
-		scoreDelta += Math.ceil(damage * bodyFactor);
+		const bodyFactor = bodyPartWeight * (isFriendlyFire ? -FRIENDLY_FIRE_WEIGHT : 1);
+		const scoreDelta = Math.ceil(damage * bodyFactor);
 
-		return StatActions.addScore(scoreDelta, killer);
+		const actions = [StatActions.addScore(scoreDelta + awards, killer)];
+		symDamage && actions.push(StatActions.addScore(-scoreDelta, victim));
+
+		return actions;
 	};
 
 	private static judge = (): void => {

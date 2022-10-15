@@ -30,6 +30,7 @@ export abstract class Snakes {
 			const snake = snakes[i];
 			const { id } = snakes[i];
 			const actions = [] as Action[];
+
 			let { head, tail, direction } = snake;
 
 			direction = this.applyDirection(snake);
@@ -51,15 +52,15 @@ export abstract class Snakes {
 		}
 	};
 
-	static faceObject = (object: Point, skipHead = true): PointWithId | undefined => {
+	static faceObject = (object: Point): PointWithId | undefined => {
 		const snakes = this.get();
 
 		for (let i = 0; i < snakes.length; i++) {
 			const { id, head } = snakes[i];
-			let point = skipHead ? head.prev : head;
+			let point: Point | undefined = head;
 
 			while (point) {
-				if (Hlp.comparePoints(object, point)) {
+				if (object !== point && Hlp.comparePoints(object, point)) {
 					break;
 				}
 
@@ -94,7 +95,7 @@ export abstract class Snakes {
 		for (let i = 0; i < ids.length; i++) {
 			const id = ids[i];
 			const { head } = this.getById(id);
-			const { actions: cutActions } = this.cut(id, head);
+			const { actions: cutActions } = this.cut({ id, point: head });
 
 			actions.push(SnakesActions.removeSnake(id), ...cutActions);
 		}
@@ -109,17 +110,17 @@ export abstract class Snakes {
 		isDead: boolean;
 		isHeadShot: boolean;
 	}> => {
-		const { id: victim, point: victimPoint } = snakeShotResult;
+		const { id, point } = snakeShotResult;
 		const actions = [] as Action[];
-		const isDead = !victimPoint.next;
-		const isHeadShot = !!(isDead && victimPoint.prev);
+		const isDead = !point.next;
+		const isHeadShot = !!(isDead && point.prev);
 
 		let damage = 1;
 
 		if (isDead) {
-			damage = this.snakeLen(victim);
+			damage = this.len(id);
 		} else {
-			const { result: cutRes, actions: cutActions } = this.cut(victim, victimPoint);
+			const { result: cutRes, actions: cutActions } = this.cut({ id, point });
 
 			damage = cutRes;
 			actions.push(...cutActions);
@@ -131,9 +132,8 @@ export abstract class Snakes {
 		};
 	};
 
-	static snakeLen = (id: Player): number => {
-		const { head } = this.getById(id);
-		let point: Point | undefined = head;
+	static len = (id: Player, start = this.getById(id).head): number => {
+		let point: Point | undefined = start;
 		let len = 0;
 
 		while (point) {
@@ -143,23 +143,28 @@ export abstract class Snakes {
 		return len;
 	};
 
-	static cut = (id: Player, startPoint: Point): ResultWitActions<number> => {
+	static cut = (...cutIt: PointWithId[]): ResultWitActions<number> => {
 		const bin = [] as Point[];
 		const actions = [] as Action[];
-		const nextTail = startPoint.next;
-		let trashPoint: Point | undefined = startPoint;
 
-		while (trashPoint) {
-			bin.push(trashPoint);
-			trashPoint = trashPoint.prev;
+		for (let i = 0; i < cutIt.length; i++) {
+			const { id, point: start } = cutIt[i];
+			const nextTail = start.next;
+
+			let point: Point | undefined = start;
+
+			while (point) {
+				bin.push(point);
+				point = point.prev;
+			}
+
+			if (nextTail) {
+				nextTail.prev = undefined;
+				actions.push(SnakesActions.setTail(nextTail, id));
+			}
+
+			actions.push(BinActions.moveToBin(bin));
 		}
-
-		if (nextTail) {
-			nextTail.prev = undefined;
-			actions.push(SnakesActions.setTail(nextTail, id));
-		}
-
-		actions.push(BinActions.moveToBin(bin));
 
 		return {
 			result: bin.length,
@@ -191,7 +196,6 @@ export abstract class Snakes {
 		}
 
 		const tail = point;
-
 		return tail;
 	};
 
@@ -203,7 +207,6 @@ export abstract class Snakes {
 		}
 
 		state.dispatch(SnakesActions.newDirection(undefined, id));
-
 		return newDirection;
 	};
 

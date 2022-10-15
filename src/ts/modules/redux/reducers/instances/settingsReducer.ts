@@ -36,10 +36,10 @@ export abstract class SettingsReducer extends Reducer<SettingsStore> {
 	static getInitialState = (): SettingsStore => this.initialState;
 
 	static reduce = (state: Store, action: Action): Store => {
-		let propName: string;
-
 		const { type } = action;
 		const userSettingsState = state as SettingsStore;
+
+		let propName: string;
 
 		switch (type) {
 			case SET_PLAYER_MODE:
