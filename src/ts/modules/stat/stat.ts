@@ -4,7 +4,8 @@ import {
 	DEC_LIVES,
 	FRIENDLY_FIRE_WEIGHT,
 	HEAD_SHOT_AWARD,
-	KILL_AWARD
+	KILL_AWARD,
+	SYM_DAMAGE_WEIGHT
 } from '../../utils/constants';
 import { DamageType, GameStatus, Player } from '../../utils/enums';
 import { Action, ArenaActions, StatActions, state, StatStore } from '../redux';
@@ -59,7 +60,7 @@ export abstract class Stat {
 		const scoreDelta = Math.ceil(damage * bodyFactor);
 
 		const actions = [StatActions.addScore(scoreDelta + awards, killer)];
-		symDamage && actions.push(StatActions.addScore(-scoreDelta, victim));
+		symDamage && actions.push(StatActions.addScore(-Math.ceil(scoreDelta * SYM_DAMAGE_WEIGHT), victim));
 
 		return actions;
 	};
