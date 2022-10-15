@@ -133,13 +133,14 @@ export class Controller {
 		const { playerInput: input } = store.input;
 		const { gameStatus } = state.get<ArenaStore>().arena;
 
+		ServiceInput[input] && this.pauseContinue();
+
 		if (gameStatus !== GameStatus.InProgress) {
 			return;
 		}
 
 		MoveInput[input] && this.handleDirectionChange(store);
 		FireInput[input] && this.handleFire(store);
-		ServiceInput[input] && this.pauseContinue();
 	};
 
 	private handleControlInput = (store: InputStore): void => {
