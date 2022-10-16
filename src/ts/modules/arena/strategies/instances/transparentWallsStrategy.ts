@@ -1,3 +1,4 @@
+import { Hlp } from '../../../../utils';
 import { Position } from '../../../../utils/enums';
 import { Id, Point } from '../../../../utils/types';
 import { Action, SnakesActions } from '../../../redux';
@@ -11,7 +12,9 @@ export class TransparentWallsStrategy extends BaseWallsStrategy {
 		[Position.Right]: (head: Point): number => (head.x = 0)
 	};
 
-	protected applyPosition = (head: Point, width: number, height: number, id: Id, position: Position): Action[] => {
+	protected applyPosition = (head: Point, id: Id, position: Position): Action[] => {
+		const { width, height } = Hlp.getSize();
+
 		this.headCalcs[position](head, width, height);
 		return [SnakesActions.setHead(head, id)];
 	};

@@ -38,6 +38,7 @@ export const PLAYER_MODE = PlayerMode.Multiplayer;
 export const GAME_RESET = 'COMMON_ACTIONS/GAME_RESET';
 
 //// ARENA ACTIONS
+export const SET_SIZE = 'ARENA/SET_SIZE';
 export const SET_COIN = 'ARENA/SET_COIN';
 export const REMOVE_COIN = 'ARENA/REMOVE_COIN';
 export const SET_GAME_STATUS = 'ARENA/SET_GAME_STATUS';

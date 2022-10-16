@@ -36,8 +36,6 @@ import { Stat } from '../stat/stat';
 export class Controller {
 	private arena!: Arena;
 	private renderer: Renderer;
-	private width: number;
-	private height: number;
 	private onStart: () => void;
 	private onFinish: () => void;
 
@@ -45,15 +43,13 @@ export class Controller {
 		const cProps = { ...defaultProps, ...props };
 		const { autostart } = cProps;
 
-		({
-			renderer: this.renderer,
-			width: this.width,
-			height: this.height,
-			onStart: this.onStart,
-			onFinish: this.onFinish
-		} = cProps);
+		({ renderer: this.renderer, onStart: this.onStart, onFinish: this.onFinish } = cProps);
 
-		this.arena = new Arena({ width: this.width, height: this.height });
+		const { width, height } = cProps;
+
+		state.dispatch(ArenaActions.setSize({ width, height }));
+
+		this.arena = new Arena();
 		this.subscribe();
 
 		autostart && this.start();

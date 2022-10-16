@@ -58,3 +58,8 @@ export interface ObjectWithId {
 }
 
 export type Task = (...params: unknown[]) => unknown;
+
+export type Size = {
+	width: number;
+	height: number;
+};

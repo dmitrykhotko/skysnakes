@@ -21,7 +21,7 @@ const pointCalcs = {
 };
 
 export class SoftWallsStrategy extends BaseWallsStrategy {
-	protected applyPosition = (point: Point, _: number, __: number, id: Player, position: Position): Action[] => {
+	protected applyPosition = (point: Point, id: Player, position: Position): Action[] => {
 		const newPoint = pointCalcs[position](point);
 
 		if (newPoint.prev) {

@@ -1,8 +1,9 @@
 import { Bullets } from '../modules/arena/characters/bullets';
 import { Coins } from '../modules/arena/characters/coins';
 import { Snakes } from '../modules/arena/characters/snakes';
+import { ArenaStore, state } from '../modules/redux';
 import { Direction } from './enums';
-import { Id, ObjectWithId, Point, Task } from './types';
+import { Id, ObjectWithId, Point, Size, Task } from './types';
 
 export abstract class Hlp {
 	private static id = 0;
@@ -70,11 +71,7 @@ export abstract class Hlp {
 	// not sure about this method here
 	static getFreeCells = (width: number, height: number): number[] => {
 		const cells: number[] = [];
-		const set = new Set<number>([
-			...Coins.toNumbers(width),
-			...Snakes.toNumbers(width),
-			...Bullets.toNumbers(width)
-		]);
+		const set = new Set<number>([...Coins.toNums(), ...Snakes.toNums(), ...Bullets.toNums()]);
 
 		for (let i = 0; i < width * height; i++) {
 			if (set.has(i)) {
@@ -90,4 +87,6 @@ export abstract class Hlp {
 	static delayTask = (task: Task, delay: number): void => {
 		setTimeout(task, delay);
 	};
+
+	static getSize = (): Size => state.get<ArenaStore>().arena.size;
 }

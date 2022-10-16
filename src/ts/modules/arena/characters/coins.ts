@@ -5,14 +5,15 @@ import { ArenaActions, ArenaStore, state } from '../../redux';
 
 export abstract class Coins {
 	// move width and height to the redux
-	static init = (width: number, height: number): void => {
+	static init = (): void => {
 		for (let i = 0; i < COINS_NUMBER; i++) {
-			this.set(width, height, INIT_COINS_MAX_DELAY);
+			this.set(INIT_COINS_MAX_DELAY);
 		}
 	};
 
-	static checkFound = (object: Point, width: number, height: number): boolean => {
+	static checkFound = (object: Point): boolean => {
 		const { coins } = state.get<ArenaStore>().arena;
+
 		let success = false;
 
 		for (let i = 0; i < coins.length; i++) {
@@ -22,7 +23,7 @@ export abstract class Coins {
 
 			if (success) {
 				state.dispatch(ArenaActions.removeCoin(id));
-				this.set(width, height);
+				this.set();
 
 				break;
 			}
@@ -31,7 +32,8 @@ export abstract class Coins {
 		return success;
 	};
 
-	static toNumbers = (width: number): Set<number> => {
+	static toNums = (): Set<number> => {
+		const { width } = Hlp.getSize();
 		const set: Set<number> = new Set<number>();
 		const { coins } = state.get<ArenaStore>().arena;
 
@@ -43,7 +45,8 @@ export abstract class Coins {
 		return set;
 	};
 
-	private static set = (width: number, height: number, delay = RESPAWN_COIN_MAX_DELAY): void => {
+	private static set = (delay = RESPAWN_COIN_MAX_DELAY): void => {
+		const { width, height } = Hlp.getSize();
 		Hlp.delayTask(() => {
 			const freeCells = Hlp.getFreeCells(width, height);
 			const coinCellIndex = Hlp.randomInt(freeCells.length);

@@ -1,5 +1,5 @@
-import { GAME_RESET, REMOVE_COIN, SET_COIN, SET_GAME_STATUS } from '../../../../utils/constants';
-import { Coin, Id } from '../../../../utils/types';
+import { GAME_RESET, REMOVE_COIN, SET_COIN, SET_GAME_STATUS, SET_SIZE } from '../../../../utils/constants';
+import { Coin, Id, Size } from '../../../../utils/types';
 import { Action, SetValueAction } from '../..';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
@@ -10,6 +10,7 @@ import { Hlp } from '../../../../utils';
 export type ArenaState = {
 	gameStatus: GameStatus;
 	coins: Coin[];
+	size: Size;
 };
 
 export type ArenaStore = {
@@ -20,7 +21,8 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 	private static initialState = {
 		arena: {
 			gameStatus: GameStatus.InProgress,
-			coins: []
+			coins: [],
+			size: { width: 0, height: 0 }
 		}
 	} as ArenaStore;
 
@@ -30,23 +32,21 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 		const { type } = action;
 		const arenaStore = state as ArenaStore;
 
-		let propName: string;
-
 		switch (type) {
+			case SET_SIZE:
+				return setValue(arenaStore, action, 'arena', 'size');
 			case SET_COIN:
 				return this.addCoin(state, action);
 			case REMOVE_COIN:
 				return this.removeCoin(state, action);
 			case SET_GAME_STATUS:
-				propName = 'gameStatus';
-				break;
+				return setValue(arenaStore, action, 'arena', 'gameStatus');
 			case GAME_RESET:
-				return { ...state, ...this.initialState };
+				const { size } = arenaStore.arena;
+				return { ...state, ...{ arena: { ...this.initialState.arena, ...{ size } } } };
 			default:
 				return state;
 		}
-
-		return setValue(arenaStore, action, 'arena', propName as keyof ArenaState);
 	};
 
 	private static addCoin = (state: Store, action: Action): ArenaStore => {

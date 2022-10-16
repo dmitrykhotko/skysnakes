@@ -17,7 +17,9 @@ export abstract class Snakes {
 
 	static getById = (id: Player): SnakeState => Hlp.getById(id, this.get());
 
-	static init = (snakesInitial: DirectionWithId[], width: number, height: number): void => {
+	static init = (snakesInitial: DirectionWithId[]): void => {
+		const { width, height } = Hlp.getSize();
+
 		snakesInitial.forEach(({ id, direction }) => {
 			this.create(id, direction, this.getStartPoint(direction, width, height));
 		});
@@ -73,7 +75,8 @@ export abstract class Snakes {
 		}
 	};
 
-	static toNumbers = (width: number): Set<number> => {
+	static toNums = (): Set<number> => {
+		const { width } = Hlp.getSize();
 		const set: Set<number> = new Set<number>();
 		const snakes = this.get();
 

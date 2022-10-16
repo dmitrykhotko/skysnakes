@@ -44,7 +44,8 @@ export abstract class Bullets {
 		return [BulletsActions.remove(id), BinActions.moveToBin(bin)];
 	};
 
-	static toNumbers = (width: number): Set<number> => {
+	static toNums = (): Set<number> => {
+		const { width } = Hlp.getSize();
 		const set: Set<number> = new Set<number>();
 		const bullets = state.get<BulletsStore>().bullets;
 

@@ -1,20 +1,23 @@
+import { Hlp } from '../../../../utils';
 import { Position } from '../../../../utils/enums';
 import { Id, Point, ResultWitActions } from '../../../../utils/types';
 import { Action } from '../../../redux';
 import { ArenaStrategy } from '../arenaStrategy';
 
 export abstract class BaseWallsStrategy extends ArenaStrategy {
-	run = (point: Point, width: number, height: number, id?: number): ResultWitActions => {
-		const position = this.getPosition(point, width, height);
+	run = (point: Point, id?: number): ResultWitActions => {
+		const position = this.getPosition(point);
 
 		return {
 			result: true,
-			actions: id && position !== undefined ? this.applyPosition(point, width, height, id, position) : []
+			actions: id && position !== undefined ? this.applyPosition(point, id, position) : []
 		};
 	};
 
-	private getPosition = (point: Point, width: number, height: number): Position | undefined => {
+	private getPosition = (point: Point): Position | undefined => {
+		const { width, height } = Hlp.getSize();
 		const { x, y } = point;
+
 		let pos: Position;
 
 		if (!!~x && !!~y && x !== width && y !== height) {
@@ -34,5 +37,5 @@ export abstract class BaseWallsStrategy extends ArenaStrategy {
 		return pos;
 	};
 
-	protected abstract applyPosition(point: Point, width: number, height: number, id: Id, position: Position): Action[];
+	protected abstract applyPosition(point: Point, id: Id, position: Position): Action[];
 }

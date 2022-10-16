@@ -9,23 +9,9 @@ import { Hlp } from '../../utils';
 import { Stat } from '../stat/stat';
 import { Coins } from './characters/coins';
 
-export type ArenaProps = {
-	width: number;
-	height: number;
-	snakeSpeed?: number;
-	bulletSpeed?: number;
-};
-
 type someFunc = (...params: unknown[]) => unknown;
 
-const defaultProps = {
-	snakeSpeed: SNAKE_SPEED,
-	bulletSpeed: BULLET_SPEED
-};
-
 export class Arena {
-	private width: number;
-	private height: number;
 	private stepsNum: number;
 	private steps!: number;
 	private snakeStep: number;
@@ -34,24 +20,18 @@ export class Arena {
 	private bulletStrategy?: ArenaStrategy;
 	private snakesInitial!: DirectionWithId[];
 
-	constructor(props: ArenaProps) {
-		const aProps = { ...defaultProps, ...props };
-
-		({ width: this.width, height: this.height } = aProps);
-
-		const { snakeSpeed, bulletSpeed } = aProps;
-
-		this.stepsNum = Hlp.lcm(snakeSpeed, bulletSpeed);
-		this.snakeStep = this.stepsNum / snakeSpeed;
-		this.bulletStep = this.stepsNum / bulletSpeed;
+	constructor() {
+		this.stepsNum = Hlp.lcm(SNAKE_SPEED, BULLET_SPEED);
+		this.snakeStep = this.stepsNum / SNAKE_SPEED;
+		this.bulletStep = this.stepsNum / BULLET_SPEED;
 	}
 
 	start = (snakesInitial: DirectionWithId[], arenaStrategy?: ArenaStrategy, bulletStrategy?: ArenaStrategy): void => {
 		this.steps = 0;
 		this.snakesInitial = snakesInitial;
 
-		Snakes.init(this.snakesInitial, this.width, this.height);
-		Coins.init(this.width, this.height);
+		Snakes.init(this.snakesInitial);
+		Coins.init();
 
 		this.arenaStrategy = arenaStrategy;
 		this.bulletStrategy = bulletStrategy;
@@ -86,7 +66,7 @@ export class Arena {
 		for (let i = 0; i < bullets.length; i++) {
 			const bullet = bullets[i];
 			const { id, point } = bullet;
-			const coinFoundResult = Coins.checkFound(point, this.width, this.height);
+			const coinFoundResult = Coins.checkFound(point);
 			const { result: strategyResult, actions: strategyActions } = this.runStrategy(
 				point,
 				id,
@@ -102,7 +82,7 @@ export class Arena {
 	};
 
 	private moveSnakeMiddleware = (id: Player, head: Point): boolean => {
-		const success = Coins.checkFound(head, this.width, this.height);
+		const success = Coins.checkFound(head);
 
 		success && Stat.faceCoin(id);
 		return !success;
@@ -215,7 +195,7 @@ export class Arena {
 	};
 
 	private runStrategy = (point: Point, id: Id, strategy?: ArenaStrategy): ResultWitActions =>
-		strategy ? strategy.run(point, this.width, this.height, id) : { result: true, actions: [] };
+		strategy ? strategy.run(point, id) : { result: true, actions: [] };
 
 	private getState = (): ArenaState => state.get<ArenaStore>().arena;
 
@@ -237,7 +217,7 @@ export class Arena {
 					}
 				}
 
-				Snakes.init(snakesInitial, this.width, this.height);
+				Snakes.init(snakesInitial);
 			},
 			RESPAWN_SNAKE_DELAY
 		);
