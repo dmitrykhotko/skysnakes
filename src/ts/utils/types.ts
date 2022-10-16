@@ -32,17 +32,19 @@ export type Bullet = {
 
 export type PlayerInput = FireInput | MoveInput;
 
+export type PointWithId = { point: Point; id: Id };
+
+export type Coin = PointWithId;
+
 export type GameState = {
 	gameStatus: GameStatus;
-	coin: Point;
+	coins: Coin[];
 	snakes: SnakeData[];
 	bullets: Bullet[];
 	playersStat: PlayersStat[];
 	winners: Player[];
 	bin: Point[];
 };
-
-export type PointWithId = { point: Point; id: Id };
 
 export type DirectionWithId = { direction: Direction; id: Id };
 

@@ -1,6 +1,6 @@
 import { CELL_SIZE, LINE_HEIGHT } from '../../../utils/constants';
-import { DrawGrid, DrawingObject, KeyCode, Player } from '../../../utils/enums';
-import { PlayersStat, Point, SnakeData } from '../../../utils/types';
+import { DrawGrid, DrawingObject, KeyCode } from '../../../utils/enums';
+import { GameState, Point } from '../../../utils/types';
 import { BaseRenderer } from './baseRenderer';
 
 const colors = {
@@ -59,9 +59,9 @@ export class CanvasRenderer extends BaseRenderer {
 		this.presenterEl.focus();
 	};
 
-	protected override renderServiceInfo(playersStat: PlayersStat[], winners: Player[], snakes: SnakeData[]): void {
+	protected override renderServiceInfo(state: GameState): void {
 		this.serviceInfoCtx.clearRect(0, 0, this.serviceInfoEl.width, this.serviceInfoEl.height);
-		super.renderServiceInfo(playersStat, winners, snakes);
+		super.renderServiceInfo(state);
 	}
 
 	protected renderRect = ({ x, y }: Point, w: number, h: number, type: DrawingObject): void => {

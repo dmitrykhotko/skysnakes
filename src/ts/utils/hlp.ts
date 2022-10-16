@@ -1,3 +1,6 @@
+import { Bullets } from '../modules/arena/characters/bullets';
+import { Coins } from '../modules/arena/characters/coins';
+import { Snakes } from '../modules/arena/characters/snakes';
 import { Direction } from './enums';
 import { Id, ObjectWithId, Point } from './types';
 
@@ -62,5 +65,25 @@ export abstract class Hlp {
 		}
 
 		return targets;
+	};
+
+	// not sure about this method here
+	static getFreeCells = (width: number, height: number): number[] => {
+		const cells: number[] = [];
+		const set = new Set<number>([
+			...Coins.toNumbers(width),
+			...Snakes.toNumbers(width),
+			...Bullets.toNumbers(width)
+		]);
+
+		for (let i = 0; i < width * height; i++) {
+			if (set.has(i)) {
+				continue;
+			}
+
+			cells.push(i);
+		}
+
+		return cells;
 	};
 }

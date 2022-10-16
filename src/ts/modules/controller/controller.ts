@@ -32,6 +32,7 @@ import { Hlp } from '../../utils';
 import { Snakes } from '../arena/characters/snakes';
 import { Bullets } from '../arena/characters/bullets';
 import { Stat } from '../stat/stat';
+import { DelayedTasks } from '../../utils/delayedTasks';
 
 export class Controller {
 	private arena!: Arena;
@@ -60,6 +61,7 @@ export class Controller {
 	}
 
 	notify(): void {
+		DelayedTasks.run();
 		this.arena.step();
 
 		const arenaState = this.getArenaData();

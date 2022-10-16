@@ -1,10 +1,21 @@
-import { DrawGrid, DrawingObject, Player } from '../../../utils/enums';
+import { DrawGrid, DrawingObject, GameStatus, Player } from '../../../utils/enums';
 import { InputActions, state, BinActions } from '../../redux';
-import { Bullet, GameState, PlayerInput, PlayersStat, Point, SnakeData } from '../../../utils/types';
+import { Bullet, Coin, GameState, PlayerInput, Point, SnakeData } from '../../../utils/types';
 import { Renderer } from '../renderer';
+import { Hlp } from '../../../utils';
 
 export abstract class BaseRenderer extends Renderer {
 	protected drawGrid = DrawGrid.No;
+
+	private prevState = {
+		gameStatus: GameStatus.Stop,
+		coins: [],
+		snakes: [],
+		bullets: [],
+		playersStat: [],
+		winners: [],
+		bin: []
+	} as GameState;
 
 	private isInitialized = false;
 
@@ -21,26 +32,29 @@ export abstract class BaseRenderer extends Renderer {
 	}
 
 	render = (state: GameState): void => {
-		const { snakes, playersStat, winners, bullets, bin } = state;
+		const { snakes, bullets, bin } = state;
 
 		if (!this.isInitialized) {
 			this.renderMap();
 		}
 
 		this.renderSnakes(snakes);
-		this.renderCell(state.coin, DrawingObject.Coin);
+		this.renderCoins(state.coins);
 		this.renderBullets(bullets);
-		this.renderServiceInfo(playersStat, winners, snakes);
+		this.renderServiceInfo(state);
 		this.emptyBin(bin);
 
 		!this.isInitialized && (this.isInitialized = true);
+		this.prevState = state;
 	};
 
 	protected input = (input: PlayerInput): void => {
 		state.dispatch(InputActions.setInput(input));
 	};
 
-	protected renderServiceInfo(playersStat: PlayersStat[], winners: Player[], snakes: SnakeData[]): void {
+	protected renderServiceInfo(state: GameState): void {
+		const { playersStat, winners, snakes, coins } = state;
+
 		let lineNumber = 1;
 
 		if (winners.length) {
@@ -71,7 +85,22 @@ export abstract class BaseRenderer extends Renderer {
 
 			this.renderServiceTextLine(`HEAD ${Player[id]}: x: ${x}, y: ${y}`, lineNumber++);
 		}
+
+		lineNumber++;
+
+		this.renderServiceTextLine(`COINS NUMBER ${coins.length}`, lineNumber++);
 	}
+
+	private renderCoins = (coins: Coin[]): void => {
+		const prevCoins = this.prevState.coins;
+
+		for (let i = 0; i < coins.length; i++) {
+			const { id, point } = coins[i];
+			const notRendered = !Hlp.getById(id, prevCoins);
+
+			notRendered && this.renderCell(point, DrawingObject.Coin);
+		}
+	};
 
 	private renderMap = (): void => {
 		if (this.drawGrid === DrawGrid.Yes) {

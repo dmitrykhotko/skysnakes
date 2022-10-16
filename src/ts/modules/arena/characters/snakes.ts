@@ -73,7 +73,7 @@ export abstract class Snakes {
 		}
 	};
 
-	static getSet = (width: number): Set<number> => {
+	static toNumbers = (width: number): Set<number> => {
 		const set: Set<number> = new Set<number>();
 		const snakes = this.get();
 

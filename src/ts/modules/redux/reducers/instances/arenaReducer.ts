@@ -1,14 +1,15 @@
-import { GAME_RESET, SET_COIN, SET_GAME_STATUS } from '../../../../utils/constants';
-import { Point } from '../../../../utils/types';
-import { Action } from '../..';
+import { GAME_RESET, REMOVE_COIN, SET_COIN, SET_GAME_STATUS } from '../../../../utils/constants';
+import { Coin, Id } from '../../../../utils/types';
+import { Action, SetValueAction } from '../..';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
 import { setValue } from '../utils';
 import { GameStatus } from '../../../../utils/enums';
+import { Hlp } from '../../../../utils';
 
 export type ArenaState = {
 	gameStatus: GameStatus;
-	coin: Point;
+	coins: Coin[];
 };
 
 export type ArenaStore = {
@@ -19,7 +20,7 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 	private static initialState = {
 		arena: {
 			gameStatus: GameStatus.InProgress,
-			coin: { x: 0, y: 0 }
+			coins: []
 		}
 	} as ArenaStore;
 
@@ -33,8 +34,9 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 
 		switch (type) {
 			case SET_COIN:
-				propName = 'coin';
-				break;
+				return this.addCoin(state, action);
+			case REMOVE_COIN:
+				return this.removeCoin(state, action);
 			case SET_GAME_STATUS:
 				propName = 'gameStatus';
 				break;
@@ -45,5 +47,31 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 		}
 
 		return setValue(arenaStore, action, 'arena', propName as keyof ArenaState);
+	};
+
+	private static addCoin = (state: Store, action: Action): ArenaStore => {
+		const arena = (state as ArenaStore).arena;
+		const { value } = action as SetValueAction<Coin>;
+
+		return {
+			...state,
+			arena: {
+				...arena,
+				coins: [...arena.coins, value]
+			}
+		};
+	};
+
+	private static removeCoin = (state: Store, action: Action): ArenaStore => {
+		const arena = (state as ArenaStore).arena;
+		const { value } = action as SetValueAction<Id>;
+
+		return {
+			...state,
+			arena: {
+				...arena,
+				coins: [...Hlp.filterById(value, arena.coins)]
+			}
+		};
 	};
 }

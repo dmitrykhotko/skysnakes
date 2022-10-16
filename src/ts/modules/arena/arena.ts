@@ -1,4 +1,4 @@
-import { BULLET_SPEED, RESPAWN_DELAY, SNAKE_SPEED } from '../../utils/constants';
+import { BULLET_SPEED, RESPAWN_SNAKE_DELAY, SNAKE_SPEED } from '../../utils/constants';
 import { DamageType, GameStatus, Player } from '../../utils/enums';
 import { Action, ArenaActions, ArenaStore, ArenaState, BulletsStore, state, StatActions } from '../redux';
 import { Point, ResultWitActions, DirectionWithId, Id, PointWithId } from '../../utils/types';
@@ -7,6 +7,8 @@ import { Bullets } from './characters/bullets';
 import { ArenaStrategy } from './strategies';
 import { Hlp } from '../../utils';
 import { Stat } from '../stat/stat';
+import { DelayedTasks } from '../../utils/delayedTasks';
+import { Coins } from './characters/coins';
 
 export type ArenaProps = {
 	width: number;
@@ -22,11 +24,6 @@ const defaultProps = {
 	bulletSpeed: BULLET_SPEED
 };
 
-type DelayedTask = {
-	delay: number;
-	task: someFunc;
-};
-
 export class Arena {
 	private width: number;
 	private height: number;
@@ -37,7 +34,6 @@ export class Arena {
 	private arenaStrategy?: ArenaStrategy;
 	private bulletStrategy?: ArenaStrategy;
 	private snakesInitial!: DirectionWithId[];
-	private delayedTasks = [] as DelayedTask[];
 
 	constructor(props: ArenaProps) {
 		const aProps = { ...defaultProps, ...props };
@@ -52,22 +48,20 @@ export class Arena {
 	}
 
 	start = (snakesInitial: DirectionWithId[], arenaStrategy?: ArenaStrategy, bulletStrategy?: ArenaStrategy): void => {
-		const actions = [this.setCoin(), ArenaActions.setGameStatus(GameStatus.InProgress)];
-
 		this.steps = 0;
 		this.snakesInitial = snakesInitial;
 
 		Snakes.init(this.snakesInitial, this.width, this.height);
+		Coins.init(this.width, this.height);
 
 		this.arenaStrategy = arenaStrategy;
 		this.bulletStrategy = bulletStrategy;
 
-		state.dispatch(...actions);
+		state.dispatch(ArenaActions.setGameStatus(GameStatus.InProgress));
 	};
 
 	step = (): void => {
 		this.steps++;
-		this.runDelayedTasks();
 
 		const moveBullets = !(this.steps % this.bulletStep);
 		const moveSnakes = !(this.steps % this.snakeStep);
@@ -76,24 +70,6 @@ export class Arena {
 		moveSnakes && this.callIfInProgress(this.moveSnakes);
 
 		this.steps === this.stepsNum && (this.steps = 0);
-	};
-
-	private delay = (task: someFunc, delay: number): void => {
-		this.delayedTasks.push({
-			delay,
-			task
-		});
-	};
-
-	private runDelayedTasks = (): void => {
-		const delayedTasks = [] as DelayedTask[];
-
-		for (let i = 0; i < this.delayedTasks.length; i++) {
-			const item = this.delayedTasks[i];
-			--item.delay ? delayedTasks.push(item) : item.task();
-		}
-
-		this.delayedTasks = delayedTasks;
 	};
 
 	private callIfInProgress = (callMe: someFunc, ...params: unknown[]): unknown => {
@@ -111,7 +87,7 @@ export class Arena {
 		for (let i = 0; i < bullets.length; i++) {
 			const bullet = bullets[i];
 			const { id, point } = bullet;
-			const coinFoundResult = this.checkCoinFound(point);
+			const coinFoundResult = Coins.checkFound(point, this.width, this.height);
 			const { result: strategyResult, actions: strategyActions } = this.runStrategy(
 				point,
 				id,
@@ -127,7 +103,7 @@ export class Arena {
 	};
 
 	private moveSnakeMiddleware = (id: Player, head: Point): boolean => {
-		const success = this.checkCoinFound(head);
+		const success = Coins.checkFound(head, this.width, this.height);
 
 		success && Stat.faceCoin(id);
 		return !success;
@@ -242,23 +218,13 @@ export class Arena {
 	private runStrategy = (point: Point, id: Id, strategy?: ArenaStrategy): ResultWitActions =>
 		strategy ? strategy.run(point, this.width, this.height, id) : { result: true, actions: [] };
 
-	private setCoin = (): Action => {
-		const freeCells = this.getFreeCells();
-		const coinCellIndex = Hlp.randomInt(freeCells.length);
-		const coinCellValue = freeCells[coinCellIndex];
-		const x = coinCellValue % this.width;
-		const y = (coinCellValue - x) / this.width;
-
-		return ArenaActions.setCoin({ x, y });
-	};
-
 	private getState = (): ArenaState => state.get<ArenaStore>().arena;
 
 	private respawn = (...ids: Player[]): void => {
 		Snakes.remove(ids);
 
 		this.callIfInProgress(
-			this.delay as someFunc,
+			DelayedTasks.delay as someFunc,
 			() => {
 				const snakesInitial = [];
 
@@ -274,29 +240,7 @@ export class Arena {
 
 				Snakes.init(snakesInitial, this.width, this.height);
 			},
-			RESPAWN_DELAY
+			RESPAWN_SNAKE_DELAY
 		);
-	};
-
-	private getFreeCells = (): number[] => {
-		const cells: number[] = [];
-		const set = new Set<number>([...Snakes.getSet(this.width), ...Bullets.getSet(this.width)]);
-
-		for (let i = 0; i < this.width * this.height; i++) {
-			if (set.has(i)) {
-				continue;
-			}
-
-			cells.push(i);
-		}
-
-		return cells;
-	};
-
-	private checkCoinFound = (object: Point): boolean => {
-		const success = Hlp.comparePoints(object, this.getState().coin);
-		success && state.dispatch(this.setCoin());
-
-		return success;
 	};
 }

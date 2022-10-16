@@ -7,9 +7,9 @@ export const TRACE_STATE = false;
 // GAME DEFAULTS
 
 export const CELL_SIZE = 15;
-export const LINE_HEIGHT = 60;
+export const LINE_HEIGHT = 40;
 
-export const SNAKE_LENGTH = 30;
+export const SNAKE_LENGTH = 10;
 
 export const FPS = 30; // Valid values are 60,30,20,15,10...
 export const SNAKE_SPEED = 1;
@@ -23,9 +23,12 @@ export const BODY_PART_RAM_WEIGHT = 0.5;
 export const FRIENDLY_FIRE_WEIGHT = 0.5;
 export const SYM_DAMAGE_WEIGHT = 0.75;
 
-export const RESPAWN_DELAY = 30;
+export const RESPAWN_SNAKE_DELAY = 30;
+export const INIT_COINS_MAX_DELAY = 100;
+export const RESPAWN_COIN_MAX_DELAY = 500;
 
-export const LIVES = 2;
+export const LIVES = 5;
+export const COINS_NUMBER = 30;
 export const PLAYER_MODE = PlayerMode.Multiplayer;
 
 // ACTIONS
@@ -36,6 +39,7 @@ export const GAME_RESET = 'COMMON_ACTIONS/GAME_RESET';
 
 //// ARENA ACTIONS
 export const SET_COIN = 'ARENA/SET_COIN';
+export const REMOVE_COIN = 'ARENA/REMOVE_COIN';
 export const SET_GAME_STATUS = 'ARENA/SET_GAME_STATUS';
 
 //// USER SETTINGS ACTIONS
