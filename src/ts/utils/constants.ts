@@ -23,9 +23,9 @@ export const BODY_PART_RAM_WEIGHT = 0.5;
 export const FRIENDLY_FIRE_WEIGHT = 0.5;
 export const SYM_DAMAGE_WEIGHT = 0.75;
 
-export const RESPAWN_SNAKE_DELAY = 30;
-export const INIT_COINS_MAX_DELAY = 100;
-export const RESPAWN_COIN_MAX_DELAY = 500;
+export const RESPAWN_SNAKE_DELAY = 1000;
+export const INIT_COINS_MAX_DELAY = 5000;
+export const RESPAWN_COIN_MAX_DELAY = 2000;
 
 export const LIVES = 5;
 export const COINS_NUMBER = 30;

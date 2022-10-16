@@ -1,6 +1,5 @@
 import { Hlp } from '../../../utils';
 import { COINS_NUMBER, INIT_COINS_MAX_DELAY, RESPAWN_COIN_MAX_DELAY } from '../../../utils/constants';
-import { DelayedTasks } from '../../../utils/delayedTasks';
 import { Point } from '../../../utils/types';
 import { ArenaActions, ArenaStore, state } from '../../redux';
 
@@ -45,7 +44,7 @@ export abstract class Coins {
 	};
 
 	private static set = (width: number, height: number, delay = RESPAWN_COIN_MAX_DELAY): void => {
-		DelayedTasks.delay(() => {
+		Hlp.delayTask(() => {
 			const freeCells = Hlp.getFreeCells(width, height);
 			const coinCellIndex = Hlp.randomInt(freeCells.length);
 			const coinCellValue = freeCells[coinCellIndex];

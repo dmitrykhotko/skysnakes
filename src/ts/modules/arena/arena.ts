@@ -7,7 +7,6 @@ import { Bullets } from './characters/bullets';
 import { ArenaStrategy } from './strategies';
 import { Hlp } from '../../utils';
 import { Stat } from '../stat/stat';
-import { DelayedTasks } from '../../utils/delayedTasks';
 import { Coins } from './characters/coins';
 
 export type ArenaProps = {
@@ -224,7 +223,7 @@ export class Arena {
 		Snakes.remove(ids);
 
 		this.callIfInProgress(
-			DelayedTasks.delay as someFunc,
+			Hlp.delayTask as someFunc,
 			() => {
 				const snakesInitial = [];
 

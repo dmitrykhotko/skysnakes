@@ -56,3 +56,5 @@ export type ResultWitActions<T = boolean> = {
 export interface ObjectWithId {
 	id: Id;
 }
+
+export type Task = (...params: unknown[]) => unknown;

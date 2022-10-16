@@ -2,7 +2,7 @@ import { Bullets } from '../modules/arena/characters/bullets';
 import { Coins } from '../modules/arena/characters/coins';
 import { Snakes } from '../modules/arena/characters/snakes';
 import { Direction } from './enums';
-import { Id, ObjectWithId, Point } from './types';
+import { Id, ObjectWithId, Point, Task } from './types';
 
 export abstract class Hlp {
 	private static id = 0;
@@ -85,5 +85,9 @@ export abstract class Hlp {
 		}
 
 		return cells;
+	};
+
+	static delayTask = (task: Task, delay: number): void => {
+		setTimeout(task, delay);
 	};
 }
