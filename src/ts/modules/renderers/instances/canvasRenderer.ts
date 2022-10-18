@@ -129,7 +129,6 @@ export class CanvasRenderer extends BaseRenderer {
 
 	protected measureText = (text: string, lineHeight: number): number => {
 		this.activeLayer.font = `700 ${lineHeight}px Verdana`;
-		console.log('this.activeLayer.measureText(text).width: ', this.activeLayer.measureText(text).width);
 		return this.activeLayer.measureText(text).width / this.cellSize;
 	};
 
