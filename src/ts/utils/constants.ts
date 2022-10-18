@@ -9,6 +9,7 @@ export const TRACE_STATE = false;
 export const CELL_SIZE = 20;
 export const LINE_HEIGHT = 30;
 export const LIVE_SIZE_CELLS = 4;
+export const CIRCLE_RADIUS_CELLS = 0.5;
 
 export const SNAKE_LENGTH = 10;
 
@@ -30,7 +31,7 @@ export const RESPAWN_COIN_MAX_DELAY = 3000;
 export const COIN_LIVE_TIME = 60000;
 
 export const LIVES = 5;
-export const COINS_NUMBER = 30;
+export const COINS_NUMBER = 50;
 export const PLAYER_MODE = PlayerMode.Multiplayer;
 
 export const SCORE_SEPARATOR = ':';
@@ -58,8 +59,6 @@ export const SET_LIVES = 'USER_SETTINGS/SET_LIVES';
 
 // export const SET_DIRECTION = 'INPUT/SET_DIRECTION';
 export const SET_INPUT = 'INPUT/SET_INPUT';
-export const GAME_START = 'INPUT/GAME_START';
-export const GAME_PAUSE = 'INPUT/GAME_PAUSE';
 
 //// SNAKES ACTIONS
 

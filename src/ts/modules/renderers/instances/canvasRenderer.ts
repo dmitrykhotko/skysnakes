@@ -1,4 +1,4 @@
-import { CELL_SIZE, LINE_HEIGHT } from '../../../utils/constants';
+import { CELL_SIZE, CIRCLE_RADIUS_CELLS, LINE_HEIGHT } from '../../../utils/constants';
 import { DrawGrid, DrawingObject, KeyCode, Layer } from '../../../utils/enums';
 import { Point, Size } from '../../../utils/types';
 import { BaseRenderer } from './baseRenderer';
@@ -103,7 +103,12 @@ export class CanvasRenderer extends BaseRenderer {
 		this.clearRect(point, { width: 1, height: 1 });
 	};
 
-	protected renderCircle = (point: Point, type: DrawingObject, radius = 0.5, fitToCell = true): void => {
+	protected renderCircle = (
+		point: Point,
+		type: DrawingObject,
+		radius = CIRCLE_RADIUS_CELLS,
+		fitToCell = true
+	): void => {
 		const cRadius = radius * this.cellSize;
 		const { x, y } = this.weightPoint(point, fitToCell ? cRadius : 0);
 
@@ -170,6 +175,17 @@ export class CanvasRenderer extends BaseRenderer {
 		this.activeLayer.fillStyle = colors[type];
 		this.activeLayer.fill();
 		this.activeLayer.restore();
+	};
+
+	protected drawLive = (point: Point, { width, height }: Size, type: DrawingObject, factor = 1): void => {
+		const fSize = { width: width * factor, height: height * factor };
+		const radius = CIRCLE_RADIUS_CELLS * factor;
+
+		this.drawHeart(point, fSize, type);
+		this.renderCircle(point, DrawingObject.Empty, radius);
+		this.renderCircle({ x: point.x - factor, y: point.y }, DrawingObject.Empty, radius);
+		this.renderCircle({ x: point.x, y: point.y + factor }, DrawingObject.Bullet, radius);
+		this.renderCircle({ x: point.x - factor, y: point.y + factor }, DrawingObject.Bullet, radius);
 	};
 
 	// make a single weight method

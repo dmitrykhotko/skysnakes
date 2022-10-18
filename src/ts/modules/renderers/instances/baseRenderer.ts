@@ -5,19 +5,20 @@ import { Renderer } from '../renderer';
 import { Hlp } from '../../../utils';
 import { LINE_HEIGHT, LIVE_SIZE_CELLS, SCORE_SEPARATOR } from '../../../utils/constants';
 
+const defaultPrevState = {
+	gameStatus: GameStatus.Stop,
+	coins: [],
+	snakes: [],
+	bullets: [],
+	playersStat: [],
+	winners: [],
+	bin: []
+} as GameState;
+
 export abstract class BaseRenderer extends Renderer {
 	protected drawGrid = DrawGrid.No;
 
-	private prevState = {
-		gameStatus: GameStatus.Stop,
-		coins: [],
-		snakes: [],
-		bullets: [],
-		playersStat: [],
-		winners: [],
-		bin: []
-	} as GameState;
-
+	private prevState = defaultPrevState;
 	private isInitialized = false;
 
 	protected abstract use: (layer: Layer) => BaseRenderer;
@@ -29,28 +30,33 @@ export abstract class BaseRenderer extends Renderer {
 	protected abstract renderTextLine: (text: string, lineNumber: number) => void;
 	protected abstract clearRect: (point?: Point, size?: Size) => void;
 	protected abstract clearCell: (point: Point) => void;
-	protected abstract drawHeart: (point: Point, size: Size, type: DrawingObject) => void;
+	protected abstract drawLive: (point: Point, size: Size, type: DrawingObject, factor?: number) => void;
 
 	constructor(protected size: Size) {
 		super();
 	}
 
 	render = (state: GameState): void => {
-		const { snakes, bullets, bin, playersStat } = state;
+		const { snakes, bullets, bin, playersStat, winners } = state;
 
 		if (!this.isInitialized) {
 			this.use(Layer.Presenter).clearRect();
 		}
 
+		this.emptyBin(bin);
 		this.renderSnakes(snakes);
 		this.renderCoins(state.coins);
 		this.renderBullets(bullets);
 		this.renderServiceInfo(state);
-		this.renderStat(playersStat);
-		this.emptyBin(bin);
+		this.renderStat(playersStat, winners);
 
 		!this.isInitialized && (this.isInitialized = true);
 		this.prevState = state;
+	};
+
+	reset = (): void => {
+		this.prevState = defaultPrevState;
+		this.isInitialized = false;
 	};
 
 	protected input = (input: PlayerInput): void => {
@@ -97,11 +103,12 @@ export abstract class BaseRenderer extends Renderer {
 		this.renderTextLine(`COINS NUMBER ${coins.length}`, lineNumber++);
 	}
 
-	private renderStat = (playersStat: PlayerStat[]): void => {
+	private renderStat = (playersStat: PlayerStat[], winners: Player[]): void => {
 		if (playersStat === this.prevState.playersStat) {
 			return;
 		}
 
+		this.renderWinners(winners);
 		this.use(Layer.Stat).clearRect();
 
 		const wh = LIVE_SIZE_CELLS;
@@ -115,21 +122,53 @@ export abstract class BaseRenderer extends Renderer {
 			const type = this.getType(id);
 			const text = score.toString();
 			const textLength = this.measureText(text, LINE_HEIGHT);
-			const livesLength = (lives + 3) * wh * (i - 1) - wh * ~(i - 1) * 2 + wh;
-			const x = baseX + livesLength;
-
-			for (let j = 0; j < lives; j++) {
-				const point = { x: x + j * wh, y: 1 };
-
-				this.drawHeart(point, { width: wh, height: wh }, type);
-				this.renderCircle(point, DrawingObject.Empty);
-				this.renderCircle({ x: point.x - 1, y: point.y }, DrawingObject.Empty);
-				this.renderCircle({ x: point.x, y: point.y + 1 }, DrawingObject.Bullet);
-				this.renderCircle({ x: point.x - 1, y: point.y + 1 }, DrawingObject.Bullet);
-			}
 
 			this.renderText(text, { x: baseX + textLength * (i - 1) + (i ? 1 : -1), y: 3 }, LINE_HEIGHT, type);
+
+			if (lives) {
+				const livesLength = (lives + 3) * wh * (i - 1) - wh * ~(i - 1) * 2 + wh;
+
+				for (let j = 0; j < lives; j++) {
+					const x = baseX + livesLength + j * wh;
+					this.drawLive({ x, y: 1 }, { width: wh, height: wh }, type);
+				}
+			}
 		}
+
+		if (winners.length) {
+			const text = 'press Esc / Enter to restart';
+			const sepLen = this.measureText(text, LINE_HEIGHT);
+
+			this.renderText(text, { x: baseX - sepLen / 2, y: 8 }, LINE_HEIGHT, DrawingObject.Bullet);
+		}
+	};
+
+	private renderWinners = (winners: Player[]): void => {
+		if (!winners.length) {
+			return;
+		}
+
+		this.use(Layer.Presenter);
+
+		const wh = LIVE_SIZE_CELLS;
+		const baseX = this.size.width / 2;
+		const liveH = wh * 2;
+		const baseY = this.size.height / 2;
+		const lineHeight = LINE_HEIGHT * 2;
+		const text = `WINNER${winners.length > 1 ? 'S' : ''}`;
+		const textLength = this.measureText(text, lineHeight);
+		const isSingleWinnerFactor = winners.length === 1 ? 0 : 1;
+
+		for (let i = 0; i < winners.length; i++) {
+			this.drawLive(
+				{ x: baseX - (liveH * (i ? 1 : -1) * isSingleWinnerFactor) / 2, y: baseY - 1 },
+				{ width: wh, height: wh },
+				this.getType(winners[i]),
+				2
+			);
+		}
+
+		this.renderText(text, { x: baseX - textLength / 2, y: baseY - 2 }, lineHeight, DrawingObject.Coin);
 	};
 
 	private renderCoins = (coins: Coin[]): void => {

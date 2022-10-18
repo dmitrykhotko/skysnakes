@@ -1,5 +1,5 @@
-import { GAME_PAUSE, GAME_START, SET_INPUT } from '../../utils/constants';
-import { ControlInput, FireInput, GameStatus, MoveInput, ServiceInput } from '../../utils/enums';
+import { SET_INPUT } from '../../utils/constants';
+import { FireInput, GameStatus, MoveInput, ServiceInput } from '../../utils/enums';
 import {
 	ArenaStore,
 	BulletsStore,
@@ -8,12 +8,10 @@ import {
 	SnakesActions,
 	SnakesStore,
 	state,
-	Store,
 	BinStore,
 	CommonActions,
 	StatStore,
-	ArenaActions,
-	Action
+	ArenaActions
 } from '../redux';
 import { Arena } from '../arena/arena';
 import { Observer } from '../observable/observer';
@@ -48,10 +46,8 @@ export class Controller {
 		const { width, height } = cProps;
 
 		state.dispatch(ArenaActions.setSize({ width, height }));
-
 		this.arena = new Arena();
-		this.subscribe();
-
+		state.subscribe(this.handleInput as Observer, SET_INPUT);
 		autostart && this.start();
 	}
 
@@ -65,12 +61,6 @@ export class Controller {
 			return this.onFinish();
 		}
 	}
-
-	private subscribe = (): void => {
-		state.subscribe(this.handleInput as Observer, SET_INPUT);
-		state.subscribe(this.handleControlInput as Observer, GAME_START);
-		state.subscribe(this.handleControlInput as Observer, GAME_PAUSE);
-	};
 
 	private getArenaData = (): GameState => {
 		const { arena, snakes, bullets, bin, stat } = state.get<
@@ -99,70 +89,59 @@ export class Controller {
 		);
 
 		this.arena.start(snakesInitial, new arenaStrategies[arenaType](), new NormalStrategy());
+		this.renderer.reset();
 		this.renderer.focus();
 
 		this.onStart();
-	};
-
-	private pauseContinue = (): void => {
-		const { gameStatus } = state.get<ArenaStore>().arena;
-		let action: Action | undefined;
-
-		switch (gameStatus) {
-			case GameStatus.InProgress:
-				action = ArenaActions.setGameStatus(GameStatus.Pause);
-				this.onFinish();
-				break;
-			case GameStatus.Pause:
-				action = ArenaActions.setGameStatus(GameStatus.InProgress);
-				this.onStart();
-				break;
-			default:
-				break;
-		}
-
-		action && state.dispatch(action);
-		this.renderer.focus();
 	};
 
 	private handleInput = (store: InputStore): void => {
 		const { playerInput: input } = store.input;
 		const { gameStatus } = state.get<ArenaStore>().arena;
 
-		ServiceInput[input] && this.pauseContinue();
+		ServiceInput[input] && this.handleServiceInput();
 
 		if (gameStatus !== GameStatus.InProgress) {
 			return;
 		}
 
-		MoveInput[input] && this.handleDirectionChange(store);
-		FireInput[input] && this.handleFire(store);
+		MoveInput[input] && this.handleMoveInput(input as MoveInput);
+		FireInput[input] && this.handleFireInput(input as FireInput);
 	};
 
-	private handleControlInput = (store: InputStore): void => {
-		switch (store.input.controlInput) {
-			case ControlInput.Start:
-				this.start();
+	private handleServiceInput = (): void => {
+		const { gameStatus } = state.get<ArenaStore>().arena;
+
+		switch (gameStatus) {
+			case GameStatus.InProgress:
+				state.dispatch(ArenaActions.setGameStatus(GameStatus.Pause));
+				this.onFinish();
+
 				break;
-			case ControlInput.Pause:
-				this.pauseContinue();
+			case GameStatus.Pause:
+				state.dispatch(ArenaActions.setGameStatus(GameStatus.InProgress));
+				this.onStart();
+
+				break;
+			case GameStatus.Stop:
+				this.start();
 				break;
 			default:
 				break;
 		}
+
+		this.renderer.focus();
 	};
 
-	private handleDirectionChange = (store: Store): void => {
-		const { playerInput } = (store as InputStore).input;
-		const { id, direction } = inputToIdDirection[playerInput as MoveInput];
+	private handleMoveInput = (input: MoveInput): void => {
+		const { id, direction } = inputToIdDirection[input];
 		const snake = Snakes.getById(id);
 
 		snake && state.dispatch(SnakesActions.newDirection(direction, id));
 	};
 
-	private handleFire = (store: Store): void => {
-		const { playerInput } = (store as InputStore).input;
-		const id = fireInputToPlayerId[playerInput as FireInput];
+	private handleFireInput = (input: FireInput): void => {
+		const id = fireInputToPlayerId[input];
 		const snake = Snakes.getById(id);
 
 		if (!snake) {

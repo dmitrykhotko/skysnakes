@@ -37,13 +37,8 @@ export enum FireInput {
 }
 
 export enum ServiceInput {
-	Escape = 11
-}
-
-export enum ControlInput {
-	Start = 11,
-	Pause = 12,
-	Empty = 13
+	Escape = 11,
+	Enter = 12
 }
 
 export enum KeyCode {
@@ -57,7 +52,8 @@ export enum KeyCode {
 	KeyD = MoveInput.LRight,
 	Tab = FireInput.LFire,
 	Space = FireInput.RFire,
-	Escape = ServiceInput.Escape
+	Escape = ServiceInput.Escape,
+	Enter = ServiceInput.Enter
 }
 
 export enum Player {

@@ -1,5 +1,5 @@
 import { Action } from '../modules/redux';
-import { Direction, MoveInput, FireInput, Player, GameStatus } from './enums';
+import { Direction, MoveInput, FireInput, Player, GameStatus, ServiceInput } from './enums';
 
 export type Point = {
 	x: number;
@@ -30,7 +30,7 @@ export type Bullet = {
 	direction: Direction;
 };
 
-export type PlayerInput = FireInput | MoveInput;
+export type PlayerInput = FireInput | MoveInput | ServiceInput;
 
 export type PointWithId = { point: Point; id: Id };
 
