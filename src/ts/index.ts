@@ -7,9 +7,10 @@ import { CELL_SIZE } from './utils/constants';
 const run = (): void => {
 	const autostart = true;
 	const presenterEl = document.querySelector('.js-Snake__Presenter') as HTMLCanvasElement;
-	const serviceInfoEl = document.querySelector('.js-Snake__ServiceInfo') as HTMLCanvasElement;
+	const statEl = document.querySelector('.js-Snake__Stat') as HTMLCanvasElement;
+	const serviceEl = document.querySelector('.js-Snake__ServiceInfo') as HTMLCanvasElement;
 
-	if (!(presenterEl && serviceInfoEl)) {
+	if (!(presenterEl && serviceEl && statEl)) {
 		return;
 	}
 
@@ -24,13 +25,16 @@ const run = (): void => {
 	width -= width % cellSize;
 	height -= height % cellSize;
 
+	width /= cellSize;
+	height /= cellSize;
+
 	const timer = new Timer();
-	const renderer = new CanvasRenderer({ presenterEl, serviceInfoEl, width, height });
+	const renderer = new CanvasRenderer({ presenterEl, statEl, serviceEl, size: { width, height } });
 	const controller = new Controller({
 		renderer,
 		autostart,
-		width: width / cellSize,
-		height: height / cellSize,
+		width,
+		height,
 		onStart: timer.start,
 		onFinish: timer.stop
 	});

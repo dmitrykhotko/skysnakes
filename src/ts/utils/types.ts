@@ -17,7 +17,7 @@ export type SnakeData = {
 
 export type Id = number;
 
-export type PlayersStat = {
+export type PlayerStat = {
 	id: Id;
 	lives: number;
 	score: number;
@@ -41,7 +41,7 @@ export type GameState = {
 	coins: Coin[];
 	snakes: SnakeData[];
 	bullets: Bullet[];
-	playersStat: PlayersStat[];
+	playersStat: PlayerStat[];
 	winners: Player[];
 	bin: Point[];
 };

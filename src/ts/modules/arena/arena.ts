@@ -49,6 +49,8 @@ export class Arena {
 		moveSnakes && this.callIfInProgress(this.moveSnakes);
 
 		this.steps === this.stepsNum && (this.steps = 0);
+
+		Coins.inspect();
 	};
 
 	private callIfInProgress = (callMe: someFunc, ...params: unknown[]): unknown => {

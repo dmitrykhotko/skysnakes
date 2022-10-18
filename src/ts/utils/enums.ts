@@ -98,3 +98,9 @@ export enum DamageType {
 	death = 3,
 	ram = 4
 }
+
+export enum Layer {
+	Presenter = 1,
+	Stat = 2,
+	Service = 3
+}

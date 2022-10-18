@@ -6,8 +6,9 @@ export const TRACE_STATE = false;
 
 // GAME DEFAULTS
 
-export const CELL_SIZE = 15;
-export const LINE_HEIGHT = 40;
+export const CELL_SIZE = 20;
+export const LINE_HEIGHT = 30;
+export const LIVE_SIZE_CELLS = 4;
 
 export const SNAKE_LENGTH = 10;
 
@@ -15,21 +16,24 @@ export const FPS = 30; // Valid values are 60,30,20,15,10...
 export const SNAKE_SPEED = 1;
 export const BULLET_SPEED = 2;
 
-export const COIN_AWARD = 5;
-export const HEAD_SHOT_AWARD = 25;
-export const KILL_AWARD = 10;
+export const COIN_AWARD = 2;
+export const HEAD_SHOT_AWARD = 15;
+export const KILL_AWARD = 5;
 export const BODY_PART_HIT_WEIGHT = 0.5;
 export const BODY_PART_RAM_WEIGHT = 0.5;
-export const FRIENDLY_FIRE_WEIGHT = 0.5;
+export const FRIENDLY_FIRE_WEIGHT = 1.5;
 export const SYM_DAMAGE_WEIGHT = 0.75;
 
 export const RESPAWN_SNAKE_DELAY = 1000;
 export const INIT_COINS_MAX_DELAY = 5000;
-export const RESPAWN_COIN_MAX_DELAY = 2000;
+export const RESPAWN_COIN_MAX_DELAY = 3000;
+export const COIN_LIVE_TIME = 60000;
 
 export const LIVES = 5;
 export const COINS_NUMBER = 30;
 export const PLAYER_MODE = PlayerMode.Multiplayer;
+
+export const SCORE_SEPARATOR = ':';
 
 // ACTIONS
 

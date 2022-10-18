@@ -1,5 +1,5 @@
 import { SET_SCORE, ADD_SCORE, INC_SCORE, DEC_LIVES, SET_WINNERS } from '../../../../utils/constants';
-import { PlayersStat } from '../../../../utils/types';
+import { PlayerStat } from '../../../../utils/types';
 import { Action, SetValueAction, SetValueByIdAction } from '../..';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
@@ -8,7 +8,7 @@ import { Hlp } from '../../../../utils';
 import { setValue } from '../utils';
 
 export type StatState = {
-	playersStat: PlayersStat[];
+	playersStat: PlayerStat[];
 	winners: Player[];
 };
 
@@ -38,7 +38,7 @@ export abstract class StatReducer extends Reducer<StatStore> {
 					...state,
 					stat: {
 						...statStore.stat,
-						playersStat: (action as SetValueAction<PlayersStat[]>).value
+						playersStat: (action as SetValueAction<PlayerStat[]>).value
 					}
 				};
 			case INC_SCORE:
@@ -59,7 +59,7 @@ export abstract class StatReducer extends Reducer<StatStore> {
 		const targetStat = Hlp.getById(id, playersStat);
 		const playersStatNew = [
 			...Hlp.filterById(id, playersStat),
-			{ ...targetStat, [propName]: targetStat[propName as keyof PlayersStat] + value }
+			{ ...targetStat, [propName]: targetStat[propName as keyof PlayerStat] + value }
 		].sort((p1, p2) => p1.id - p2.id);
 
 		if (!targetStat) {

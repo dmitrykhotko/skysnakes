@@ -1,14 +1,14 @@
 import { CELL_SIZE, LINE_HEIGHT } from '../../../utils/constants';
-import { DrawGrid, DrawingObject, KeyCode } from '../../../utils/enums';
-import { GameState, Point } from '../../../utils/types';
+import { DrawGrid, DrawingObject, KeyCode, Layer } from '../../../utils/enums';
+import { Point, Size } from '../../../utils/types';
 import { BaseRenderer } from './baseRenderer';
 
 const colors = {
-	[DrawingObject.Empty]: '#E8F8F5',
-	[DrawingObject.Head1]: '#34495E',
-	[DrawingObject.Head2]: '#229954',
+	[DrawingObject.Empty]: '#191970',
+	[DrawingObject.Head1]: '#DEB887',
+	[DrawingObject.Head2]: '#00FF7F',
 	[DrawingObject.Body]: '#E67E22',
-	[DrawingObject.Coin]: '#F1C40F',
+	[DrawingObject.Coin]: '#FFFF00',
 	[DrawingObject.Grid]: '#758384',
 	[DrawingObject.Bullet]: '#ff3300',
 	[DrawingObject.ServiceArea]: 'yellow'
@@ -22,31 +22,37 @@ const defaultProps = {
 
 export type CanvasRendererProps = {
 	presenterEl: HTMLCanvasElement;
-	serviceInfoEl: HTMLCanvasElement;
+	statEl: HTMLCanvasElement;
+	serviceEl: HTMLCanvasElement;
 	drawGrid?: DrawGrid;
-	width: number;
-	height: number;
+	size: Size;
 	cellSize?: number;
 	lineHeight?: number;
 };
 
 export class CanvasRenderer extends BaseRenderer {
 	private presenterEl: HTMLCanvasElement;
-	private serviceInfoEl: HTMLCanvasElement;
-	private presenterCtx!: CanvasRenderingContext2D;
-	private serviceInfoCtx!: CanvasRenderingContext2D;
+	private presenterLayer!: CanvasRenderingContext2D;
+	private statEl: HTMLCanvasElement;
+	private statLayer!: CanvasRenderingContext2D;
+	private serviceEl: HTMLCanvasElement;
+	private serviceLayer!: CanvasRenderingContext2D;
 	private cellSize: number;
 	private lineHeight: number;
 
+	private activeLayer = this.presenterLayer;
+	private layers!: Record<Layer, CanvasRenderingContext2D>;
+
 	constructor(props: CanvasRendererProps) {
 		const cProps = { ...defaultProps, ...props };
-		const { width, height } = cProps;
+		const { size } = cProps;
 
-		super(width, height);
+		super(size);
 
 		({
 			presenterEl: this.presenterEl,
-			serviceInfoEl: this.serviceInfoEl,
+			statEl: this.statEl,
+			serviceEl: this.serviceEl,
 			drawGrid: this.drawGrid,
 			cellSize: this.cellSize,
 			lineHeight: this.lineHeight
@@ -59,77 +65,155 @@ export class CanvasRenderer extends BaseRenderer {
 		this.presenterEl.focus();
 	};
 
-	protected override renderServiceInfo(state: GameState): void {
-		this.serviceInfoCtx.clearRect(0, 0, this.serviceInfoEl.width, this.serviceInfoEl.height);
-		super.renderServiceInfo(state);
-	}
-
-	protected renderRect = ({ x, y }: Point, w: number, h: number, type: DrawingObject): void => {
-		this.presenterCtx.fillStyle = colors[type];
-		this.presenterCtx.fillRect(x, y, w * this.cellSize, h * this.cellSize);
+	protected use = (layer: Layer): BaseRenderer => {
+		this.activeLayer = this.layers[layer];
+		return this;
 	};
 
-	protected renderCell = ({ x, y }: Point, type: DrawingObject): void => {
-		if (x >= this.width || y >= this.height) {
-			return;
-		}
+	protected renderRect = ({ x, y }: Point, w: number, h: number, type: DrawingObject): void => {
+		this.activeLayer.fillStyle = colors[type];
+		this.activeLayer.fillRect(x, y, w * this.cellSize, h * this.cellSize);
+	};
 
-		const cX = x * this.cellSize;
-		const cY = y * this.cellSize;
+	protected renderCell = (point: Point, type: DrawingObject): void => {
+		const { x, y } = this.weightPoint(point);
 
 		if (type !== DrawingObject.Empty) {
-			this.presenterCtx.fillStyle = colors[type];
-			this.presenterCtx.fillRect(cX, cY, this.cellSize, this.cellSize);
+			this.activeLayer.fillStyle = colors[type];
+			this.activeLayer.fillRect(x, y, this.cellSize, this.cellSize);
 		} else {
-			this.presenterCtx.fillStyle = colors[type];
-			this.presenterCtx.fillRect(cX, cY, this.cellSize, this.cellSize);
+			this.activeLayer.fillStyle = colors[type];
+			this.activeLayer.fillRect(x, y, this.cellSize, this.cellSize);
 
 			if (this.drawGrid === DrawGrid.Yes) {
-				this.presenterCtx.strokeStyle = colors[DrawingObject.Grid];
-				this.presenterCtx.strokeRect(cX, cY, this.cellSize, this.cellSize);
+				this.activeLayer.strokeStyle = colors[DrawingObject.Grid];
+				this.activeLayer.strokeRect(x, y, this.cellSize, this.cellSize);
 			}
 		}
 	};
 
-	protected renderServiceTextLine = (text: string, lineNumber: number): void => {
-		this.renderTextLine(text, lineNumber, this.serviceInfoCtx);
+	protected clearRect = (point = { x: 0, y: 0 }, size?: Size): void => {
+		const { x, y } = this.weightPoint(point);
+		const { width, height } = size ? this.weightSize(size) : this.activeLayer.canvas;
+
+		this.activeLayer.clearRect(x, y, width, height);
 	};
 
-	protected renderPresenterLine = (text: string, lineNumber: number): void => {
-		this.renderTextLine(text, lineNumber, this.presenterCtx);
+	protected clearCell = (point: Point): void => {
+		this.clearRect(point, { width: 1, height: 1 });
 	};
 
-	private renderTextLine = (text: string, lineNumber: number, ctx: CanvasRenderingContext2D): void => {
-		ctx.fillStyle = 'blue';
-		ctx.font = `${this.lineHeight * 0.75}px serif`;
-		ctx.fillText(text, this.cellSize, this.lineHeight * lineNumber);
+	protected renderCircle = (point: Point, type: DrawingObject, radius = 0.5, fitToCell = true): void => {
+		const cRadius = radius * this.cellSize;
+		const { x, y } = this.weightPoint(point, fitToCell ? cRadius : 0);
+
+		this.activeLayer.fillStyle = colors[type];
+		this.activeLayer.beginPath();
+		this.activeLayer.arc(x, y, cRadius, 0, 2 * Math.PI);
+		this.activeLayer.fill();
 	};
 
-	private init = (): void => {
-		const { width: serviceInfoElWidth } = this.serviceInfoEl.getBoundingClientRect();
-		const presenterCtx = this.initCanvas(this.presenterEl, this.width, this.height);
-		const serviceInfoCtx = this.initCanvas(
-			this.serviceInfoEl,
-			serviceInfoElWidth * window.devicePixelRatio,
-			this.height,
-			true
+	protected renderTextLine = (text: string, lineNumber: number): void => {
+		this.activeLayer.fillStyle = '#FFFFFF';
+		this.activeLayer.font = `700 ${this.lineHeight * 0.75}px Verdana`;
+		this.activeLayer.fillText(text, this.cellSize, this.lineHeight * lineNumber);
+	};
+
+	protected renderText = (text: string, point: Point, lineHeight: number, type: DrawingObject): void => {
+		const { x, y } = this.weightPoint(point);
+
+		this.activeLayer.fillStyle = colors[type];
+		this.activeLayer.font = `700 ${lineHeight}px Verdana`;
+		this.activeLayer.fillText(text, x, y);
+	};
+
+	protected measureText = (text: string, lineHeight: number): number => {
+		this.activeLayer.font = `700 ${lineHeight}px Verdana`;
+		console.log('this.activeLayer.measureText(text).width: ', this.activeLayer.measureText(text).width);
+		return this.activeLayer.measureText(text).width / this.cellSize;
+	};
+
+	protected drawHeart = (point: Point, size: Size, type: DrawingObject): void => {
+		const { width, height } = this.weightSize(size);
+		const { x, y } = this.weightPoint(point);
+		const topCurveHeight = height * 0.3;
+
+		this.activeLayer.save();
+		this.activeLayer.beginPath();
+		this.activeLayer.moveTo(x, y + topCurveHeight);
+		// top left curve
+		this.activeLayer.bezierCurveTo(x, y, x - width / 2, y, x - width / 2, y + topCurveHeight);
+
+		// bottom left curve
+		this.activeLayer.bezierCurveTo(
+			x - width / 2,
+			y + (height + topCurveHeight) / 2,
+			x,
+			y + (height + topCurveHeight) / 2,
+			x,
+			y + height
 		);
 
-		if (!(presenterCtx && serviceInfoCtx)) {
+		// bottom right curve
+		this.activeLayer.bezierCurveTo(
+			x,
+			y + (height + topCurveHeight) / 2,
+			x + width / 2,
+			y + (height + topCurveHeight) / 2,
+			x + width / 2,
+			y + topCurveHeight
+		);
+
+		// top right curve
+		this.activeLayer.bezierCurveTo(x + width / 2, y, x, y, x, y + topCurveHeight);
+
+		this.activeLayer.closePath();
+		this.activeLayer.fillStyle = colors[type];
+		this.activeLayer.fill();
+		this.activeLayer.restore();
+	};
+
+	// make a single weight method
+	private weightPoint = ({ x, y }: Point, extra = 0): Point => ({
+		x: x * this.cellSize + extra,
+		y: y * this.cellSize + extra
+	});
+
+	private weightSize = ({ width, height }: Size, extra = 0): Size => ({
+		width: width * this.cellSize + extra,
+		height: height * this.cellSize + extra
+	});
+
+	private init = (): void => {
+		const size = this.weightSize(this.size);
+		const dpr = window.devicePixelRatio;
+		const { height: statElHeight } = this.statEl.getBoundingClientRect();
+		const { width: serviceElWidth } = this.serviceEl.getBoundingClientRect();
+		const presenterLayer = this.initCanvas(this.presenterEl, size);
+		const statLayer = this.initCanvas(this.statEl, { width: size.width, height: statElHeight * dpr });
+		const serviceLayer = this.initCanvas(this.serviceEl, { width: serviceElWidth * dpr, height: size.height });
+
+		if (!(presenterLayer && serviceLayer && statLayer)) {
 			return;
 		}
 
-		this.presenterCtx = presenterCtx;
-		this.serviceInfoCtx = serviceInfoCtx;
+		this.presenterLayer = presenterLayer;
+		this.statLayer = statLayer;
+		this.serviceLayer = serviceLayer;
+
+		this.layers = {
+			[Layer.Presenter]: this.presenterLayer,
+			[Layer.Stat]: this.statLayer,
+			[Layer.Service]: this.serviceLayer
+		};
 
 		this.presenterEl.addEventListener('keydown', this.onKeyDown);
 	};
 
 	private initCanvas = (
 		canvas: HTMLCanvasElement,
-		width: number,
-		height: number,
-		alpha = false
+		{ width, height }: Size,
+		alpha = true
 	): CanvasRenderingContext2D | null => {
 		const ctx = canvas.getContext('2d', { alpha });
 
