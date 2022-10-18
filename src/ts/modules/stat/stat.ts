@@ -58,10 +58,11 @@ export abstract class Stat {
 		}
 
 		const bodyFactor = bodyPartWeight * (isFriendlyFire ? -FRIENDLY_FIRE_WEIGHT : 1);
-		const scoreDelta = Math.ceil(damage * bodyFactor);
+		const actions = [StatActions.addScore(Math.floor((damage + awards) * bodyFactor), killer)];
 
-		const actions = [StatActions.addScore(scoreDelta + awards, killer)];
-		symDamage && actions.push(StatActions.addScore(-Math.ceil(scoreDelta * SYM_DAMAGE_WEIGHT), victim));
+		if (!isFriendlyFire && symDamage) {
+			actions.push(StatActions.addScore(-Math.floor(damage * bodyFactor * SYM_DAMAGE_WEIGHT), victim));
+		}
 
 		return actions;
 	};
