@@ -72,20 +72,12 @@ export enum Strategy {
 	Transparent = 'transparent'
 }
 
-export enum DrawGrid {
-	Yes = 'yes',
-	No = 'no'
-}
-
 export enum DrawingObject {
 	Empty = 1,
 	Head1 = 2,
 	Head2 = 3,
-	Body = 4,
 	Coin = 5,
-	Grid = 6,
-	Bullet = 7,
-	ServiceArea = 8
+	Bullet = 7
 }
 
 export enum DamageType {

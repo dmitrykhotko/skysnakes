@@ -1,12 +1,5 @@
-import {
-	SET_ARENA_TYPE,
-	SET_LIVES,
-	SET_DRAW_GRID,
-	SET_PLAYER_MODE,
-	LIVES,
-	PLAYER_MODE
-} from '../../../../utils/constants';
-import { Strategy, DrawGrid, PlayerMode } from '../../../../utils/enums';
+import { SET_ARENA_TYPE, SET_LIVES, SET_PLAYER_MODE, LIVES, PLAYER_MODE } from '../../../../utils/constants';
+import { Strategy, PlayerMode } from '../../../../utils/enums';
 import { Action } from '../..';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
@@ -15,7 +8,6 @@ import { setValue } from '../utils';
 export type SettingsState = {
 	playerMode: PlayerMode;
 	arenaType: Strategy;
-	drawGrid: DrawGrid;
 	lives: number;
 };
 
@@ -28,7 +20,6 @@ export abstract class SettingsReducer extends Reducer<SettingsStore> {
 		settings: {
 			playerMode: PLAYER_MODE,
 			arenaType: Strategy.Transparent,
-			drawGrid: DrawGrid.No,
 			lives: LIVES
 		}
 	} as SettingsStore;
@@ -47,9 +38,6 @@ export abstract class SettingsReducer extends Reducer<SettingsStore> {
 				break;
 			case SET_ARENA_TYPE:
 				propName = 'arenaType';
-				break;
-			case SET_DRAW_GRID:
-				propName = 'drawGrid';
 				break;
 			case SET_LIVES:
 				propName = 'lives';

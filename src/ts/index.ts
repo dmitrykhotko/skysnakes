@@ -14,6 +14,9 @@ const run = (): void => {
 		return;
 	}
 
+	const urlParams = new URLSearchParams(window.location.search);
+	const serviceInfoFlag = urlParams.get('serviceInfo') === 'true';
+
 	const cellSize = CELL_SIZE;
 	const dpr = window.devicePixelRatio;
 
@@ -29,7 +32,7 @@ const run = (): void => {
 	height /= cellSize;
 
 	const timer = new Timer();
-	const renderer = new CanvasRenderer({ presenterEl, statEl, serviceEl, size: { width, height } });
+	const renderer = new CanvasRenderer({ presenterEl, statEl, serviceEl, size: { width, height } }, serviceInfoFlag);
 	const controller = new Controller({
 		renderer,
 		autostart,

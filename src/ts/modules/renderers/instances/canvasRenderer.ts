@@ -1,21 +1,17 @@
 import { CELL_SIZE, CIRCLE_RADIUS_CELLS, LINE_HEIGHT } from '../../../utils/constants';
-import { DrawGrid, DrawingObject, KeyCode, Layer } from '../../../utils/enums';
+import { DrawingObject, KeyCode, Layer } from '../../../utils/enums';
 import { Point, Size } from '../../../utils/types';
 import { BaseRenderer } from './baseRenderer';
 
 const colors = {
-	[DrawingObject.Empty]: '#191970',
+	[DrawingObject.Empty]: '#0A045D',
 	[DrawingObject.Head1]: '#DEB887',
 	[DrawingObject.Head2]: '#00FF7F',
-	[DrawingObject.Body]: '#E67E22',
 	[DrawingObject.Coin]: '#FFFF00',
-	[DrawingObject.Grid]: '#758384',
-	[DrawingObject.Bullet]: '#ff3300',
-	[DrawingObject.ServiceArea]: 'yellow'
+	[DrawingObject.Bullet]: '#ff3300'
 };
 
 const defaultProps = {
-	drawGrid: DrawGrid.No,
 	cellSize: CELL_SIZE,
 	lineHeight: LINE_HEIGHT
 };
@@ -24,7 +20,6 @@ export type CanvasRendererProps = {
 	presenterEl: HTMLCanvasElement;
 	statEl: HTMLCanvasElement;
 	serviceEl: HTMLCanvasElement;
-	drawGrid?: DrawGrid;
 	size: Size;
 	cellSize?: number;
 	lineHeight?: number;
@@ -43,17 +38,16 @@ export class CanvasRenderer extends BaseRenderer {
 	private activeLayer = this.presenterLayer;
 	private layers!: Record<Layer, CanvasRenderingContext2D>;
 
-	constructor(props: CanvasRendererProps) {
+	constructor(props: CanvasRendererProps, serviceInfoFlag: boolean) {
 		const cProps = { ...defaultProps, ...props };
 		const { size } = cProps;
 
-		super(size);
+		super(size, serviceInfoFlag);
 
 		({
 			presenterEl: this.presenterEl,
 			statEl: this.statEl,
 			serviceEl: this.serviceEl,
-			drawGrid: this.drawGrid,
 			cellSize: this.cellSize,
 			lineHeight: this.lineHeight
 		} = cProps);
@@ -84,11 +78,6 @@ export class CanvasRenderer extends BaseRenderer {
 		} else {
 			this.activeLayer.fillStyle = colors[type];
 			this.activeLayer.fillRect(x, y, this.cellSize, this.cellSize);
-
-			if (this.drawGrid === DrawGrid.Yes) {
-				this.activeLayer.strokeStyle = colors[DrawingObject.Grid];
-				this.activeLayer.strokeRect(x, y, this.cellSize, this.cellSize);
-			}
 		}
 	};
 

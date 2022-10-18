@@ -1,4 +1,4 @@
-import { DrawGrid, DrawingObject, GameStatus, Layer, Player } from '../../../utils/enums';
+import { DrawingObject, GameStatus, Layer, Player } from '../../../utils/enums';
 import { InputActions, state, BinActions } from '../../redux';
 import { Bullet, Coin, GameState, PlayerInput, PlayerStat, Point, Size, SnakeData } from '../../../utils/types';
 import { Renderer } from '../renderer';
@@ -16,8 +16,6 @@ const defaultPrevState = {
 } as GameState;
 
 export abstract class BaseRenderer extends Renderer {
-	protected drawGrid = DrawGrid.No;
-
 	private prevState = defaultPrevState;
 	private isInitialized = false;
 
@@ -32,7 +30,7 @@ export abstract class BaseRenderer extends Renderer {
 	protected abstract clearCell: (point: Point) => void;
 	protected abstract drawLive: (point: Point, size: Size, type: DrawingObject, factor?: number) => void;
 
-	constructor(protected size: Size) {
+	constructor(protected size: Size, private serviceInfoFlag = true) {
 		super();
 	}
 
@@ -47,8 +45,9 @@ export abstract class BaseRenderer extends Renderer {
 		this.renderSnakes(snakes);
 		this.renderCoins(state.coins);
 		this.renderBullets(bullets);
-		this.renderServiceInfo(state);
 		this.renderStat(playersStat, winners);
+
+		this.serviceInfoFlag && this.renderServiceInfo(state);
 
 		!this.isInitialized && (this.isInitialized = true);
 		this.prevState = state;
@@ -65,7 +64,7 @@ export abstract class BaseRenderer extends Renderer {
 
 	protected renderServiceInfo(state: GameState): void {
 		const { playersStat, winners, snakes, coins } = state;
-		let lineNumber = 1;
+		let lineNumber = 2;
 
 		this.use(Layer.Service).clearRect();
 
