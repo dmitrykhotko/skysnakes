@@ -218,17 +218,17 @@ export abstract class Snakes {
 
 		switch (direction) {
 			case Direction.Left:
-				head = { x: width, y: height / 2 };
+				head = { x: width, y: Hlp.randomInt(height) };
 				break;
 			case Direction.Down:
-				head = { x: width / 2, y: 0 };
+				head = { x: Hlp.randomInt(width), y: 0 };
 				break;
 			case Direction.Up:
-				head = { x: width / 2, y: height };
+				head = { x: Hlp.randomInt(width), y: height };
 				break;
 			case Direction.Right:
 			default:
-				head = { x: 0, y: height / 2 };
+				head = { x: 0, y: Hlp.randomInt(height) };
 				break;
 		}
 

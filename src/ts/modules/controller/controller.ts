@@ -55,7 +55,9 @@ export class Controller {
 		this.arena.step();
 
 		const arenaState = this.getArenaData();
+
 		this.renderer.render(arenaState);
+		state.dispatch(ArenaActions.flushCoinsBuffer());
 
 		if (arenaState.gameStatus !== GameStatus.InProgress) {
 			return this.onFinish();
@@ -68,11 +70,13 @@ export class Controller {
 		>();
 
 		return {
+			...arena,
+			...stat,
 			snakes,
 			bullets,
 			bin,
-			...arena,
-			...stat
+			coins: arena.coinsBuffer,
+			additionalInfo: { coinsNum: arena.coins.length }
 		} as GameState;
 	};
 

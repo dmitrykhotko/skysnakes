@@ -2,7 +2,6 @@ import { DrawingObject, GameStatus, Layer, Player } from '../../../utils/enums';
 import { InputActions, state, BinActions } from '../../redux';
 import { Bullet, Coin, GameState, PlayerInput, PlayerStat, Point, Size, SnakeData } from '../../../utils/types';
 import { Renderer } from '../renderer';
-import { Hlp } from '../../../utils';
 import { LINE_HEIGHT, LIVE_SIZE_CELLS, SCORE_SEPARATOR } from '../../../utils/constants';
 
 const defaultPrevState = {
@@ -63,7 +62,7 @@ export abstract class BaseRenderer extends Renderer {
 	};
 
 	protected renderServiceInfo(state: GameState): void {
-		const { playersStat, winners, snakes, coins } = state;
+		const { playersStat, winners, snakes, additionalInfo } = state;
 		let lineNumber = 2;
 
 		this.use(Layer.Service).clearRect();
@@ -99,7 +98,16 @@ export abstract class BaseRenderer extends Renderer {
 
 		lineNumber++;
 
-		this.renderTextLine(`COINS NUMBER ${coins.length}`, lineNumber++);
+		if (!additionalInfo) {
+			return;
+		}
+
+		const aInfo = Object.entries(additionalInfo);
+
+		for (let i = 0; i < aInfo.length; i++) {
+			const [name, value] = aInfo[i];
+			this.renderTextLine(`${name}:  ${value.toString()}`, lineNumber++);
+		}
 	}
 
 	private renderStat = (playersStat: PlayerStat[], winners: Player[]): void => {
@@ -135,7 +143,7 @@ export abstract class BaseRenderer extends Renderer {
 		}
 
 		if (winners.length) {
-			const text = 'press Esc / Enter to restart';
+			const text = 'Press Esc / Enter to restart';
 			const sepLen = this.measureText(text, LINE_HEIGHT);
 
 			this.renderText(text, { x: baseX - sepLen / 2, y: 8 }, LINE_HEIGHT, DrawingObject.Bullet);
@@ -171,19 +179,11 @@ export abstract class BaseRenderer extends Renderer {
 	};
 
 	private renderCoins = (coins: Coin[]): void => {
-		const prevCoins = this.prevState.coins;
-
-		if (prevCoins === coins) {
-			return;
-		}
-
 		this.use(Layer.Presenter);
 
 		for (let i = 0; i < coins.length; i++) {
-			const { id, point } = coins[i];
-			const notRendered = !Hlp.getById(id, prevCoins);
-
-			notRendered && this.renderCircle(point, DrawingObject.Coin);
+			const { point } = coins[i];
+			this.renderCircle(point, DrawingObject.Coin);
 		}
 	};
 

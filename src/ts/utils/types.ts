@@ -44,6 +44,7 @@ export type GameState = {
 	playersStat: PlayerStat[];
 	winners: Player[];
 	bin: Point[];
+	additionalInfo?: Record<string, string | number>;
 };
 
 export type DirectionWithId = { direction: Direction; id: Id };

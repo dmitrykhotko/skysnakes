@@ -1,4 +1,11 @@
-import { GAME_RESET, REMOVE_COIN, SET_COIN, SET_GAME_STATUS, SET_SIZE } from '../../../../utils/constants';
+import {
+	FLUSH_COINS_BUFFER,
+	GAME_RESET,
+	REMOVE_COIN,
+	SET_COIN,
+	SET_GAME_STATUS,
+	SET_SIZE
+} from '../../../../utils/constants';
 import { Coin, Id, Size } from '../../../../utils/types';
 import { Action, SetValueAction } from '../..';
 import { Store } from '../../state';
@@ -10,6 +17,7 @@ import { Hlp } from '../../../../utils';
 export type ArenaState = {
 	gameStatus: GameStatus;
 	coins: Coin[];
+	coinsBuffer: Coin[];
 	size: Size;
 };
 
@@ -22,6 +30,7 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 		arena: {
 			gameStatus: GameStatus.InProgress,
 			coins: [],
+			coinsBuffer: [],
 			size: { width: 0, height: 0 }
 		}
 	} as ArenaStore;
@@ -37,6 +46,14 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 				return setValue(arenaStore, action, 'arena', 'size');
 			case SET_COIN:
 				return this.addCoin(state, action);
+			case FLUSH_COINS_BUFFER:
+				return {
+					...state,
+					arena: {
+						...arenaStore.arena,
+						coinsBuffer: []
+					}
+				};
 			case REMOVE_COIN:
 				return this.removeCoin(state, action);
 			case SET_GAME_STATUS:
@@ -57,7 +74,8 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 			...state,
 			arena: {
 				...arena,
-				coins: [...arena.coins, value]
+				coins: [...arena.coins, value],
+				coinsBuffer: [...arena.coinsBuffer, value]
 			}
 		};
 	};

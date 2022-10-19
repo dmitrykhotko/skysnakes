@@ -26,9 +26,9 @@ export const FRIENDLY_FIRE_WEIGHT = 1.5;
 export const SYM_DAMAGE_WEIGHT = 0.75;
 
 export const RESPAWN_SNAKE_DELAY = 1000;
-export const INIT_COINS_MAX_DELAY = 5000;
 export const RESPAWN_COIN_MAX_DELAY = 3000;
-export const COIN_LIVE_TIME = 60000;
+export const INIT_COINS_MAX_DELAY = 5000;
+export const COIN_LIVE_TIME = 90000;
 
 export const LIVES = 5;
 export const COINS_NUMBER = 50;
@@ -45,6 +45,7 @@ export const GAME_RESET = 'COMMON_ACTIONS/GAME_RESET';
 //// ARENA ACTIONS
 export const SET_SIZE = 'ARENA/SET_SIZE';
 export const SET_COIN = 'ARENA/SET_COIN';
+export const FLUSH_COINS_BUFFER = 'ARENA/FLUSH_COINS_BUFFER';
 export const REMOVE_COIN = 'ARENA/REMOVE_COIN';
 export const SET_GAME_STATUS = 'ARENA/SET_GAME_STATUS';
 

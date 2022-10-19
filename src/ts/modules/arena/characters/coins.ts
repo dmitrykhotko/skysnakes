@@ -55,13 +55,8 @@ export abstract class Coins {
 		this.activeCoins++;
 
 		Hlp.delayTask(() => {
-			const freeCells = Hlp.getFreeCells(width, height);
-			const coinCellIndex = Hlp.randomInt(freeCells.length);
-			const coinCellValue = freeCells[coinCellIndex];
-			const x = coinCellValue % width;
-			const y = (coinCellValue - x) / width;
 			const id = Hlp.generateId();
-			const point = { x, y };
+			const point = { x: Hlp.randomInt(width), y: Hlp.randomInt(height) };
 
 			state.dispatch(ArenaActions.setCoin({ id, point }));
 
