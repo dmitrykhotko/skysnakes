@@ -1,33 +1,38 @@
 import { FPS } from '../../utils/constants';
-import { BaseObservable } from '../observable/baseObservable';
+import { Observer } from '../observable/observer';
 
-export class Timer extends BaseObservable {
+const requestIdleCallback = !!window.requestIdleCallback
+	? window.requestIdleCallback.bind(window)
+	: window.setTimeout.bind(window);
+
+export class Timer {
 	private interval: number;
 	private lastFrameTime = 0;
-	private inProgress = true;
+	private rAFId?: number;
 
-	constructor(fps = FPS) {
-		super();
+	constructor(private renderCb: Observer, private calculateCb: Observer, fps = FPS) {
 		this.interval = 1000 / fps;
 	}
 
 	start = (): void => {
-		this.inProgress = true;
-		requestAnimationFrame(this.animate);
+		this.rAFId = requestAnimationFrame(this.render);
 	};
 
 	stop = (): void => {
-		this.inProgress = false;
+		this.rAFId && cancelAnimationFrame(this.rAFId);
 	};
 
-	private animate = (time: number): void => {
+	private render = (time: number): void => {
 		const delta = time - this.lastFrameTime;
+		requestAnimationFrame(this.render);
 
-		this.inProgress && requestAnimationFrame(this.animate);
-
-		if (delta > this.interval) {
-			this.lastFrameTime = time - (delta % this.interval);
-			this.notify();
+		if (delta < this.interval) {
+			return;
 		}
+
+		this.lastFrameTime = time - (delta % this.interval);
+		this.renderCb();
+
+		requestIdleCallback(this.calculateCb);
 	};
 }

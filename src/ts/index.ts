@@ -1,7 +1,5 @@
 import { Controller } from './modules/controller/controller';
-import { Observer } from './modules/observable/observer';
 import { CanvasRenderer } from './modules/renderers/instances/canvasRenderer';
-import { Timer } from './modules/timer/timer';
 import { CELL_SIZE } from './utils/constants';
 
 const run = (): void => {
@@ -31,18 +29,12 @@ const run = (): void => {
 	width /= cellSize;
 	height /= cellSize;
 
-	const timer = new Timer();
 	const renderer = new CanvasRenderer({ presenterEl, statEl, serviceEl, size: { width, height } }, serviceInfoFlag);
-	const controller = new Controller({
+	new Controller({
 		renderer,
 		autostart,
-		width,
-		height,
-		onStart: timer.start,
-		onFinish: timer.stop
+		size: { width, height }
 	});
-
-	timer.subscribe(controller.notify.bind(controller) as Observer);
 };
 
 run();

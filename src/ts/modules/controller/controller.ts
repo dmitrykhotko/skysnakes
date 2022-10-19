@@ -30,39 +30,46 @@ import { Hlp } from '../../utils';
 import { Snakes } from '../arena/characters/snakes';
 import { Bullets } from '../arena/characters/bullets';
 import { Stat } from '../stat/stat';
+import { Timer } from '../timer/timer';
 
 export class Controller {
 	private arena!: Arena;
 	private renderer: Renderer;
-	private onStart: () => void;
-	private onFinish: () => void;
+	private timer: Timer;
 
 	constructor(props: ControllerProps) {
 		const cProps = { ...defaultProps, ...props };
 		const { autostart } = cProps;
 
-		({ renderer: this.renderer, onStart: this.onStart, onFinish: this.onFinish } = cProps);
+		({ renderer: this.renderer } = cProps);
 
-		const { width, height } = cProps;
+		const {
+			size: { width, height }
+		} = cProps;
 
 		state.dispatch(ArenaActions.setSize({ width, height }));
 		this.arena = new Arena();
 		state.subscribe(this.handleInput as Observer, SET_INPUT);
+
+		this.timer = new Timer(this.render, this.calculate);
+
 		autostart && this.start();
 	}
 
-	notify(): void {
-		this.arena.step();
-
+	render = (): void => {
 		const arenaState = this.getArenaData();
 
 		this.renderer.render(arenaState);
 		state.dispatch(ArenaActions.flushCoinsBuffer());
 
 		if (arenaState.gameStatus !== GameStatus.InProgress) {
-			return this.onFinish();
+			return this.timer.stop();
 		}
-	}
+	};
+
+	calculate = (): void => {
+		this.arena.step();
+	};
 
 	private getArenaData = (): GameState => {
 		const { arena, snakes, bullets, bin, stat } = state.get<
@@ -96,7 +103,7 @@ export class Controller {
 		this.renderer.reset();
 		this.renderer.focus();
 
-		this.onStart();
+		this.timer.start();
 	};
 
 	private handleInput = (store: InputStore): void => {
@@ -119,12 +126,12 @@ export class Controller {
 		switch (gameStatus) {
 			case GameStatus.InProgress:
 				state.dispatch(ArenaActions.setGameStatus(GameStatus.Pause));
-				this.onFinish();
+				this.timer.stop();
 
 				break;
 			case GameStatus.Pause:
 				state.dispatch(ArenaActions.setGameStatus(GameStatus.InProgress));
-				this.onStart();
+				this.timer.start();
 
 				break;
 			case GameStatus.Stop:

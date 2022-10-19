@@ -1,4 +1,5 @@
 import { FireInput, Strategy, Direction, MoveInput, Player, PlayerMode } from '../../utils/enums';
+import { Size } from '../../utils/types';
 import { NormalStrategy, SoftWallsStrategy, TransparentWallsStrategy } from '../arena/strategies';
 import { Renderer } from '../renderers/renderer';
 
@@ -7,11 +8,8 @@ const { P1, P2 } = Player;
 
 export type ControllerProps = {
 	renderer: Renderer;
-	width: number;
-	height: number;
+	size: Size;
 	autostart?: boolean;
-	onStart: () => void;
-	onFinish: () => void;
 };
 
 export const inputToIdDirection = {
