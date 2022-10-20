@@ -83,7 +83,7 @@ export class Arena {
 		victim && this.respawn(victim);
 	};
 
-	private moveSnakeMiddleware = (id: Player, head: Point): boolean => {
+	private checkSnakeGrowth = (id: Player, head: Point): boolean => {
 		const success = Coins.checkFound(head);
 
 		success && Stat.faceCoin(id);
@@ -91,7 +91,7 @@ export class Arena {
 	};
 
 	private moveSnakes = (): void => {
-		Snakes.move(this.moveSnakeMiddleware);
+		Snakes.move(this.checkSnakeGrowth);
 
 		const actions = [] as Action[];
 		const snakes = Snakes.get();

@@ -4,16 +4,27 @@ import { Id, Point } from '../../../utils/types';
 import { ArenaActions, ArenaStore, BinActions, state } from '../../redux';
 
 export abstract class Coins {
-	private static activeCoins = 0;
+	private static activeCoinsNum = 0;
+	private static activeCoinsDicto: Record<Id, NodeJS.Timeout> = {};
 
 	static init = (): void => {
+		this.activeCoinsNum = 0;
+
+		const coinsTimeouts = Object.values(this.activeCoinsDicto);
+
+		for (let i = 0; i < coinsTimeouts.length; i++) {
+			clearTimeout(coinsTimeouts[i]);
+		}
+
+		this.activeCoinsDicto = {};
+
 		for (let i = 0; i < COINS_NUMBER; i++) {
 			this.set(INIT_COINS_MAX_DELAY);
 		}
 	};
 
 	static inspect = (): void => {
-		this.activeCoins < COINS_NUMBER && this.set();
+		this.activeCoinsNum < COINS_NUMBER && this.set();
 	};
 
 	static checkFound = (object: Point): boolean => {
@@ -51,11 +62,10 @@ export abstract class Coins {
 
 	private static set = (delay = RESPAWN_COIN_MAX_DELAY): void => {
 		const { width, height } = Hlp.getSize();
+		const id = Hlp.generateId();
 
-		this.activeCoins++;
-
-		Hlp.delayTask(() => {
-			const id = Hlp.generateId();
+		this.activeCoinsNum++;
+		this.activeCoinsDicto[id] = Hlp.delayTask(() => {
 			const point = { x: Hlp.randomInt(width), y: Hlp.randomInt(height) };
 
 			state.dispatch(ArenaActions.setCoin({ id, point }));
@@ -75,6 +85,7 @@ export abstract class Coins {
 
 	private static remove = (id: Id): void => {
 		state.dispatch(ArenaActions.removeCoin(id));
-		this.activeCoins--;
+		this.activeCoinsNum--;
+		delete this.activeCoinsDicto[id];
 	};
 }

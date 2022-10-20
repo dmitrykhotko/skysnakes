@@ -27,7 +27,7 @@ export abstract class BaseRenderer extends Renderer {
 	protected abstract renderTextLine: (text: string, lineNumber: number) => void;
 	protected abstract clearRect: (point?: Point, size?: Size) => void;
 	protected abstract clearCell: (point: Point) => void;
-	protected abstract drawLive: (point: Point, size: Size, type: DrawingObject, factor?: number) => void;
+	protected abstract renderLive: (point: Point, size: Size, type: DrawingObject, factor?: number) => void;
 
 	constructor(protected size: Size, private serviceInfoFlag = true) {
 		super();
@@ -137,7 +137,7 @@ export abstract class BaseRenderer extends Renderer {
 
 				for (let j = 0; j < lives; j++) {
 					const x = baseX + livesLength + j * wh;
-					this.drawLive({ x, y: 1 }, { width: wh, height: wh }, type);
+					this.renderLive({ x, y: 1 }, { width: wh, height: wh }, type, 0.5);
 				}
 			}
 		}
@@ -167,11 +167,10 @@ export abstract class BaseRenderer extends Renderer {
 		const isSingleWinnerFactor = winners.length === 1 ? 0 : 1;
 
 		for (let i = 0; i < winners.length; i++) {
-			this.drawLive(
+			this.renderLive(
 				{ x: baseX - (liveH * (i ? 1 : -1) * isSingleWinnerFactor) / 2, y: baseY - 1 },
 				{ width: wh, height: wh },
-				this.getType(winners[i]),
-				2
+				this.getType(winners[i])
 			);
 		}
 

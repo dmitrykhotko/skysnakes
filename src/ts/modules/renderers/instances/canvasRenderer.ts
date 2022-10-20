@@ -126,7 +126,12 @@ export class CanvasRenderer extends BaseRenderer {
 		return this.activeLayer.measureText(text).width / this.cellSize;
 	};
 
-	protected drawHeart = (point: Point, size: Size, type: DrawingObject): void => {
+	protected renderLive = (point: Point, { width, height }: Size, type: DrawingObject, factor = 1): void => {
+		const fSize = { width: width * factor, height: height * factor };
+		this.renderHeart(point, fSize, type);
+	};
+
+	private renderHeart = (point: Point, size: Size, type: DrawingObject): void => {
 		const { width, height } = this.weightSize(size);
 		const { x, y } = this.weightPoint(point);
 		const topCurveHeight = height * 0.3;
@@ -164,17 +169,6 @@ export class CanvasRenderer extends BaseRenderer {
 		this.activeLayer.fillStyle = colors[type];
 		this.activeLayer.fill();
 		this.activeLayer.restore();
-	};
-
-	protected drawLive = (point: Point, { width, height }: Size, type: DrawingObject, factor = 1): void => {
-		const fSize = { width: width * factor, height: height * factor };
-		const radius = CIRCLE_RADIUS_CELLS * factor;
-
-		this.drawHeart(point, fSize, type);
-		this.renderCircle(point, DrawingObject.Empty, radius);
-		this.renderCircle({ x: point.x - factor, y: point.y }, DrawingObject.Empty, radius);
-		this.renderCircle({ x: point.x, y: point.y + factor }, DrawingObject.Bullet, radius);
-		this.renderCircle({ x: point.x - factor, y: point.y + factor }, DrawingObject.Bullet, radius);
 	};
 
 	// make a single weight method

@@ -84,9 +84,7 @@ export abstract class Hlp {
 		return cells;
 	};
 
-	static delayTask = (task: Task, delay: number): void => {
-		setTimeout(task, delay);
-	};
+	static delayTask = (task: Task, delay?: number): NodeJS.Timeout => setTimeout(task, delay);
 
 	static getSize = (): Size => state.get<ArenaStore>().arena.size;
 }

@@ -2,6 +2,7 @@ import { join } from 'path';
 import { SourceMapDevToolPlugin } from 'webpack';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import StylelintPlugin from 'stylelint-webpack-plugin';
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 import ESLintPlugin from 'eslint-webpack-plugin';
 
@@ -9,7 +10,10 @@ const getPlugins = enableSourceMaps => {
 	const plugins = [
 		new MiniCssExtractPlugin({ filename: '[name].css' }),
 		new ESLintPlugin({ fix: true, extensions: ['js', 'jsx', 'ts', 'tsx'] }),
-		new StylelintPlugin({ fix: true, files: '**/*.scss' })
+		new StylelintPlugin({ fix: true, files: '**/*.scss' }),
+		new CopyWebpackPlugin({
+			patterns: [{ from: 'src/assets', to: 'assets' }]
+		})
 	];
 
 	if (enableSourceMaps) {

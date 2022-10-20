@@ -25,7 +25,7 @@ export abstract class Snakes {
 		});
 	};
 
-	static move = (middleware: (id: Player, head: Point) => boolean): void => {
+	static move = (checkGrowth: (id: Player, head: Point) => boolean): void => {
 		const snakes = this.get();
 
 		for (let i = 0; i < snakes.length; i++) {
@@ -43,7 +43,7 @@ export abstract class Snakes {
 			head.next = nextHead;
 			head = nextHead;
 
-			if (middleware(id, head)) {
+			if (checkGrowth(id, head)) {
 				actions.push(BinActions.moveToBin([tail]));
 
 				tail.next && (tail = tail.next);

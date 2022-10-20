@@ -1,7 +1,8 @@
 .Snake {
 	width: 100vw;
 	height: 100vh;
-	background-color: #0A045D;
+	background: linear-gradient(0deg, transparent 0, #0A045D 100%), url('../../assets/images/bg.jpeg');
+	background-position: center;
 
 	.Snake {
 	
