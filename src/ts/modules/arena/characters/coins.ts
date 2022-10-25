@@ -1,22 +1,18 @@
 import { Hlp } from '../../../utils';
 import { COINS_NUMBER, COIN_LIVE_TIME, INIT_COINS_MAX_DELAY, RESPAWN_COIN_MAX_DELAY } from '../../../utils/constants';
+import { DelayedTasks } from '../../../utils/delayedTasks';
 import { Id, Point } from '../../../utils/types';
 import { ArenaActions, ArenaStore, BinActions, state } from '../../redux';
 
 export abstract class Coins {
-	private static activeCoinsNum = 0;
-	private static activeCoinsDicto: Record<Id, NodeJS.Timeout> = {};
+	private static activeCoinsIds = [] as number[];
 
 	static init = (): void => {
-		this.activeCoinsNum = 0;
-
-		const coinsTimeouts = Object.values(this.activeCoinsDicto);
-
-		for (let i = 0; i < coinsTimeouts.length; i++) {
-			clearTimeout(coinsTimeouts[i]);
+		for (let i = 0; i < this.activeCoinsIds.length; i++) {
+			DelayedTasks.remove(this.activeCoinsIds[i]);
 		}
 
-		this.activeCoinsDicto = {};
+		this.activeCoinsIds = [];
 
 		for (let i = 0; i < COINS_NUMBER; i++) {
 			this.set(INIT_COINS_MAX_DELAY);
@@ -24,7 +20,7 @@ export abstract class Coins {
 	};
 
 	static inspect = (): void => {
-		this.activeCoinsNum < COINS_NUMBER && this.set();
+		this.activeCoinsIds.length < COINS_NUMBER && this.set();
 	};
 
 	static checkFound = (object: Point): boolean => {
@@ -64,13 +60,14 @@ export abstract class Coins {
 		const { width, height } = Hlp.getSize();
 		const id = Hlp.generateId();
 
-		this.activeCoinsNum++;
-		this.activeCoinsDicto[id] = Hlp.delayTask(() => {
+		this.activeCoinsIds.push(id);
+
+		DelayedTasks.delay(() => {
 			const point = { x: Hlp.randomInt(width), y: Hlp.randomInt(height) };
 
 			state.dispatch(ArenaActions.setCoin({ id, point }));
 
-			Hlp.delayTask(() => {
+			DelayedTasks.delay(() => {
 				const coin = Hlp.getById(id, state.get<ArenaStore>().arena.coins);
 
 				if (!coin) {
@@ -85,7 +82,6 @@ export abstract class Coins {
 
 	private static remove = (id: Id): void => {
 		state.dispatch(ArenaActions.removeCoin(id));
-		this.activeCoinsNum--;
-		delete this.activeCoinsDicto[id];
+		this.activeCoinsIds = Hlp.filter(id, this.activeCoinsIds);
 	};
 }

@@ -31,6 +31,7 @@ import { Snakes } from '../arena/characters/snakes';
 import { Bullets } from '../arena/characters/bullets';
 import { Stat } from '../stat/stat';
 import { Timer } from '../timer/timer';
+import { DelayedTasks } from '../../utils/delayedTasks';
 
 export class Controller {
 	private arena!: Arena;
@@ -68,6 +69,7 @@ export class Controller {
 	};
 
 	calculate = (): void => {
+		DelayedTasks.run();
 		this.arena.step();
 	};
 

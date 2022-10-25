@@ -24,7 +24,7 @@ export class Timer {
 
 	private render = (time: number): void => {
 		const delta = time - this.lastFrameTime;
-		requestAnimationFrame(this.render);
+		this.rAFId = requestAnimationFrame(this.render);
 
 		if (delta < this.interval) {
 			return;
