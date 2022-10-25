@@ -75,23 +75,6 @@ export abstract class Snakes {
 		}
 	};
 
-	static toNums = (): Set<number> => {
-		const { width } = Hlp.getSize();
-		const set: Set<number> = new Set<number>();
-		const snakes = this.get();
-
-		for (let i = 0; i < snakes.length; i++) {
-			let point: Point | undefined = snakes[i].head;
-
-			while (point) {
-				set.add(point.x + point.y * width);
-				point = point.prev;
-			}
-		}
-
-		return set;
-	};
-
 	static remove = (ids: Player[]): void => {
 		const actions = [] as Action[];
 

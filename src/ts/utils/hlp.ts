@@ -1,6 +1,3 @@
-import { Bullets } from '../modules/arena/characters/bullets';
-import { Coins } from '../modules/arena/characters/coins';
-import { Snakes } from '../modules/arena/characters/snakes';
 import { ArenaStore, state } from '../modules/redux';
 import { Direction } from './enums';
 import { Id, ObjectWithId, Point, Size } from './types';
@@ -66,36 +63,6 @@ export abstract class Hlp {
 		}
 
 		return targets;
-	};
-
-	static filter = <T>(id: T, items: T[]): T[] => {
-		const targets = [];
-
-		for (let i = 0; i < items.length; i++) {
-			const item = items[i];
-
-			if (item !== id) {
-				targets.push(item);
-			}
-		}
-
-		return targets;
-	};
-
-	// not sure about this method here
-	static getFreeCells = (width: number, height: number): number[] => {
-		const cells: number[] = [];
-		const set = new Set<number>([...Coins.toNums(), ...Snakes.toNums(), ...Bullets.toNums()]);
-
-		for (let i = 0; i < width * height; i++) {
-			if (set.has(i)) {
-				continue;
-			}
-
-			cells.push(i);
-		}
-
-		return cells;
 	};
 
 	static getSize = (): Size => state.get<ArenaStore>().arena.size;

@@ -1,41 +1,58 @@
 import { Hlp } from './hlp';
 import { Id } from './types';
 
-export type Task = (...params: unknown[]) => unknown;
+export type Task = (id: Id, ...params: unknown[]) => void;
 
-export type DelayedTask = {
-	delay: number;
+type DelayedTask = {
 	task: Task;
 	id: Id;
+	params?: unknown[];
 };
 
 export abstract class DelayedTasks {
-	private static delayedTasks = [] as DelayedTask[];
+	private static tasks = {} as Record<number, DelayedTask[]>;
+	private static rmSet = new Set<Id>();
+	private static step = 0;
 
-	static delay = (task: Task, delay: number): Id => {
+	static delay = (task: Task, delay: number, ...params: unknown[]): Id => {
 		const id = Hlp.generateId();
+		const step = this.step + delay;
 
-		this.delayedTasks.push({
+		if (!this.tasks[step]) {
+			this.tasks[step] = [];
+		}
+
+		this.tasks[step].push({
 			id,
-			delay,
-			task
+			task,
+			params
 		});
 
 		return id;
 	};
 
 	static run = (): void => {
-		const delayedTasks = [] as DelayedTask[];
+		const tasks = this.tasks[this.step];
 
-		for (let i = 0; i < this.delayedTasks.length; i++) {
-			const item = this.delayedTasks[i];
-			item.delay-- ? delayedTasks.push(item) : item.task();
+		if (tasks) {
+			for (let i = 0; i < tasks.length; i++) {
+				const { task, id, params = [] } = tasks[i];
+
+				if (this.rmSet.has(id)) {
+					this.rmSet.delete(id);
+					continue;
+				}
+
+				task(id, ...params);
+			}
+
+			delete this.tasks[this.step];
 		}
 
-		this.delayedTasks = delayedTasks;
+		this.step++;
 	};
 
 	static remove = (id: Id): void => {
-		this.delayedTasks = Hlp.filterById(id, this.delayedTasks);
+		this.rmSet.add(id);
 	};
 }

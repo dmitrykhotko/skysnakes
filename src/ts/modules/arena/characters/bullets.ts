@@ -44,19 +44,6 @@ export abstract class Bullets {
 		return [BulletsActions.remove(id), BinActions.moveToBin(bin)];
 	};
 
-	static toNums = (): Set<number> => {
-		const { width } = Hlp.getSize();
-		const set: Set<number> = new Set<number>();
-		const bullets = state.get<BulletsStore>().bullets;
-
-		for (let i = 0; i < bullets.length; i++) {
-			const { point } = bullets[i];
-			set.add(point.x + point.y * width);
-		}
-
-		return set;
-	};
-
 	private static checkCollision = (bullet: Bullet): Action[] => {
 		const {
 			id,
