@@ -11,7 +11,6 @@ type DelayedTask = {
 
 export abstract class DelayedTasks {
 	private static tasks = {} as Record<number, DelayedTask[]>;
-	private static rmSet = new Set<Id>();
 	private static step = 0;
 
 	static delay = (task: Task, delay: number, ...params: unknown[]): Id => {
@@ -36,13 +35,7 @@ export abstract class DelayedTasks {
 
 		if (tasks) {
 			for (let i = 0; i < tasks.length; i++) {
-				const { task, id, params = [] } = tasks[i];
-
-				if (this.rmSet.has(id)) {
-					this.rmSet.delete(id);
-					continue;
-				}
-
+				const { task, params = [] } = tasks[i];
 				task(...params);
 			}
 
@@ -52,13 +45,8 @@ export abstract class DelayedTasks {
 		this.step++;
 	};
 
-	static remove = (id: Id): void => {
-		this.rmSet.add(id);
-	};
-
 	static reset = (): void => {
 		this.tasks = {};
-		this.rmSet = new Set<Id>();
 		this.step = 0;
 	};
 }

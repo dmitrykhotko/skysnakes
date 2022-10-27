@@ -97,14 +97,12 @@ export class Arena {
 		const actions = [] as Action[];
 		const snakes = Snakes.get();
 		const victims = [];
-		const cutIt = [] as PointWithId[];
 
 		for (let i = 0; i < snakes.length; i++) {
 			const { id, head } = snakes[i];
 			const ramActions = this.checkRam(id, head);
 
 			if (ramActions.length) {
-				// cutIt.push(...ramResult);
 				victims.push(id);
 				actions.push(...ramActions, StatActions.decLives(id));
 
@@ -122,7 +120,7 @@ export class Arena {
 			}
 		}
 
-		state.dispatch(...actions, ...Snakes.cut(...cutIt).actions);
+		state.dispatch(...actions);
 
 		const { result: victim, actions: hitsActions } = this.checkHits();
 		state.dispatch(...hitsActions);
