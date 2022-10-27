@@ -21,16 +21,17 @@ export const COIN_AWARD = 2;
 export const HEAD_SHOT_AWARD = 15;
 export const KILL_AWARD = 5;
 export const BODY_PART_HIT_WEIGHT = 0.6;
-export const BODY_PART_RAM_WEIGHT = 0.5;
-export const FRIENDLY_FIRE_WEIGHT = 1.5;
+export const BODY_PART_RAM_WEIGHT = 0.6;
+export const FRIENDLY_FIRE_WEIGHT = 3.5;
 export const SYM_DAMAGE_WEIGHT = 0.75;
 
 export const RESPAWN_SNAKE_DELAY = 1 * FPS; // X * FPS = Seconds
 export const RESPAWN_COIN_MAX_DELAY = 3 * FPS;
 export const INIT_COINS_MAX_DELAY = 5 * FPS;
-export const COIN_LIVE_TIME = 90 * FPS;
+export const STANDARD_COIN_LIFETIME = 90 * FPS;
+export const DEATH_COIN_LIFETIME = 270 * FPS;
 
-export const LIVES = 500;
+export const LIVES = 5;
 export const COINS_NUMBER = 50;
 export const PLAYER_MODE = PlayerMode.Multiplayer;
 

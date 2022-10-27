@@ -84,11 +84,11 @@ export class Arena {
 		victim && this.respawn(victim);
 	};
 
-	private checkSnakeGrowth = (id: Player, head: Point): boolean => {
-		const success = Coins.checkCollisions(head);
+	private checkSnakeGrowth = (id: Player, head: Point): number => {
+		const coinsNum = Coins.checkCollisions(head);
 
-		success && Stat.faceCoin(id);
-		return !success;
+		coinsNum && Stat.faceCoin(id, coinsNum);
+		return coinsNum;
 	};
 
 	private moveSnakes = (): void => {
@@ -101,10 +101,10 @@ export class Arena {
 
 		for (let i = 0; i < snakes.length; i++) {
 			const { id, head } = snakes[i];
-			const { result: ramResult, actions: ramActions } = this.checkRam(id, head);
+			const ramActions = this.checkRam(id, head);
 
 			if (ramActions.length) {
-				cutIt.push(...ramResult);
+				// cutIt.push(...ramResult);
 				victims.push(id);
 				actions.push(...ramActions, StatActions.decLives(id));
 
@@ -131,38 +131,48 @@ export class Arena {
 		victims.length && this.respawn(...victims);
 	};
 
-	private checkRam = (killer: Player, head: Point): ResultWitActions<PointWithId[]> => {
+	private checkRam = (killer: Player, head: Point): Action[] => {
 		const actions = [] as Action[];
 		const facedSnake = Snakes.checkCollisions(head);
-		const cutIt = [] as PointWithId[];
 
 		if (!facedSnake) {
-			return { result: [], actions: [] };
+			return actions;
 		}
 
 		const { id: victim, point: facedPoint } = facedSnake;
+
 		let victimDamage = 0;
 		let killerDamage = 0;
+		let victimPoints = [] as Point[];
+		let killerPoints = [] as Point[];
 
 		if (victim !== killer) {
-			cutIt.push({
+			const { result: cutPoints, actions: cutActions } = Snakes.cut({
 				id: victim,
 				point: facedPoint
 			});
 
-			victimDamage = Snakes.len(victim, facedPoint);
-			killerDamage = Snakes.len(killer);
+			killerPoints = Snakes.toArray(killer);
+			victimPoints = cutPoints;
+
+			victimDamage = victimPoints.length;
+			killerDamage = killerPoints.length;
 
 			actions.push(
 				...Stat.setDamage({ killer, victim, damage: victimDamage - killerDamage }),
-				...Stat.setDamage({ killer: victim, victim: killer, damage: killerDamage - victimDamage })
+				...Stat.setDamage({ killer: victim, victim: killer, damage: killerDamage - victimDamage }),
+				...cutActions
 			);
 		} else {
-			killerDamage = Snakes.len(killer);
+			killerPoints = Snakes.toArray(killer);
+			killerDamage = killerPoints.length;
 			actions.push(...Stat.setDamage({ killer, victim: killer, damage: killerDamage }));
 		}
 
-		return { result: cutIt, actions };
+		Coins.setDeathCoins(killerPoints, killer);
+		Coins.setDeathCoins(victimPoints, victim);
+
+		return actions;
 	};
 
 	private checkHits = (): ResultWitActions<Player | undefined> => {
@@ -195,7 +205,7 @@ export class Arena {
 			state.dispatch(...Bullets.remove(bullet), ...hitActions, ...addScoreActions);
 
 			!isHeadShot && points.shift();
-			Coins.setExtraCoins(points);
+			Coins.setDeathCoins(points, victim);
 
 			if (isDead) {
 				const player = snakeShotResult.id;

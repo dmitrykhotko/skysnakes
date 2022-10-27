@@ -6,7 +6,7 @@ import { Reducer } from '../reducer';
 import { Point, SnakeData } from '../../../../utils/types';
 import { Hlp } from '../../../../utils';
 
-export type SnakeState = SnakeData & { newDirection?: Direction };
+export type SnakeState = SnakeData & { newDirection?: Direction; growthBuffer: number };
 
 export type SnakesStore = {
 	snakes: SnakeState[];
@@ -51,7 +51,7 @@ export abstract class SnakesReducer extends Reducer<SnakesStore> {
 
 	private static setSnake = (state: Store, action: Action): SnakesStore => {
 		const snakesState = state as SnakesStore;
-		const { value } = action as SetValueAction<SnakeData>;
+		const { value } = action as SetValueAction<SnakeState>;
 
 		return {
 			...snakesState,

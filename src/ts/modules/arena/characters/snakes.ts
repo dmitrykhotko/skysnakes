@@ -25,7 +25,7 @@ export abstract class Snakes {
 		});
 	};
 
-	static move = (checkGrowth: (id: Player, head: Point) => boolean): void => {
+	static move = (checkGrowth: (id: Player, head: Point) => number): void => {
 		const snakes = this.get();
 
 		for (let i = 0; i < snakes.length; i++) {
@@ -33,7 +33,7 @@ export abstract class Snakes {
 			const { id } = snakes[i];
 			const actions = [] as Action[];
 
-			let { head, tail, direction } = snake;
+			let { head, tail, direction, growthBuffer } = snake;
 
 			direction = this.applyDirection(snake);
 
@@ -43,14 +43,18 @@ export abstract class Snakes {
 			head.next = nextHead;
 			head = nextHead;
 
-			if (checkGrowth(id, head)) {
+			growthBuffer += checkGrowth(id, head);
+
+			if (growthBuffer) {
+				growthBuffer--;
+			} else {
 				actions.push(BinActions.moveToBin([tail]));
 
 				tail.next && (tail = tail.next);
 				tail.prev = undefined;
 			}
 
-			state.dispatch(SnakesActions.setSnake({ id, head, tail, direction }), ...actions);
+			state.dispatch(SnakesActions.setSnake({ id, head, tail, direction, growthBuffer }), ...actions);
 		}
 	};
 
@@ -129,6 +133,17 @@ export abstract class Snakes {
 		return len;
 	};
 
+	static toArray = (id: Player, start = this.getById(id).head): Point[] => {
+		const points = [] as Point[];
+		let point: Point | undefined = start;
+
+		while (point) {
+			points.push(point) && (point = point.prev);
+		}
+
+		return points;
+	};
+
 	static cut = (...cutIt: PointWithId[]): ResultWitActions<Point[]> => {
 		const bin = [] as Point[];
 		const actions = [] as Action[];
@@ -158,20 +173,9 @@ export abstract class Snakes {
 		};
 	};
 
-	private static toArray = (id: Player): Point[] => {
-		const points = [] as Point[];
-		let point: Point | undefined = this.getById(id).head;
-
-		while (point) {
-			points.push(point) && (point = point.prev);
-		}
-
-		return points;
-	};
-
 	private static create = (id: Player, direction: Direction, head: Point): void => {
 		const tail = this.initBody(head, SNAKE_LENGTH, direction);
-		state.dispatch(SnakesActions.setSnake({ id, head, tail, direction }));
+		state.dispatch(SnakesActions.setSnake({ id, head, tail, direction, growthBuffer: 0 }));
 	};
 
 	private static initBody = (head: Point, length: number, direction: Direction): Point => {

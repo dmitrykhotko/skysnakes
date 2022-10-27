@@ -74,10 +74,11 @@ export enum Strategy {
 
 export enum DrawingObject {
 	Empty = 1,
-	Head1 = 2,
-	Head2 = 3,
-	Coin = 5,
-	Bullet = 7
+	Player1 = 2,
+	Player2 = 3,
+	StandardCoin = 5,
+	Bullet = 7,
+	WinnersText = 8
 }
 
 export enum DamageType {
@@ -91,4 +92,12 @@ export enum Layer {
 	Presenter = 1,
 	Stat = 2,
 	Service = 3
+}
+
+export enum CoinType {
+	Standard = 1,
+	DeathPlayer1 = 2,
+	DeathPlayer2 = 3
+	// Large = 4,
+	// Super = 5
 }

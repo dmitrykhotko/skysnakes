@@ -58,17 +58,17 @@ export abstract class Stat {
 		}
 
 		const bodyFactor = bodyPartWeight * (isFriendlyFire ? -FRIENDLY_FIRE_WEIGHT : 1);
-		const actions = [StatActions.addScore(Math.floor((damage + awards) * bodyFactor), killer)];
+		const actions = [StatActions.addScore(Math.ceil((damage + awards) * bodyFactor), killer)];
 
 		if (!isFriendlyFire && symDamage) {
-			actions.push(StatActions.addScore(-Math.floor(damage * bodyFactor * SYM_DAMAGE_WEIGHT), victim));
+			actions.push(StatActions.addScore(-Math.ceil(damage * bodyFactor * SYM_DAMAGE_WEIGHT), victim));
 		}
 
 		return actions;
 	};
 
-	static faceCoin = (id: Player): void => {
-		state.dispatch(StatActions.addScore(COIN_AWARD, id));
+	static faceCoin = (id: Player, num: number): void => {
+		state.dispatch(StatActions.addScore(COIN_AWARD * num, id));
 	};
 
 	private static judge = (): void => {

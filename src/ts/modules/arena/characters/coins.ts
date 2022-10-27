@@ -1,95 +1,97 @@
 import { Hlp } from '../../../utils';
-import { COINS_NUMBER, COIN_LIVE_TIME, INIT_COINS_MAX_DELAY, RESPAWN_COIN_MAX_DELAY } from '../../../utils/constants';
+import {
+	COINS_NUMBER,
+	STANDARD_COIN_LIFETIME,
+	INIT_COINS_MAX_DELAY,
+	RESPAWN_COIN_MAX_DELAY,
+	DEATH_COIN_LIFETIME
+} from '../../../utils/constants';
 import { DelayedTasks, Task } from '../../../utils/delayedTasks';
+import { CoinType, Player } from '../../../utils/enums';
 import { Id, Point, Size } from '../../../utils/types';
 import { ArenaActions, ArenaStore, BinActions, state } from '../../redux';
 
 export abstract class Coins {
-	private static activeCoinsIds = [] as number[];
-	private static activeTasks = new Set<Id>();
+	private static typeToLifeTime = {
+		[CoinType.Standard]: STANDARD_COIN_LIFETIME,
+		[CoinType.DeathPlayer1]: DEATH_COIN_LIFETIME,
+		[CoinType.DeathPlayer2]: DEATH_COIN_LIFETIME
+	};
+
+	private static playerToDeathPlayer = {
+		[Player.P1]: CoinType.DeathPlayer1,
+		[Player.P2]: CoinType.DeathPlayer2
+	};
+
+	private static activeCoinsNum = 0;
 
 	static init = (): void => {
-		const activeTasks = [...this.activeTasks];
-
-		for (let i = 0; i < activeTasks.length; i++) {
-			DelayedTasks.remove(activeTasks[i]);
-		}
-
-		this.activeTasks = new Set<Id>();
-		this.activeCoinsIds = [];
+		this.activeCoinsNum = 0;
 
 		for (let i = 0; i < COINS_NUMBER; i++) {
-			this.set(INIT_COINS_MAX_DELAY);
+			this.delayedSet(INIT_COINS_MAX_DELAY);
 		}
 	};
 
 	static checkNumber = (): void => {
-		this.activeCoinsIds.length < COINS_NUMBER && this.set();
+		this.activeCoinsNum < COINS_NUMBER && this.delayedSet();
 	};
 
-	static checkCollisions = (object: Point): boolean => {
+	static checkCollisions = (object: Point): number => {
 		const { coins } = state.get<ArenaStore>().arena;
+
 		let success = false;
+		let num = 0;
 
 		for (let i = 0; i < coins.length; i++) {
-			const { id, point } = coins[i];
+			const { id, point, type } = coins[i];
 
 			success = Hlp.comparePoints(object, point);
 
 			if (success) {
-				this.remove(id);
+				this.remove(id, type);
 				this.checkNumber();
 
-				break;
+				num++;
 			}
 		}
 
-		return success;
+		return num;
 	};
 
-	static setExtraCoins = (points: Point[]): void => {
+	static setDeathCoins = (points: Point[], player: Player): void => {
 		const size = Hlp.getSize();
 
 		for (let i = 0; i < points.length; i++) {
-			this.setTask(0, Hlp.generateId(), size, points[i]);
+			this.set(Hlp.generateId(), size, points[i], this.playerToDeathPlayer[player]);
 		}
 	};
 
-	private static removeTask = (taskId: Id, id: Id, point: Point): void => {
-		const coin = Hlp.getById(id, state.get<ArenaStore>().arena.coins);
+	private static delayedSet = (delay = RESPAWN_COIN_MAX_DELAY): void => {
+		const id = Hlp.generateId();
 
-		this.activeTasks.delete(taskId);
+		this.activeCoinsNum++;
+		DelayedTasks.delay(this.set as Task, Hlp.randomInt(delay), id, Hlp.getSize());
+	};
+
+	private static set = (
+		id: Id,
+		{ width, height }: Size,
+		point = { x: Hlp.randomInt(width), y: Hlp.randomInt(height) },
+		type = CoinType.Standard
+	): void => {
+		state.dispatch(ArenaActions.setCoin({ id, point, type }));
+		DelayedTasks.delay(this.remove as Task, Hlp.randomInt(this.typeToLifeTime[type]), id, type);
+	};
+
+	private static remove = (id: Id, type: CoinType): void => {
+		const coin = Hlp.getById(id, state.get<ArenaStore>().arena.coins);
 
 		if (!coin) {
 			return;
 		}
 
-		this.remove(id);
-		state.dispatch(BinActions.moveToBin([point]));
-	};
-
-	private static setTask = (
-		taskId: Id,
-		id: Id,
-		{ width, height }: Size,
-		point = { x: Hlp.randomInt(width), y: Hlp.randomInt(height) }
-	): void => {
-		state.dispatch(ArenaActions.setCoin({ id, point }));
-		taskId && this.activeTasks.delete(taskId);
-		this.activeTasks.add(DelayedTasks.delay(this.removeTask as Task, Hlp.randomInt(COIN_LIVE_TIME), id, point));
-	};
-
-	private static set = (delay = RESPAWN_COIN_MAX_DELAY): void => {
-		const id = Hlp.generateId();
-
-		this.activeCoinsIds.push(id);
-		this.activeTasks.add(DelayedTasks.delay(this.setTask as Task, Hlp.randomInt(delay), id, Hlp.getSize()));
-	};
-
-	private static remove = (id: Id): void => {
-		const index = this.activeCoinsIds.indexOf(id);
-
-		~index && this.activeCoinsIds.splice(index, 1);
-		state.dispatch(ArenaActions.removeCoin(id));
+		type === CoinType.Standard && this.activeCoinsNum--;
+		state.dispatch(ArenaActions.removeCoin(id), BinActions.moveToBin([coin.point]));
 	};
 }

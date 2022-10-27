@@ -1,21 +1,27 @@
-import { DrawingObject, GameStatus, Layer, Player } from '../../../utils/enums';
+import { CoinType, DrawingObject, GameStatus, Layer, Player } from '../../../utils/enums';
 import { InputActions, state, BinActions } from '../../redux';
 import { Bullet, Coin, GameState, PlayerInput, PlayerStat, Point, Size, SnakeData } from '../../../utils/types';
 import { Renderer } from '../renderer';
 import { LINE_HEIGHT, LIVE_SIZE_CELLS, SCORE_SEPARATOR } from '../../../utils/constants';
 
-const defaultPrevState = {
-	gameStatus: GameStatus.Stop,
-	coins: [],
-	snakes: [],
-	bullets: [],
-	playersStat: [],
-	winners: [],
-	bin: []
-} as GameState;
-
 export abstract class BaseRenderer extends Renderer {
-	private prevState = defaultPrevState;
+	private static defaultPrevState = {
+		gameStatus: GameStatus.Stop,
+		coins: [],
+		snakes: [],
+		bullets: [],
+		playersStat: [],
+		winners: [],
+		bin: []
+	} as GameState;
+
+	private static coinTypeToDrawingObject = {
+		[CoinType.Standard]: DrawingObject.StandardCoin,
+		[CoinType.DeathPlayer1]: DrawingObject.Player1,
+		[CoinType.DeathPlayer2]: DrawingObject.Player2
+	};
+
+	private prevState = BaseRenderer.defaultPrevState;
 	private isInitialized = false;
 
 	protected abstract use: (layer: Layer) => BaseRenderer;
@@ -53,7 +59,7 @@ export abstract class BaseRenderer extends Renderer {
 	};
 
 	reset = (): void => {
-		this.prevState = defaultPrevState;
+		this.prevState = BaseRenderer.defaultPrevState;
 		this.isInitialized = false;
 	};
 
@@ -126,7 +132,7 @@ export abstract class BaseRenderer extends Renderer {
 
 		for (let i = 0; i < playersStat.length; i++) {
 			const { id, lives, score } = playersStat[i];
-			const type = this.getType(id);
+			const type = this.getSnakeDrawingObject(id);
 			const text = score.toString();
 			const textLength = this.measureText(text, LINE_HEIGHT);
 
@@ -170,19 +176,19 @@ export abstract class BaseRenderer extends Renderer {
 			this.renderLive(
 				{ x: baseX - (liveH * (i ? 1 : -1) * isSingleWinnerFactor) / 2, y: baseY - 1 },
 				{ width: wh, height: wh },
-				this.getType(winners[i])
+				this.getSnakeDrawingObject(winners[i])
 			);
 		}
 
-		this.renderText(text, { x: baseX - textLength / 2, y: baseY - 2 }, lineHeight, DrawingObject.Coin);
+		this.renderText(text, { x: baseX - textLength / 2, y: baseY - 2 }, lineHeight, DrawingObject.WinnersText);
 	};
 
 	private renderCoins = (coins: Coin[]): void => {
 		this.use(Layer.Presenter);
 
 		for (let i = 0; i < coins.length; i++) {
-			const { point } = coins[i];
-			this.renderCircle(point, DrawingObject.Coin);
+			const { point, type } = coins[i];
+			this.renderCircle(point, BaseRenderer.coinTypeToDrawingObject[type]);
 		}
 	};
 
@@ -191,7 +197,7 @@ export abstract class BaseRenderer extends Renderer {
 
 		for (let i = 0; i < snakes.length; i++) {
 			const { id, head, tail } = snakes[i];
-			const type = this.getType(id);
+			const type = this.getSnakeDrawingObject(id);
 
 			if (this.isInitialized) {
 				this.renderCell(head, type);
@@ -212,7 +218,8 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	};
 
-	private getType = (id: Player): DrawingObject => (id === Player.P1 ? DrawingObject.Head1 : DrawingObject.Head2);
+	private getSnakeDrawingObject = (id: Player): DrawingObject =>
+		id === Player.P1 ? DrawingObject.Player1 : DrawingObject.Player2;
 
 	private renderBullets = (bulletsArr: Bullet[]): void => {
 		this.use(Layer.Presenter);
@@ -232,7 +239,6 @@ export abstract class BaseRenderer extends Renderer {
 		}
 
 		for (let i = 0; i < bin.length; i++) {
-			// this.renderCircle(bin[i], DrawingObject.Empty);
 			this.clearCell(bin[i]);
 		}
 

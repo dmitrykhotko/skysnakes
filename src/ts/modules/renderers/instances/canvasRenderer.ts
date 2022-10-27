@@ -3,19 +3,6 @@ import { DrawingObject, KeyCode, Layer } from '../../../utils/enums';
 import { Point, Size } from '../../../utils/types';
 import { BaseRenderer } from './baseRenderer';
 
-const colors = {
-	[DrawingObject.Empty]: '#0A045D',
-	[DrawingObject.Head1]: '#DEB887',
-	[DrawingObject.Head2]: '#00FF7F',
-	[DrawingObject.Coin]: '#FFFF00',
-	[DrawingObject.Bullet]: '#ff3300'
-};
-
-const defaultProps = {
-	cellSize: CELL_SIZE,
-	lineHeight: LINE_HEIGHT
-};
-
 export type CanvasRendererProps = {
 	presenterEl: HTMLCanvasElement;
 	statEl: HTMLCanvasElement;
@@ -26,6 +13,20 @@ export type CanvasRendererProps = {
 };
 
 export class CanvasRenderer extends BaseRenderer {
+	private static colors = {
+		[DrawingObject.Empty]: '#0A045D',
+		[DrawingObject.Player1]: '#BB8FCE',
+		[DrawingObject.Player2]: '#00FF7F',
+		[DrawingObject.StandardCoin]: '#FFFF00',
+		[DrawingObject.Bullet]: '#ff3300',
+		[DrawingObject.WinnersText]: '#FFFF00'
+	};
+
+	private static defaultProps = {
+		cellSize: CELL_SIZE,
+		lineHeight: LINE_HEIGHT
+	};
+
 	private presenterEl: HTMLCanvasElement;
 	private presenterLayer!: CanvasRenderingContext2D;
 	private statEl: HTMLCanvasElement;
@@ -39,7 +40,7 @@ export class CanvasRenderer extends BaseRenderer {
 	private layers!: Record<Layer, CanvasRenderingContext2D>;
 
 	constructor(props: CanvasRendererProps, serviceInfoFlag: boolean) {
-		const cProps = { ...defaultProps, ...props };
+		const cProps = { ...CanvasRenderer.defaultProps, ...props };
 		const { size } = cProps;
 
 		super(size, serviceInfoFlag);
@@ -65,7 +66,7 @@ export class CanvasRenderer extends BaseRenderer {
 	};
 
 	protected renderRect = ({ x, y }: Point, w: number, h: number, type: DrawingObject): void => {
-		this.activeLayer.fillStyle = colors[type];
+		this.activeLayer.fillStyle = CanvasRenderer.colors[type];
 		this.activeLayer.fillRect(x, y, w * this.cellSize, h * this.cellSize);
 	};
 
@@ -73,10 +74,10 @@ export class CanvasRenderer extends BaseRenderer {
 		const { x, y } = this.weightPoint(point);
 
 		if (type !== DrawingObject.Empty) {
-			this.activeLayer.fillStyle = colors[type];
+			this.activeLayer.fillStyle = CanvasRenderer.colors[type];
 			this.activeLayer.fillRect(x, y, this.cellSize, this.cellSize);
 		} else {
-			this.activeLayer.fillStyle = colors[type];
+			this.activeLayer.fillStyle = CanvasRenderer.colors[type];
 			this.activeLayer.fillRect(x, y, this.cellSize, this.cellSize);
 		}
 	};
@@ -101,7 +102,7 @@ export class CanvasRenderer extends BaseRenderer {
 		const cRadius = radius * this.cellSize;
 		const { x, y } = this.weightPoint(point, fitToCell ? cRadius : 0);
 
-		this.activeLayer.fillStyle = colors[type];
+		this.activeLayer.fillStyle = CanvasRenderer.colors[type];
 		this.activeLayer.beginPath();
 		this.activeLayer.arc(x, y, cRadius, 0, 2 * Math.PI);
 		this.activeLayer.fill();
@@ -116,7 +117,7 @@ export class CanvasRenderer extends BaseRenderer {
 	protected renderText = (text: string, point: Point, lineHeight: number, type: DrawingObject): void => {
 		const { x, y } = this.weightPoint(point);
 
-		this.activeLayer.fillStyle = colors[type];
+		this.activeLayer.fillStyle = CanvasRenderer.colors[type];
 		this.activeLayer.font = `700 ${lineHeight}px Verdana`;
 		this.activeLayer.fillText(text, x, y);
 	};
@@ -166,7 +167,7 @@ export class CanvasRenderer extends BaseRenderer {
 		this.activeLayer.bezierCurveTo(x + width / 2, y, x, y, x, y + topCurveHeight);
 
 		this.activeLayer.closePath();
-		this.activeLayer.fillStyle = colors[type];
+		this.activeLayer.fillStyle = CanvasRenderer.colors[type];
 		this.activeLayer.fill();
 		this.activeLayer.restore();
 	};

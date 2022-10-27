@@ -1,5 +1,5 @@
 import { Action } from '../modules/redux';
-import { Direction, MoveInput, FireInput, Player, GameStatus, ServiceInput } from './enums';
+import { Direction, MoveInput, FireInput, Player, GameStatus, ServiceInput, CoinType } from './enums';
 
 export type Point = {
 	x: number;
@@ -34,7 +34,9 @@ export type PlayerInput = FireInput | MoveInput | ServiceInput;
 
 export type PointWithId = { point: Point; id: Id };
 
-export type Coin = PointWithId;
+export type Coin = PointWithId & {
+	type: CoinType;
+};
 
 export type GameState = {
 	gameStatus: GameStatus;

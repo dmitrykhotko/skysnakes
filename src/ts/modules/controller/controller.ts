@@ -101,10 +101,11 @@ export class Controller {
 			)
 		);
 
+		DelayedTasks.reset();
+
 		this.arena.start(snakesInitial, new arenaStrategies[arenaType](), new NormalStrategy());
 		this.renderer.reset();
 		this.renderer.focus();
-
 		this.timer.start();
 	};
 

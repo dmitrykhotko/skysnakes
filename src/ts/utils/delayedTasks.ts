@@ -1,7 +1,7 @@
 import { Hlp } from './hlp';
 import { Id } from './types';
 
-export type Task = (id: Id, ...params: unknown[]) => void;
+export type Task = (...params: unknown[]) => void;
 
 type DelayedTask = {
 	task: Task;
@@ -43,7 +43,7 @@ export abstract class DelayedTasks {
 					continue;
 				}
 
-				task(id, ...params);
+				task(...params);
 			}
 
 			delete this.tasks[this.step];
@@ -54,5 +54,11 @@ export abstract class DelayedTasks {
 
 	static remove = (id: Id): void => {
 		this.rmSet.add(id);
+	};
+
+	static reset = (): void => {
+		this.tasks = {};
+		this.rmSet = new Set<Id>();
+		this.step = 0;
 	};
 }
