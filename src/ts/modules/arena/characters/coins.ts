@@ -19,7 +19,7 @@ export abstract class Coins {
 		[CoinType.DeathPlayer2]: DEATH_COIN_LIFETIME
 	};
 
-	private static playerToDeathPlayer = {
+	private static playerToCoinType = {
 		[Player.P1]: CoinType.DeathPlayer1,
 		[Player.P2]: CoinType.DeathPlayer2
 	};
@@ -65,7 +65,7 @@ export abstract class Coins {
 		const deathPoints = this.spreadPoints(points, size);
 
 		for (let i = 0; i < deathPoints.length; i++) {
-			this.set(Hlp.generateId(), size, deathPoints[i], this.playerToDeathPlayer[player]);
+			this.set(Hlp.generateId(), size, deathPoints[i], this.playerToCoinType[player]);
 		}
 	};
 
