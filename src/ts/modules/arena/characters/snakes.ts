@@ -54,7 +54,7 @@ export abstract class Snakes {
 		}
 	};
 
-	static faceObject = (object: Point): PointWithId | undefined => {
+	static checkCollisions = (object: Point): PointWithId | undefined => {
 		const snakes = this.get();
 
 		for (let i = 0; i < snakes.length; i++) {
@@ -92,7 +92,7 @@ export abstract class Snakes {
 	static hit = (
 		snakeShotResult: PointWithId
 	): ResultWitActions<{
-		damage: number;
+		points: Point[];
 		isDead: boolean;
 		isHeadShot: boolean;
 	}> => {
@@ -101,19 +101,19 @@ export abstract class Snakes {
 		const isDead = !point.next;
 		const isHeadShot = !!(isDead && point.prev);
 
-		let damage = 1;
+		let points: Point[];
 
 		if (isDead) {
-			damage = this.len(id);
+			points = this.toArray(id);
 		} else {
 			const { result: cutRes, actions: cutActions } = this.cut({ id, point });
 
-			damage = cutRes;
+			points = cutRes;
 			actions.push(...cutActions);
 		}
 
 		return {
-			result: { damage, isDead, isHeadShot },
+			result: { points, isDead, isHeadShot },
 			actions
 		};
 	};
@@ -129,7 +129,7 @@ export abstract class Snakes {
 		return len;
 	};
 
-	static cut = (...cutIt: PointWithId[]): ResultWitActions<number> => {
+	static cut = (...cutIt: PointWithId[]): ResultWitActions<Point[]> => {
 		const bin = [] as Point[];
 		const actions = [] as Action[];
 
@@ -153,9 +153,20 @@ export abstract class Snakes {
 		}
 
 		return {
-			result: bin.length,
+			result: bin,
 			actions
 		};
+	};
+
+	private static toArray = (id: Player): Point[] => {
+		const points = [] as Point[];
+		let point: Point | undefined = this.getById(id).head;
+
+		while (point) {
+			points.push(point) && (point = point.prev);
+		}
+
+		return points;
 	};
 
 	private static create = (id: Player, direction: Direction, head: Point): void => {

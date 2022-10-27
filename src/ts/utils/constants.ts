@@ -30,7 +30,7 @@ export const RESPAWN_COIN_MAX_DELAY = 3 * FPS;
 export const INIT_COINS_MAX_DELAY = 5 * FPS;
 export const COIN_LIVE_TIME = 90 * FPS;
 
-export const LIVES = 5;
+export const LIVES = 500;
 export const COINS_NUMBER = 50;
 export const PLAYER_MODE = PlayerMode.Multiplayer;
 

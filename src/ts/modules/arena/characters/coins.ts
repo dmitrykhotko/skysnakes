@@ -23,11 +23,11 @@ export abstract class Coins {
 		}
 	};
 
-	static inspect = (): void => {
+	static checkNumber = (): void => {
 		this.activeCoinsIds.length < COINS_NUMBER && this.set();
 	};
 
-	static checkFound = (object: Point): boolean => {
+	static checkCollisions = (object: Point): boolean => {
 		const { coins } = state.get<ArenaStore>().arena;
 		let success = false;
 
@@ -38,13 +38,21 @@ export abstract class Coins {
 
 			if (success) {
 				this.remove(id);
-				this.set();
+				this.checkNumber();
 
 				break;
 			}
 		}
 
 		return success;
+	};
+
+	static setExtraCoins = (points: Point[]): void => {
+		const size = Hlp.getSize();
+
+		for (let i = 0; i < points.length; i++) {
+			this.setTask(0, Hlp.generateId(), size, points[i]);
+		}
 	};
 
 	private static removeTask = (taskId: Id, id: Id, point: Point): void => {
@@ -60,12 +68,14 @@ export abstract class Coins {
 		state.dispatch(BinActions.moveToBin([point]));
 	};
 
-	private static setTask = (taskId: Id, id: Id, { width, height }: Size): void => {
-		const point = { x: Hlp.randomInt(width), y: Hlp.randomInt(height) };
-
+	private static setTask = (
+		taskId: Id,
+		id: Id,
+		{ width, height }: Size,
+		point = { x: Hlp.randomInt(width), y: Hlp.randomInt(height) }
+	): void => {
 		state.dispatch(ArenaActions.setCoin({ id, point }));
-		this.activeTasks.delete(taskId);
-
+		taskId && this.activeTasks.delete(taskId);
 		this.activeTasks.add(DelayedTasks.delay(this.removeTask as Task, Hlp.randomInt(COIN_LIVE_TIME), id, point));
 	};
 

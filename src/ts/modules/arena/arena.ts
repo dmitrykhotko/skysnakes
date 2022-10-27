@@ -51,7 +51,7 @@ export class Arena {
 
 		this.steps === this.stepsNum && (this.steps = 0);
 
-		Coins.inspect();
+		Coins.checkNumber();
 	};
 
 	private callIfInProgress = (callMe: someFunc, ...params: unknown[]): unknown => {
@@ -69,7 +69,7 @@ export class Arena {
 		for (let i = 0; i < bullets.length; i++) {
 			const bullet = bullets[i];
 			const { id, point } = bullet;
-			const coinFoundResult = Coins.checkFound(point);
+			const coinFoundResult = Coins.checkCollisions(point);
 			const { result: strategyResult, actions: strategyActions } = this.runStrategy(
 				point,
 				id,
@@ -85,7 +85,7 @@ export class Arena {
 	};
 
 	private checkSnakeGrowth = (id: Player, head: Point): boolean => {
-		const success = Coins.checkFound(head);
+		const success = Coins.checkCollisions(head);
 
 		success && Stat.faceCoin(id);
 		return !success;
@@ -133,7 +133,7 @@ export class Arena {
 
 	private checkRam = (killer: Player, head: Point): ResultWitActions<PointWithId[]> => {
 		const actions = [] as Action[];
-		const facedSnake = Snakes.faceObject(head);
+		const facedSnake = Snakes.checkCollisions(head);
 		const cutIt = [] as PointWithId[];
 
 		if (!facedSnake) {
@@ -171,7 +171,7 @@ export class Arena {
 		for (let i = 0; i < bullets.length; i++) {
 			const bullet = bullets[i];
 			const { player: killer, point: bulletPoint } = bullet;
-			const snakeShotResult = Snakes.faceObject(bulletPoint);
+			const snakeShotResult = Snakes.checkCollisions(bulletPoint);
 
 			if (!snakeShotResult) {
 				continue;
@@ -179,14 +179,23 @@ export class Arena {
 
 			const { id: victim } = snakeShotResult;
 			const {
-				result: { damage, isDead, isHeadShot },
+				result: { points, isDead, isHeadShot },
 				actions: hitActions
 			} = Snakes.hit(snakeShotResult);
 
 			const damageType = isHeadShot ? DamageType.headShot : isDead ? DamageType.death : DamageType.hit;
-			const addScoreActions = Stat.setDamage({ killer, victim, damage, damageType, symDamage: true });
+			const addScoreActions = Stat.setDamage({
+				killer,
+				victim,
+				damage: points.length,
+				damageType,
+				symDamage: true
+			});
 
 			state.dispatch(...Bullets.remove(bullet), ...hitActions, ...addScoreActions);
+
+			!isHeadShot && points.shift();
+			Coins.setExtraCoins(points);
 
 			if (isDead) {
 				const player = snakeShotResult.id;

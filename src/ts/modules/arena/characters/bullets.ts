@@ -18,7 +18,7 @@ export abstract class Bullets {
 			const newBullet = { id, player, point: nextPoint, direction };
 
 			state.dispatch(BulletsActions.setBullet(newBullet), BinActions.moveToBin([point]));
-			collisionActions.push(...this.checkCollision(newBullet));
+			collisionActions.push(...this.checkCollisions(newBullet));
 		}
 
 		state.dispatch(...collisionActions);
@@ -44,7 +44,7 @@ export abstract class Bullets {
 		return [BulletsActions.remove(id), BinActions.moveToBin(bin)];
 	};
 
-	private static checkCollision = (bullet: Bullet): Action[] => {
+	private static checkCollisions = (bullet: Bullet): Action[] => {
 		const {
 			id,
 			point: { x, y }
