@@ -4,7 +4,8 @@ import {
 	STANDARD_COIN_LIFETIME,
 	INIT_COINS_MAX_DELAY,
 	RESPAWN_COIN_MAX_DELAY,
-	DEATH_COIN_LIFETIME
+	DEATH_COIN_LIFETIME,
+	COINS_SPREAD
 } from '../../../utils/constants';
 import { DelayedTasks, Task } from '../../../utils/delayedTasks';
 import { CoinType, Player } from '../../../utils/enums';
@@ -61,9 +62,10 @@ export abstract class Coins {
 
 	static setDeathCoins = (points: Point[], player: Player): void => {
 		const size = Hlp.getSize();
+		const deathPoints = this.spreadPoints(points, size);
 
-		for (let i = 0; i < points.length; i++) {
-			this.set(Hlp.generateId(), size, points[i], this.playerToDeathPlayer[player]);
+		for (let i = 0; i < deathPoints.length; i++) {
+			this.set(Hlp.generateId(), size, deathPoints[i], this.playerToDeathPlayer[player]);
 		}
 	};
 
@@ -93,5 +95,25 @@ export abstract class Coins {
 
 		type === CoinType.Standard && this.activeCoinsNum--;
 		state.dispatch(ArenaActions.removeCoin(id), BinActions.moveToBin([coin.point]));
+	};
+
+	private static spreadPoints = (points: Point[], { width, height }: Size): Point[] => {
+		const result = [] as Point[];
+		let factor = 1;
+
+		for (let i = 0; i < points.length; i++) {
+			const { x, y } = points[i];
+			const point = {
+				x: x + Hlp.randomInt(COINS_SPREAD) * factor,
+				y: y + Hlp.randomInt(COINS_SPREAD) * factor
+			};
+
+			// TODO: get rid of soft walls strategy, move actions call out of strategies, make transparent strategy available here as helper or smth
+			result.push(point);
+
+			factor *= -1;
+		}
+
+		return result;
 	};
 }

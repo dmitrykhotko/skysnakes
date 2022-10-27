@@ -30,6 +30,7 @@ export const RESPAWN_COIN_MAX_DELAY = 3 * FPS;
 export const INIT_COINS_MAX_DELAY = 5 * FPS;
 export const STANDARD_COIN_LIFETIME = 90 * FPS;
 export const DEATH_COIN_LIFETIME = 270 * FPS;
+export const COINS_SPREAD = 7;
 
 export const LIVES = 5;
 export const COINS_NUMBER = 50;

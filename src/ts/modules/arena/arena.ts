@@ -1,7 +1,7 @@
 import { BULLET_SPEED, RESPAWN_SNAKE_DELAY, SNAKE_SPEED } from '../../utils/constants';
 import { DamageType, GameStatus, Player } from '../../utils/enums';
 import { Action, ArenaActions, ArenaStore, ArenaState, BulletsStore, state, StatActions } from '../redux';
-import { Point, ResultWitActions, DirectionWithId, Id, PointWithId } from '../../utils/types';
+import { Point, ResultWitActions, DirectionWithId, Id } from '../../utils/types';
 import { Snakes } from './characters/snakes';
 import { Bullets } from './characters/bullets';
 import { ArenaStrategy } from './strategies';
