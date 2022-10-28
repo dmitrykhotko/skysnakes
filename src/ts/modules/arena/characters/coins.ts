@@ -103,9 +103,21 @@ export abstract class Coins {
 
 		for (let i = 0; i < points.length; i++) {
 			const { x, y } = points[i];
+			let resultX = x + Hlp.randomInt(COINS_SPREAD) * factor;
+			let resultY = y + Hlp.randomInt(COINS_SPREAD) * factor;
+
+			if (resultY > height) {
+				debugger;
+			}
+
+			resultX < 0 && (resultX = width + resultX);
+			resultX > width && (resultX = resultX - width);
+			resultY < 0 && (resultY = height + resultY);
+			resultY > height && (resultY = resultY - height);
+
 			const point = {
-				x: x + Hlp.randomInt(COINS_SPREAD) * factor,
-				y: y + Hlp.randomInt(COINS_SPREAD) * factor
+				x: resultX,
+				y: resultY
 			};
 
 			// TODO: get rid of soft walls strategy, move actions call out of strategies, make transparent strategy available here as helper or smth
