@@ -1,7 +1,6 @@
 export { Store, state } from './state';
 
 export { Reducer } from './reducers/reducer';
-export { SettingsReducer, SettingsStore, SettingsState } from './reducers/instances/settingsReducer';
 export { ArenaReducer, ArenaStore, ArenaState } from './reducers/instances/arenaReducer';
 export { InputReducer, InputStore, InputState } from './reducers/instances/inputReducer';
 export { SnakesReducer, SnakesStore, SnakeState } from './reducers/instances/snakesReducer';

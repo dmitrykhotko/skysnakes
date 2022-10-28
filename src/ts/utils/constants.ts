@@ -29,7 +29,7 @@ export const RESPAWN_SNAKE_DELAY = 1 * FPS; // X * FPS = Seconds
 export const RESPAWN_COIN_MAX_DELAY = 3 * FPS;
 export const INIT_COINS_MAX_DELAY = 5 * FPS;
 export const STANDARD_COIN_LIFETIME = 90 * FPS;
-export const DEATH_COIN_LIFETIME = 270 * FPS;
+export const DEATH_COIN_LIFETIME = 180 * FPS;
 export const COINS_SPREAD = 7;
 
 export const LIVES = 5;
@@ -50,12 +50,6 @@ export const SET_COIN = 'ARENA/SET_COIN';
 export const FLUSH_COINS_BUFFER = 'ARENA/FLUSH_COINS_BUFFER';
 export const REMOVE_COIN = 'ARENA/REMOVE_COIN';
 export const SET_GAME_STATUS = 'ARENA/SET_GAME_STATUS';
-
-//// USER SETTINGS ACTIONS
-
-export const SET_PLAYER_MODE = 'USER_SETTINGS/SET_PLAYER_MODE';
-export const SET_ARENA_TYPE = 'USER_SETTINGS/SET_ARENA_TYPE';
-export const SET_LIVES = 'USER_SETTINGS/SET_LIVES';
 
 //// INPUT ACTIONS
 

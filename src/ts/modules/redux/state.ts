@@ -4,7 +4,6 @@ import { Observer } from '../observable/observer';
 import { Action } from './';
 import { ArenaReducer } from './reducers/instances/arenaReducer';
 import { InputReducer } from './reducers/instances/inputReducer';
-import { SettingsReducer } from './reducers/instances/settingsReducer';
 import { SnakesReducer } from './reducers/instances/snakesReducer';
 import { BulletsReducer } from './reducers/instances/bulletsReducer';
 import { BinReducer } from './reducers/instances/binReducer';
@@ -91,7 +90,6 @@ class State implements Observable {
 
 const reducer = new ReducerCollection(
 	ArenaReducer,
-	SettingsReducer,
 	InputReducer,
 	SnakesReducer,
 	BulletsReducer,

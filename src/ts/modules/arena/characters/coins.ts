@@ -99,20 +99,16 @@ export abstract class Coins {
 
 	private static spreadPoints = (points: Point[], { width, height }: Size): Point[] => {
 		const result = [] as Point[];
-		let factor = 1;
 
 		for (let i = 0; i < points.length; i++) {
 			const { x, y } = points[i];
-			let resultX = x + Hlp.randomInt(COINS_SPREAD) * factor;
-			let resultY = y + Hlp.randomInt(COINS_SPREAD) * factor;
 
-			if (resultY > height) {
-				debugger;
-			}
+			let resultX = x + Hlp.randomInt(COINS_SPREAD, -COINS_SPREAD);
+			let resultY = y + Hlp.randomInt(COINS_SPREAD, -COINS_SPREAD);
 
 			resultX < 0 && (resultX = width + resultX);
-			resultX > width && (resultX = resultX - width);
 			resultY < 0 && (resultY = height + resultY);
+			resultX > width && (resultX = resultX - width);
 			resultY > height && (resultY = resultY - height);
 
 			const point = {
@@ -120,10 +116,7 @@ export abstract class Coins {
 				y: resultY
 			};
 
-			// TODO: get rid of soft walls strategy, move actions call out of strategies, make transparent strategy available here as helper or smth
 			result.push(point);
-
-			factor *= -1;
 		}
 
 		return result;

@@ -1,10 +1,9 @@
-import { SET_INPUT } from '../../utils/constants';
+import { LIVES, PLAYER_MODE, SET_INPUT } from '../../utils/constants';
 import { FireInput, GameStatus, MoveInput, ServiceInput } from '../../utils/enums';
 import {
 	ArenaStore,
 	BulletsStore,
 	InputStore,
-	SettingsStore,
 	SnakesActions,
 	SnakesStore,
 	state,
@@ -18,14 +17,12 @@ import { Observer } from '../observable/observer';
 import { Renderer } from '../renderers/renderer';
 import {
 	fireInputToPlayerId,
-	arenaStrategies,
 	ControllerProps,
 	defaultProps,
 	inputToIdDirection,
 	toDirectionsAndPlayers
 } from './utils';
 import { GameState } from '../../utils/types';
-import { NormalStrategy } from '../arena/strategies';
 import { Hlp } from '../../utils';
 import { Snakes } from '../arena/characters/snakes';
 import { Bullets } from '../arena/characters/bullets';
@@ -90,20 +87,19 @@ export class Controller {
 	};
 
 	private start = (): void => {
-		const { playerMode, arenaType, lives } = state.get<SettingsStore>().settings;
-		const snakesInitial = toDirectionsAndPlayers[playerMode];
+		const snakesInitial = toDirectionsAndPlayers[PLAYER_MODE];
 
 		state.dispatch(CommonActions.resetGame());
 		state.dispatch(
 			...Stat.reset(
 				snakesInitial.map(({ id }) => id),
-				lives
+				LIVES
 			)
 		);
 
 		DelayedTasks.reset();
 
-		this.arena.start(snakesInitial, new arenaStrategies[arenaType](), new NormalStrategy());
+		this.arena.start(snakesInitial);
 		this.renderer.reset();
 		this.renderer.focus();
 		this.timer.start();

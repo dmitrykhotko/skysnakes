@@ -34,7 +34,7 @@ export abstract class Hlp {
 		return j;
 	};
 
-	static randomInt = (max: number): number => Math.floor(Math.random() * max);
+	static randomInt = (max: number, min = 0): number => Math.floor(Math.random() * (max - min + 1)) + min;
 
 	static getById = <T extends ObjectWithId>(id: Id, items: T[]): T => {
 		let target!: T;

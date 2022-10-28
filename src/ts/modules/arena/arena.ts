@@ -1,10 +1,18 @@
 import { BULLET_SPEED, RESPAWN_SNAKE_DELAY, SNAKE_SPEED } from '../../utils/constants';
 import { DamageType, GameStatus, Player } from '../../utils/enums';
-import { Action, ArenaActions, ArenaStore, ArenaState, BulletsStore, state, StatActions } from '../redux';
-import { Point, ResultWitActions, DirectionWithId, Id } from '../../utils/types';
+import {
+	Action,
+	ArenaActions,
+	ArenaStore,
+	ArenaState,
+	BulletsStore,
+	state,
+	StatActions,
+	SnakesActions
+} from '../redux';
+import { Point, ResultWitActions, DirectionWithId, Size } from '../../utils/types';
 import { Snakes } from './characters/snakes';
 import { Bullets } from './characters/bullets';
-import { ArenaStrategy } from './strategies';
 import { Hlp } from '../../utils';
 import { Stat } from '../stat/stat';
 import { Coins } from './characters/coins';
@@ -17,8 +25,6 @@ export class Arena {
 	private steps!: number;
 	private snakeStep: number;
 	private bulletStep: number;
-	private arenaStrategy?: ArenaStrategy;
-	private bulletStrategy?: ArenaStrategy;
 	private snakesInitial!: DirectionWithId[];
 
 	constructor() {
@@ -27,15 +33,12 @@ export class Arena {
 		this.bulletStep = this.stepsNum / BULLET_SPEED;
 	}
 
-	start = (snakesInitial: DirectionWithId[], arenaStrategy?: ArenaStrategy, bulletStrategy?: ArenaStrategy): void => {
+	start = (snakesInitial: DirectionWithId[]): void => {
 		this.steps = 0;
 		this.snakesInitial = snakesInitial;
 
 		Snakes.init(this.snakesInitial);
 		Coins.init();
-
-		this.arenaStrategy = arenaStrategy;
-		this.bulletStrategy = bulletStrategy;
 
 		state.dispatch(ArenaActions.setGameStatus(GameStatus.InProgress));
 	};
@@ -62,22 +65,19 @@ export class Arena {
 	private moveBullets = (): void => {
 		Bullets.move();
 
+		const { width, height } = Hlp.getSize();
 		const { result: victim, actions: hitsActions } = this.checkHits();
 		const actions = [...hitsActions];
 		const bullets = state.get<BulletsStore>().bullets;
 
 		for (let i = 0; i < bullets.length; i++) {
 			const bullet = bullets[i];
-			const { id, point } = bullet;
+			const { point } = bullet;
+			const { x, y } = point;
 			const coinFoundResult = Coins.checkCollisions(point);
-			const { result: strategyResult, actions: strategyActions } = this.runStrategy(
-				point,
-				id,
-				this.bulletStrategy
-			);
+			const facedWall = !(x === width || y === height || !~x || !~y);
 
-			actions.push(...strategyActions);
-			(coinFoundResult || !strategyResult) && actions.push(...Bullets.remove(bullet));
+			(coinFoundResult || !facedWall) && actions.push(...Bullets.remove(bullet));
 		}
 
 		state.dispatch(...actions);
@@ -94,6 +94,7 @@ export class Arena {
 	private moveSnakes = (): void => {
 		Snakes.move(this.checkSnakeGrowth);
 
+		const size = Hlp.getSize();
 		const actions = [] as Action[];
 		const snakes = Snakes.get();
 		const victims = [];
@@ -109,15 +110,7 @@ export class Arena {
 				continue;
 			}
 
-			const { result: strategyResult, actions: strategyActions } = this.runStrategy(head, id, this.arenaStrategy);
-			actions.push(...strategyActions);
-
-			if (!strategyResult) {
-				victims.push(id);
-				actions.push(StatActions.decLives(id));
-
-				continue;
-			}
+			actions.push(...this.checkWalls(head, id, size));
 		}
 
 		state.dispatch(...actions);
@@ -127,6 +120,34 @@ export class Arena {
 
 		victim && victims.push(victim);
 		victims.length && this.respawn(...victims);
+	};
+
+	private checkWalls = (head: Point, id: Player, { width, height }: Size): Action[] => {
+		const actions = [] as Action[];
+		let { x: headX, y: headY } = head;
+
+		if (!!~headX && !!~headY && headX !== width && headY !== height) {
+			return actions;
+		}
+
+		if (!~headX) {
+			headX = width;
+		} else if (headX === width) {
+			headX = 0;
+		}
+
+		if (!~headY) {
+			headY = height;
+		} else if (headY === height) {
+			headY = 0;
+		}
+
+		const newHead = { x: headX, y: headY, prev: head.prev };
+
+		newHead.prev && (newHead.prev.next = newHead);
+		actions.push(SnakesActions.setHead(newHead, id));
+
+		return actions;
 	};
 
 	private checkRam = (killer: Player, head: Point): Action[] => {
@@ -190,7 +211,6 @@ export class Arena {
 				result: { points, isDead, isHeadShot },
 				actions: hitActions
 			} = Snakes.hit(snakeShotResult);
-
 			const damageType = isHeadShot ? DamageType.headShot : isDead ? DamageType.death : DamageType.hit;
 			const addScoreActions = Stat.setDamage({
 				killer,
@@ -201,8 +221,6 @@ export class Arena {
 			});
 
 			state.dispatch(...Bullets.remove(bullet), ...hitActions, ...addScoreActions);
-
-			!isHeadShot && points.shift();
 			Coins.setDeathCoins(points, victim);
 
 			if (isDead) {
@@ -213,9 +231,6 @@ export class Arena {
 
 		return { result: undefined, actions: [] };
 	};
-
-	private runStrategy = (point: Point, id: Id, strategy?: ArenaStrategy): ResultWitActions =>
-		strategy ? strategy.run(point, id) : { result: true, actions: [] };
 
 	private getState = (): ArenaState => state.get<ArenaStore>().arena;
 

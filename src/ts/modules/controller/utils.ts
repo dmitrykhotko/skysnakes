@@ -1,6 +1,5 @@
-import { FireInput, Strategy, Direction, MoveInput, Player, PlayerMode } from '../../utils/enums';
+import { FireInput, Direction, MoveInput, Player, PlayerMode } from '../../utils/enums';
 import { Size } from '../../utils/types';
-import { NormalStrategy, SoftWallsStrategy, TransparentWallsStrategy } from '../arena/strategies';
 import { Renderer } from '../renderers/renderer';
 
 const { Up, Down, Left, Right } = Direction;
@@ -29,12 +28,6 @@ export const toDirectionsAndPlayers = {
 		{ direction: Right, id: Player.P1 },
 		{ direction: Left, id: Player.P2 }
 	]
-};
-
-export const arenaStrategies = {
-	[Strategy.Normal]: NormalStrategy,
-	[Strategy.Soft]: SoftWallsStrategy,
-	[Strategy.Transparent]: TransparentWallsStrategy
 };
 
 export const defaultProps = {
