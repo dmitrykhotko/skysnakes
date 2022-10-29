@@ -89,7 +89,7 @@ export abstract class StatReducer extends Reducer<StatStore> {
 		}
 
 		const newPlayerStatItem = { ...targetStat, [propName]: targetStat[propName as keyof PlayerStat] + value };
-		const newPlayerStat = [...Hlp.excludeId(id, playersStat), newPlayerStatItem].sort((p1, p2) => p1.id - p2.id);
+		const newPlayerStat = [...Hlp.excludeById(playersStat, id), newPlayerStatItem].sort((p1, p2) => p1.id - p2.id);
 
 		return {
 			...store,
@@ -119,7 +119,7 @@ export abstract class StatReducer extends Reducer<StatStore> {
 			...store,
 			stat: {
 				...stat,
-				notifications: Hlp.excludeId(id, stat.notifications)
+				notifications: Hlp.excludeById(stat.notifications, id)
 			}
 		};
 	};

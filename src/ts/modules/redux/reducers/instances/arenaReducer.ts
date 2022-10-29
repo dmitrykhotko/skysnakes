@@ -60,7 +60,7 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 				return setValue(arenaStore, action, 'arena', 'gameStatus');
 			case GAME_RESET:
 				const { size } = arenaStore.arena;
-				return { ...state, ...{ arena: { ...this.initialState.arena, ...{ size } } } };
+				return { ...state, ...{ arena: { ...this.initialState.arena, size } } };
 			default:
 				return state;
 		}
@@ -88,7 +88,7 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 			...state,
 			arena: {
 				...arena,
-				coins: [...Hlp.excludeId(value, arena.coins)]
+				coins: [...Hlp.excludeById(arena.coins, value)]
 			}
 		};
 	};

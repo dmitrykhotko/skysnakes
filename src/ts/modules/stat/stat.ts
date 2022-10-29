@@ -1,3 +1,4 @@
+import { Hlp } from '../../utils';
 import {
 	STANDARD_COIN_AWARD,
 	DAMAGE_FACTOR,
@@ -70,8 +71,8 @@ export abstract class Stat {
 			return;
 		}
 
-		const maxScore = Math.max(...playersStat.map(({ score }) => score));
-		const winners = playersStat.filter(stat => stat.score === maxScore).map(({ id }) => id);
+		const maxScore = Math.max(...Hlp.mapByProp(playersStat, 'id'));
+		const winners = Hlp.mapByProp(Hlp.exclude(playersStat, 'score', maxScore), 'id');
 
 		winners.length && state.dispatch(ArenaActions.setGameStatus(GameStatus.Stop), StatActions.setWinners(winners));
 	};

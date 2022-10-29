@@ -1,15 +1,6 @@
 import { BULLET_SPEED, RESPAWN_SNAKE_DELAY, SNAKE_SPEED } from '../../utils/constants';
 import { DamageType, GameStatus, Player } from '../../utils/enums';
-import {
-	Action,
-	ArenaActions,
-	ArenaStore,
-	ArenaState,
-	BulletsStore,
-	state,
-	StatActions,
-	SnakesActions
-} from '../redux';
+import { Action, ArenaStore, ArenaState, BulletsStore, state, StatActions, SnakesActions } from '../redux';
 import { Point, ResultWitActions, DirectionWithId, Size, Id } from '../../utils/types';
 import { Snakes } from './characters/snakes';
 import { Bullets } from './characters/bullets';
@@ -39,8 +30,6 @@ export class Arena {
 
 		Snakes.init(this.snakesInitial);
 		Coins.init();
-
-		state.dispatch(ArenaActions.setGameStatus(GameStatus.InProgress));
 	};
 
 	step = (): void => {

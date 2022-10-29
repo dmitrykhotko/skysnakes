@@ -20,9 +20,13 @@ export abstract class Snakes {
 	static init = (snakesInitial: DirectionWithId[]): void => {
 		const { width, height } = Hlp.getSize();
 
-		snakesInitial.forEach(({ id, direction }) => {
-			this.create(id, direction, this.getStartPoint(direction, width, height));
-		});
+		for (let i = 0; i < snakesInitial.length; i++) {
+			const { id, direction } = snakesInitial[i];
+			const head = this.getStartPoint(direction, width, height);
+			const tail = this.initBody(head, SNAKE_LENGTH, direction);
+
+			state.dispatch(SnakesActions.setSnake({ id, head, tail, direction, growthBuffer: 0 }));
+		}
 	};
 
 	static move = (id: Player, checkGrowth: (id: Player, head: Point) => number): void => {
@@ -166,11 +170,6 @@ export abstract class Snakes {
 			result: bin,
 			actions
 		};
-	};
-
-	private static create = (id: Player, direction: Direction, head: Point): void => {
-		const tail = this.initBody(head, SNAKE_LENGTH, direction);
-		state.dispatch(SnakesActions.setSnake({ id, head, tail, direction, growthBuffer: 0 }));
 	};
 
 	private static initBody = (head: Point, length: number, direction: Direction): Point => {

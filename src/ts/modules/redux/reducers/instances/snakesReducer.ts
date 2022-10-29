@@ -29,7 +29,9 @@ export abstract class SnakesReducer extends Reducer<SnakesStore> {
 			case REMOVE_SNAKE:
 				return {
 					...state,
-					snakes: [...Hlp.excludeId((action as SetValueAction<Player>).value, (state as SnakesStore).snakes)]
+					snakes: [
+						...Hlp.excludeById((state as SnakesStore).snakes, (action as SetValueAction<Player>).value)
+					]
 				};
 			case SET_HEAD:
 				propName = 'head';
@@ -55,7 +57,7 @@ export abstract class SnakesReducer extends Reducer<SnakesStore> {
 
 		return {
 			...snakesState,
-			snakes: [...Hlp.excludeId(value.id, snakesState.snakes), value]
+			snakes: [...Hlp.excludeById(snakesState.snakes, value.id), value]
 		};
 	};
 
@@ -70,7 +72,7 @@ export abstract class SnakesReducer extends Reducer<SnakesStore> {
 
 		return {
 			...snakesState,
-			snakes: [...Hlp.excludeId(id, snakesState.snakes), { ...targetSnake, ...{ [pName]: value } }]
+			snakes: [...Hlp.excludeById(snakesState.snakes, id), { ...targetSnake, ...{ [pName]: value } }]
 		};
 	};
 }

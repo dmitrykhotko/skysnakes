@@ -51,7 +51,21 @@ export abstract class Hlp {
 		return target;
 	};
 
-	static excludeId = <T extends ObjectWithId>(id: Id, items: T[]): T[] => {
+	static exclude = <T>(items: T[], prop: keyof T, value: T[keyof T]): T[] => {
+		const targets = [];
+
+		for (let i = 0; i < items.length; i++) {
+			const item = items[i];
+
+			if (item[prop] !== value) {
+				targets.push(item);
+			}
+		}
+
+		return targets;
+	};
+
+	static excludeById = <T extends ObjectWithId>(items: T[], id: Id): T[] => {
 		const targets = [];
 
 		for (let i = 0; i < items.length; i++) {
@@ -63,6 +77,16 @@ export abstract class Hlp {
 		}
 
 		return targets;
+	};
+
+	static mapByProp = <T>(arr: T[], prop: keyof T): T[keyof T][] => {
+		const result = [] as T[keyof T][];
+
+		for (let i = 0; i < arr.length; i++) {
+			result.push(arr[i][prop]);
+		}
+
+		return result;
 	};
 
 	static getSize = (): Size => state.get<ArenaStore>().arena.size;
