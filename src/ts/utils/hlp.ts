@@ -51,7 +51,7 @@ export abstract class Hlp {
 		return target;
 	};
 
-	static filterById = <T extends ObjectWithId>(id: Id, items: T[]): T[] => {
+	static excludeId = <T extends ObjectWithId>(id: Id, items: T[]): T[] => {
 		const targets = [];
 
 		for (let i = 0; i < items.length; i++) {

@@ -88,7 +88,7 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 			...state,
 			arena: {
 				...arena,
-				coins: [...Hlp.filterById(value, arena.coins)]
+				coins: [...Hlp.excludeId(value, arena.coins)]
 			}
 		};
 	};

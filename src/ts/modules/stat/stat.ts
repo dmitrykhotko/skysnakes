@@ -1,5 +1,14 @@
-import { COIN_AWARD, DAMAGE_FACTOR, DEC_LIVES, HEAD_SHOT_AWARD, KILL_AWARD } from '../../utils/constants';
+import {
+	STANDARD_COIN_AWARD,
+	DAMAGE_FACTOR,
+	DEC_LIVES,
+	HEAD_SHOT_AWARD,
+	KILL_AWARD,
+	DEATH_ENEMY_COIN_AWARD
+} from '../../utils/constants';
 import { DamageType, GameStatus, Player } from '../../utils/enums';
+import { Notifier } from '../../utils/notifier';
+import { Coin } from '../../utils/types';
 import { Action, ArenaActions, StatActions, state, StatStore } from '../redux';
 
 export abstract class Stat {
@@ -7,15 +16,15 @@ export abstract class Stat {
 		state.subscribe(this.judge, DEC_LIVES);
 	};
 
-	static reset = (ids: Player[], lives: number): Action[] => {
-		return [StatActions.setScore(ids.map(id => ({ id, lives, score: 0 }))), StatActions.setWinners([])];
+	static setDamage = (victim: Player, damage: number, damageType?: DamageType): Action[] => {
+		const resultDamage = Math.ceil(damage * DAMAGE_FACTOR);
+		const showOnTail = damageType !== DamageType.headShot;
+
+		Notifier.decScore(resultDamage, victim, showOnTail);
+		return [StatActions.changeScore(-resultDamage, victim)];
 	};
 
-	static setDamage = (victim: Player, damage: number): Action[] => {
-		return [StatActions.addScore(-Math.ceil(damage * DAMAGE_FACTOR), victim)];
-	};
-
-	static setAward = (killer: Player, type: DamageType): Action[] => {
+	static setAward = (killer: Player, type: DamageType): void => {
 		let award = 0;
 
 		switch (type) {
@@ -26,14 +35,33 @@ export abstract class Stat {
 				award = HEAD_SHOT_AWARD;
 				break;
 			default:
-				break;
+				return;
 		}
 
-		return [StatActions.addScore(award, killer)];
+		Notifier.incScore(award, killer);
+		state.dispatch(StatActions.changeScore(award, killer));
 	};
 
-	static faceCoin = (id: Player, num: number): void => {
-		state.dispatch(StatActions.addScore(COIN_AWARD * num, id));
+	static faceCoins = (id: Player, coins: Coin[]): void => {
+		if (!coins.length) {
+			return;
+		}
+
+		let award = 0;
+
+		for (let i = 0; i < coins.length; i++) {
+			const { player } = coins[i];
+
+			if (!player || player === id) {
+				award += STANDARD_COIN_AWARD;
+				continue;
+			}
+
+			award += DEATH_ENEMY_COIN_AWARD;
+		}
+
+		Notifier.incScore(award, id);
+		state.dispatch(StatActions.changeScore(award, id));
 	};
 
 	private static judge = (): void => {

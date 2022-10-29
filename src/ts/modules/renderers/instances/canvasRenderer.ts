@@ -18,8 +18,10 @@ export class CanvasRenderer extends BaseRenderer {
 		[DrawingObject.Player1]: '#BB8FCE',
 		[DrawingObject.Player2]: '#00FF7F',
 		[DrawingObject.StandardCoin]: '#FFFF00',
-		[DrawingObject.Bullet]: '#ff3300',
-		[DrawingObject.WinnersText]: '#FFFF00'
+		[DrawingObject.Bullet]: '#FF3300',
+		[DrawingObject.WinnersText]: '#FFFF00',
+		[DrawingObject.IncScoreNotif]: '#FFFF00',
+		[DrawingObject.DecScoreNotif]: '#FF3300'
 	};
 
 	private static defaultProps = {

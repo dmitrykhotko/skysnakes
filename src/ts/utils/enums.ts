@@ -78,7 +78,9 @@ export enum DrawingObject {
 	Player2 = 3,
 	StandardCoin = 5,
 	Bullet = 7,
-	WinnersText = 8
+	WinnersText = 8,
+	IncScoreNotif = 9,
+	DecScoreNotif = 10
 }
 
 export enum DamageType {
@@ -99,4 +101,9 @@ export enum CoinType {
 	DeathPlayer2 = 3
 	// Large = 4,
 	// Super = 5
+}
+
+export enum NotifType {
+	IncScore = 1,
+	DecScore = 2
 }

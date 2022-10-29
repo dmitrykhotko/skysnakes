@@ -74,10 +74,10 @@ export class Arena {
 			const bullet = bullets[i];
 			const { point } = bullet;
 			const { x, y } = point;
-			const coinFoundResult = Coins.checkCollisions(point);
+			const faceCoin = !!Coins.checkCollisions(point).length;
 			const facedWall = !(x === width || y === height || !~x || !~y);
 
-			(coinFoundResult || !facedWall) && actions.push(...Bullets.remove(bullet));
+			(faceCoin || !facedWall) && actions.push(...Bullets.remove(bullet));
 		}
 
 		state.dispatch(...actions);
@@ -85,10 +85,10 @@ export class Arena {
 	};
 
 	private checkSnakeGrowth = (id: Player, head: Point): number => {
-		const coinsNum = Coins.checkCollisions(head);
+		const facedCoins = Coins.checkCollisions(head);
 
-		coinsNum && Stat.faceCoin(id, coinsNum);
-		return coinsNum;
+		facedCoins.length && Stat.faceCoins(id, facedCoins);
+		return facedCoins.length;
 	};
 
 	private moveSnakes = (): void => {
@@ -235,14 +235,13 @@ export class Arena {
 			} = Snakes.hit(snakeShotResult);
 			const damageType = isHeadShot ? DamageType.headShot : isDead ? DamageType.death : DamageType.standard;
 
+			Stat.setAward(killer, damageType);
+			Coins.setDeathCoins(points, victim);
 			state.dispatch(
 				...Bullets.remove(bullet),
 				...hitActions,
-				...Stat.setDamage(victim, points.length),
-				...Stat.setAward(killer, damageType)
+				...Stat.setDamage(victim, points.length, damageType)
 			);
-
-			Coins.setDeathCoins(points, victim);
 
 			if (isDead) {
 				const player = snakeShotResult.id;

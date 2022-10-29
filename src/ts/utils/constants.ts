@@ -17,17 +17,25 @@ export const FPS = 30; // Valid values are 60,30,20,15,10...
 export const SNAKE_SPEED = 1;
 export const BULLET_SPEED = 2;
 
-export const COIN_AWARD = 2;
-export const DAMAGE_FACTOR = COIN_AWARD * 1.2;
-export const HEAD_SHOT_AWARD = 15;
-export const KILL_AWARD = 5;
+export const STANDARD_COIN_AWARD = 1;
+export const DEATH_ENEMY_COIN_AWARD = STANDARD_COIN_AWARD * 2;
+export const DAMAGE_FACTOR = STANDARD_COIN_AWARD * 1.2;
+export const HEAD_SHOT_AWARD = STANDARD_COIN_AWARD * 10;
+export const KILL_AWARD = STANDARD_COIN_AWARD * 5;
 
 export const RESPAWN_SNAKE_DELAY = 1 * FPS; // X * FPS = Seconds
+
 export const RESPAWN_COIN_MAX_DELAY = 3 * FPS;
 export const INIT_COINS_MAX_DELAY = 5 * FPS;
 export const STANDARD_COIN_LIFETIME = 90 * FPS;
 export const DEATH_COIN_LIFETIME = 180 * FPS;
-export const COINS_SPREAD = 7;
+export const COINS_SPREAD = 5;
+
+export const FACE_COIN_AWARD_LIFETIME = 2 * FPS;
+export const POSITIVE_OFFSET_X = 3;
+export const NEGATIVE_OFFSET_X = -4;
+export const POSITIVE_OFFSET_Y = 4;
+export const NEGATIVE_OFFSET_Y = -2;
 
 export const LIVES = 5;
 export const COINS_NUMBER = 50;
@@ -75,7 +83,9 @@ export const EMPTY_BIN = 'BIN/EMPTY_BIN';
 //// STAT ACTIONS
 
 export const INC_SCORE = 'STAT/INC_SCORE';
-export const ADD_SCORE = 'STAT/ADD_SCORE';
+export const CHANGE_SCORE = 'STAT/CHANGE_SCORE';
 export const SET_WINNERS = 'STAT/SET_WINNERS';
-export const SET_SCORE = 'STAT/SET_SCORE';
+export const RESET_SCORE = 'STAT/RESET_SCORE';
 export const DEC_LIVES = 'STAT/DEC_LIVES';
+export const ADD_NOTIFICATION = 'STAT/ADD_NOTIFICATION';
+export const REMOVE_NOTIFICATION = 'STAT/REMOVE_NOTIFICATION';

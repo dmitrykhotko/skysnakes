@@ -1,12 +1,20 @@
-import { INC_SCORE, DEC_LIVES, SET_WINNERS, SET_SCORE, ADD_SCORE } from '../../../../utils/constants';
+import {
+	DEC_LIVES,
+	SET_WINNERS,
+	RESET_SCORE,
+	CHANGE_SCORE,
+	ADD_NOTIFICATION,
+	REMOVE_NOTIFICATION
+} from '../../../../utils/constants';
 import { Player } from '../../../../utils/enums';
-import { PlayerStat } from '../../../../utils/types';
+import { Id, Notification } from '../../../../utils/types';
 import { SetActions } from './setActions';
 
 export abstract class StatActions extends SetActions {
-	static incScore = super.setValue<Player>(INC_SCORE);
-	static addScore = super.setValueById<number, Player>(ADD_SCORE);
+	static changeScore = super.setValueById<number, Player>(CHANGE_SCORE);
 	static setWinners = super.setValue<Player[]>(SET_WINNERS);
-	static setScore = super.setValue<PlayerStat[]>(SET_SCORE);
+	static resetStat = super.setValue<{ ids: Player[]; lives: number }>(RESET_SCORE);
 	static decLives = super.setValue<Player>(DEC_LIVES);
+	static addNotification = super.setValue<Notification>(ADD_NOTIFICATION);
+	static removeNotification = super.setValue<Id>(REMOVE_NOTIFICATION);
 }

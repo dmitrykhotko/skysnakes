@@ -22,7 +22,7 @@ export const inputToIdDirection = {
 	[MoveInput.LRight]: { id: P1, direction: Right }
 };
 
-export const toDirectionsAndPlayers = {
+export const modeToInitialData = {
 	[PlayerMode.SinglePlayer]: [{ direction: Right, id: Player.P1 }],
 	[PlayerMode.Multiplayer]: [
 		{ direction: Right, id: Player.P1 },

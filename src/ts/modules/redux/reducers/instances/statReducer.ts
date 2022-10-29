@@ -1,5 +1,14 @@
-import { SET_SCORE, ADD_SCORE, INC_SCORE, DEC_LIVES, SET_WINNERS } from '../../../../utils/constants';
-import { PlayerStat } from '../../../../utils/types';
+import {
+	RESET_SCORE,
+	CHANGE_SCORE,
+	DEC_LIVES,
+	SET_WINNERS,
+	ADD_NOTIFICATION,
+	REMOVE_NOTIFICATION,
+	GAME_RESET,
+	LIVES
+} from '../../../../utils/constants';
+import { DirectionWithId, Id, Notification, PlayerStat } from '../../../../utils/types';
 import { Action, SetValueAction, SetValueByIdAction } from '../..';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
@@ -10,6 +19,7 @@ import { setValue } from '../utils';
 export type StatState = {
 	playersStat: PlayerStat[];
 	winners: Player[];
+	notifications: Notification[];
 };
 
 export type StatStore = {
@@ -20,7 +30,8 @@ export abstract class StatReducer extends Reducer<StatStore> {
 	private static initialState = {
 		stat: {
 			playersStat: [],
-			winners: []
+			winners: [],
+			notifications: []
 		}
 	} as StatStore;
 
@@ -33,7 +44,7 @@ export abstract class StatReducer extends Reducer<StatStore> {
 		switch (type) {
 			case SET_WINNERS:
 				return setValue(statStore, action, 'stat', 'winners');
-			case SET_SCORE:
+			case RESET_SCORE:
 				return {
 					...state,
 					stat: {
@@ -41,36 +52,74 @@ export abstract class StatReducer extends Reducer<StatStore> {
 						playersStat: (action as SetValueAction<PlayerStat[]>).value
 					}
 				};
-			case INC_SCORE:
-				return this.changeStat((action as SetValueAction<Player>).value, statStore, 'score');
-			case ADD_SCORE:
+			case CHANGE_SCORE:
 				const { id, value } = action as SetValueByIdAction<number, Player>;
-				return this.changeStat(id, statStore, 'score', value);
+				return this.changeStat(statStore, id, 'score', value);
 			case DEC_LIVES:
-				return this.changeStat((action as SetValueAction<Player>).value, statStore, 'lives', -1);
+				return this.changeStat(statStore, (action as SetValueAction<Player>).value, 'lives', -1);
+			case ADD_NOTIFICATION:
+				return this.addNotification(statStore, (action as SetValueAction<Notification>).value);
+			case REMOVE_NOTIFICATION:
+				return this.removeNotification(statStore, (action as SetValueAction<Id>).value);
+			case GAME_RESET:
+				const initialData = (action as SetValueAction<DirectionWithId[]>).value;
+				const playersStat = initialData.map(({ id }) => ({ id, lives: LIVES, score: 0 }));
+
+				return {
+					...state,
+					stat: {
+						...statStore.stat,
+						playersStat,
+						winners: [],
+						notifications: []
+					}
+				};
 			default:
 				return state;
 		}
 	};
 
-	private static changeStat = (id: Player, store: StatStore, propName: string, value = 1): Store => {
+	private static changeStat = (store: StatStore, id: Player, propName: string, value = 1): Store => {
 		const { stat } = store;
 		const { playersStat } = stat;
 		const targetStat = Hlp.getById(id, playersStat);
-		const playersStatNew = [
-			...Hlp.filterById(id, playersStat),
-			{ ...targetStat, [propName]: targetStat[propName as keyof PlayerStat] + value }
-		].sort((p1, p2) => p1.id - p2.id);
 
 		if (!targetStat) {
 			return store;
 		}
 
+		const newPlayerStatItem = { ...targetStat, [propName]: targetStat[propName as keyof PlayerStat] + value };
+		const newPlayerStat = [...Hlp.excludeId(id, playersStat), newPlayerStatItem].sort((p1, p2) => p1.id - p2.id);
+
 		return {
 			...store,
 			stat: {
 				...stat,
-				playersStat: playersStatNew
+				playersStat: newPlayerStat
+			}
+		};
+	};
+
+	private static addNotification = (store: StatStore, notification: Notification): Store => {
+		const { stat } = store;
+
+		return {
+			...store,
+			stat: {
+				...stat,
+				notifications: [...stat.notifications, notification]
+			}
+		};
+	};
+
+	private static removeNotification = (store: StatStore, id: Id): Store => {
+		const { stat } = store;
+
+		return {
+			...store,
+			stat: {
+				...stat,
+				notifications: Hlp.excludeId(id, stat.notifications)
 			}
 		};
 	};

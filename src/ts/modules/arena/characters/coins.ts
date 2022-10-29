@@ -9,7 +9,7 @@ import {
 } from '../../../utils/constants';
 import { DelayedTasks, Task } from '../../../utils/delayedTasks';
 import { CoinType, Player } from '../../../utils/enums';
-import { Id, Point, Size } from '../../../utils/types';
+import { Coin, Id, Point, Size } from '../../../utils/types';
 import { ArenaActions, ArenaStore, BinActions, state } from '../../redux';
 
 export abstract class Coins {
@@ -38,26 +38,24 @@ export abstract class Coins {
 		this.activeCoinsNum < COINS_NUMBER && this.delayedSet();
 	};
 
-	static checkCollisions = (object: Point): number => {
+	static checkCollisions = (object: Point): Coin[] => {
 		const { coins } = state.get<ArenaStore>().arena;
-
-		let success = false;
-		let num = 0;
+		const facedCoins = [] as Coin[];
 
 		for (let i = 0; i < coins.length; i++) {
-			const { id, point, type } = coins[i];
-
-			success = Hlp.comparePoints(object, point);
+			const coin = coins[i];
+			const { id, point, type } = coin;
+			const success = Hlp.comparePoints(object, point);
 
 			if (success) {
 				this.remove(id, type);
 				this.checkNumber();
 
-				num++;
+				facedCoins.push(coin);
 			}
 		}
 
-		return num;
+		return facedCoins;
 	};
 
 	static setDeathCoins = (points: Point[], player: Player): void => {
@@ -65,7 +63,7 @@ export abstract class Coins {
 		const deathPoints = this.spreadPoints(points, size);
 
 		for (let i = 0; i < deathPoints.length; i++) {
-			this.set(Hlp.generateId(), size, deathPoints[i], this.playerToCoinType[player]);
+			this.set(Hlp.generateId(), size, deathPoints[i], this.playerToCoinType[player], player);
 		}
 	};
 
@@ -80,9 +78,10 @@ export abstract class Coins {
 		id: Id,
 		{ width, height }: Size,
 		point = { x: Hlp.randomInt(width), y: Hlp.randomInt(height) },
-		type = CoinType.Standard
+		type = CoinType.Standard,
+		player?: Player
 	): void => {
-		state.dispatch(ArenaActions.setCoin({ id, point, type }));
+		state.dispatch(ArenaActions.setCoin({ id, point, type, player }));
 		DelayedTasks.delay(this.remove as Task, Hlp.randomInt(this.typeToLifeTime[type]), id, type);
 	};
 

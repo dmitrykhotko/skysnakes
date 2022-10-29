@@ -1,6 +1,6 @@
-import { CoinType, DrawingObject, GameStatus, Layer, Player } from '../../../utils/enums';
-import { InputActions, state, BinActions } from '../../redux';
-import { Bullet, Coin, GameState, PlayerInput, PlayerStat, Point, Size, SnakeData } from '../../../utils/types';
+import { CoinType, DrawingObject, GameStatus, Layer, NotifType, Player } from '../../../utils/enums';
+import { InputActions, state, BinActions, StatState } from '../../redux';
+import { Bullet, Coin, GameState, Notification, PlayerInput, Point, Size, SnakeData } from '../../../utils/types';
 import { Renderer } from '../renderer';
 import { LINE_HEIGHT, LIVE_SIZE_CELLS, SCORE_SEPARATOR } from '../../../utils/constants';
 
@@ -10,8 +10,11 @@ export abstract class BaseRenderer extends Renderer {
 		coins: [],
 		snakes: [],
 		bullets: [],
-		playersStat: [],
-		winners: [],
+		stat: {
+			playersStat: [],
+			winners: [],
+			notifications: []
+		},
 		bin: []
 	} as GameState;
 
@@ -19,6 +22,11 @@ export abstract class BaseRenderer extends Renderer {
 		[CoinType.Standard]: DrawingObject.StandardCoin,
 		[CoinType.DeathPlayer1]: DrawingObject.Player1,
 		[CoinType.DeathPlayer2]: DrawingObject.Player2
+	};
+
+	private static notifTypeToDrawingObject = {
+		[NotifType.IncScore]: DrawingObject.IncScoreNotif,
+		[NotifType.DecScore]: DrawingObject.DecScoreNotif
 	};
 
 	private prevState = BaseRenderer.defaultPrevState;
@@ -40,7 +48,7 @@ export abstract class BaseRenderer extends Renderer {
 	}
 
 	render = (state: GameState): void => {
-		const { snakes, bullets, bin, playersStat, winners } = state;
+		const { snakes, bullets, bin, stat } = state;
 
 		if (!this.isInitialized) {
 			this.use(Layer.Presenter).clearRect();
@@ -50,7 +58,7 @@ export abstract class BaseRenderer extends Renderer {
 		this.renderSnakes(snakes);
 		this.renderCoins(state.coins);
 		this.renderBullets(bullets);
-		this.renderStat(playersStat, winners);
+		this.renderStat(stat);
 
 		this.serviceInfoFlag && this.renderServiceInfo(state);
 
@@ -68,7 +76,11 @@ export abstract class BaseRenderer extends Renderer {
 	};
 
 	protected renderServiceInfo(state: GameState): void {
-		const { playersStat, winners, snakes, additionalInfo } = state;
+		const {
+			stat: { playersStat, winners },
+			snakes,
+			additionalInfo
+		} = state;
 		let lineNumber = 2;
 
 		this.use(Layer.Service).clearRect();
@@ -116,10 +128,12 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	}
 
-	private renderStat = (playersStat: PlayerStat[], winners: Player[]): void => {
-		if (playersStat === this.prevState.playersStat) {
+	private renderStat = (stat: StatState): void => {
+		if (stat === this.prevState.stat) {
 			return;
 		}
+
+		const { playersStat, winners, notifications } = stat;
 
 		this.renderWinners(winners);
 		this.use(Layer.Stat).clearRect();
@@ -154,6 +168,8 @@ export abstract class BaseRenderer extends Renderer {
 
 			this.renderText(text, { x: baseX - sepLen / 2, y: 8 }, LINE_HEIGHT, DrawingObject.Bullet);
 		}
+
+		this.renderNotifications(notifications);
 	};
 
 	private renderWinners = (winners: Player[]): void => {
@@ -181,6 +197,19 @@ export abstract class BaseRenderer extends Renderer {
 		}
 
 		this.renderText(text, { x: baseX - textLength / 2, y: baseY - 2 }, lineHeight, DrawingObject.WinnersText);
+	};
+
+	private renderNotifications = (notifications: Notification[]): void => {
+		for (let i = 0; i < notifications.length; i++) {
+			const {
+				type,
+				value,
+				point: { x, y }
+			} = notifications[i];
+			const drawingObject = BaseRenderer.notifTypeToDrawingObject[type];
+
+			this.renderText(value, { x, y }, LINE_HEIGHT, drawingObject);
+		}
 	};
 
 	private renderCoins = (coins: Coin[]): void => {

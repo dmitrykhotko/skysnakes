@@ -1,5 +1,5 @@
-import { Action } from '../modules/redux';
-import { Direction, MoveInput, FireInput, Player, GameStatus, ServiceInput, CoinType } from './enums';
+import { Action, StatState } from '../modules/redux';
+import { Direction, MoveInput, FireInput, Player, GameStatus, ServiceInput, CoinType, NotifType } from './enums';
 
 export type Point = {
 	x: number;
@@ -36,6 +36,14 @@ export type PointWithId = { point: Point; id: Id };
 
 export type Coin = PointWithId & {
 	type: CoinType;
+	player?: Player;
+};
+
+export type Notification = {
+	id: Id;
+	type: NotifType;
+	value: string;
+	point: Point;
 };
 
 export type GameState = {
@@ -43,8 +51,7 @@ export type GameState = {
 	coins: Coin[];
 	snakes: SnakeData[];
 	bullets: Bullet[];
-	playersStat: PlayerStat[];
-	winners: Player[];
+	stat: StatState;
 	bin: Point[];
 	additionalInfo?: Record<string, string | number>;
 };
