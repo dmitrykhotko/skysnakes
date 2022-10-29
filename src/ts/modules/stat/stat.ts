@@ -18,27 +18,26 @@ export abstract class Stat {
 
 	static setDamage = (victim: Player, damage: number, damageType?: DamageType): Action[] => {
 		const resultDamage = Math.ceil(damage * DAMAGE_FACTOR);
-		const showOnTail = damageType !== DamageType.headShot;
 
-		Notifier.decScore(resultDamage, victim, showOnTail);
+		Notifier.decScore(resultDamage, victim, damageType);
 		return [StatActions.changeScore(-resultDamage, victim)];
 	};
 
-	static setAward = (killer: Player, type: DamageType): void => {
+	static setAward = (killer: Player, damageType: DamageType): void => {
 		let award = 0;
 
-		switch (type) {
-			case DamageType.death:
+		switch (damageType) {
+			case DamageType.Death:
 				award = KILL_AWARD;
 				break;
-			case DamageType.headShot:
+			case DamageType.HeadShot:
 				award = HEAD_SHOT_AWARD;
 				break;
 			default:
 				return;
 		}
 
-		Notifier.incScore(award, killer);
+		Notifier.incScore(award, killer, damageType);
 		state.dispatch(StatActions.changeScore(award, killer));
 	};
 

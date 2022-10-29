@@ -36,6 +36,8 @@ export const POSITIVE_OFFSET_X = 3;
 export const NEGATIVE_OFFSET_X = -4;
 export const POSITIVE_OFFSET_Y = 4;
 export const NEGATIVE_OFFSET_Y = -2;
+export const DEATH_FUN_PRINT = 't(-_-t)';
+export const KILL_FUN_PRINT = 'ԅ(≖‿≖ԅ)';
 
 export const LIVES = 5;
 export const COINS_NUMBER = 50;

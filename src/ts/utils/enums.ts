@@ -84,9 +84,9 @@ export enum DrawingObject {
 }
 
 export enum DamageType {
-	headShot = 1,
-	death = 2,
-	standard = 3
+	HeadShot = 1,
+	Death = 2,
+	Standard = 3
 }
 
 export enum Layer {

@@ -186,6 +186,9 @@ export class Arena {
 				id: victim,
 				point: facedPoint
 			});
+			const isVictimDead = Hlp.comparePoints(facedPoint, Snakes.getById(victim).head);
+
+			let victimDamageType = DamageType.Standard;
 
 			killerPoints = Snakes.toArray(killer);
 			killerDamage = killerPoints.length;
@@ -193,18 +196,21 @@ export class Arena {
 			victimPoints = cutPoints;
 			victimDamage = victimPoints.length;
 
-			Hlp.comparePoints(facedPoint, Snakes.getById(victim).head) && (result = victim);
+			if (isVictimDead) {
+				result = victim;
+				victimDamageType = DamageType.Death;
+			}
 
 			actions.push(
-				...Stat.setDamage(victim, victimDamage),
-				...Stat.setDamage(killer, killerDamage),
+				...Stat.setDamage(victim, victimDamage, victimDamageType),
+				...Stat.setDamage(killer, killerDamage, DamageType.Death),
 				...cutActions
 			);
 		} else {
 			killerPoints = Snakes.toArray(killer);
 			killerDamage = killerPoints.length;
 
-			actions.push(...Stat.setDamage(killer, killerDamage));
+			actions.push(...Stat.setDamage(killer, killerDamage, DamageType.Death));
 		}
 
 		Coins.setDeathCoins(killerPoints, killer);
@@ -233,7 +239,7 @@ export class Arena {
 				result: { points, isDead, isHeadShot },
 				actions: hitActions
 			} = Snakes.hit(snakeShotResult);
-			const damageType = isHeadShot ? DamageType.headShot : isDead ? DamageType.death : DamageType.standard;
+			const damageType = isHeadShot ? DamageType.HeadShot : isDead ? DamageType.Death : DamageType.Standard;
 
 			Stat.setAward(killer, damageType);
 			Coins.setDeathCoins(points, victim);
