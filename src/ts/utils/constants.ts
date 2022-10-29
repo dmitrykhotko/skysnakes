@@ -18,12 +18,9 @@ export const SNAKE_SPEED = 1;
 export const BULLET_SPEED = 2;
 
 export const COIN_AWARD = 2;
+export const DAMAGE_FACTOR = COIN_AWARD * 1.2;
 export const HEAD_SHOT_AWARD = 15;
 export const KILL_AWARD = 5;
-export const BODY_PART_HIT_WEIGHT = 0.6;
-export const BODY_PART_RAM_WEIGHT = 0.6;
-export const FRIENDLY_FIRE_WEIGHT = 3.5;
-export const SYM_DAMAGE_WEIGHT = 0.75;
 
 export const RESPAWN_SNAKE_DELAY = 1 * FPS; // X * FPS = Seconds
 export const RESPAWN_COIN_MAX_DELAY = 3 * FPS;
