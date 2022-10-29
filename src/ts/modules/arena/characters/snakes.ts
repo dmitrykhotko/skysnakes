@@ -25,37 +25,32 @@ export abstract class Snakes {
 		});
 	};
 
-	static move = (checkGrowth: (id: Player, head: Point) => number): void => {
-		const snakes = this.get();
+	static move = (id: Player, checkGrowth: (id: Player, head: Point) => number): void => {
+		const snake = this.getById(id);
+		const actions = [] as Action[];
 
-		for (let i = 0; i < snakes.length; i++) {
-			const snake = snakes[i];
-			const { id } = snakes[i];
-			const actions = [] as Action[];
+		let { head, tail, direction, growthBuffer } = snake;
 
-			let { head, tail, direction, growthBuffer } = snake;
+		direction = this.applyDirection(snake);
 
-			direction = this.applyDirection(snake);
+		const nextHead = Hlp.nextPoint(head, direction);
 
-			const nextHead = Hlp.nextPoint(head, direction);
+		nextHead.prev = head;
+		head.next = nextHead;
+		head = nextHead;
 
-			nextHead.prev = head;
-			head.next = nextHead;
-			head = nextHead;
+		growthBuffer += checkGrowth(id, head);
 
-			growthBuffer += checkGrowth(id, head);
+		if (growthBuffer) {
+			growthBuffer--;
+		} else {
+			actions.push(BinActions.moveToBin([tail]));
 
-			if (growthBuffer) {
-				growthBuffer--;
-			} else {
-				actions.push(BinActions.moveToBin([tail]));
-
-				tail.next && (tail = tail.next);
-				tail.prev = undefined;
-			}
-
-			state.dispatch(SnakesActions.setSnake({ id, head, tail, direction, growthBuffer }), ...actions);
+			tail.next && (tail = tail.next);
+			tail.prev = undefined;
 		}
+
+		state.dispatch(SnakesActions.setSnake({ id, head, tail, direction, growthBuffer }), ...actions);
 	};
 
 	static checkCollisions = (object: Point): PointWithId | undefined => {
