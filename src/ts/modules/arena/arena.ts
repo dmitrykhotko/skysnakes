@@ -151,7 +151,12 @@ export class Arena {
 
 		const newHead = { x: headX, y: headY, prev: head.prev };
 
-		newHead.prev && (newHead.prev.next = newHead);
+		if (newHead.prev) {
+			newHead.prev.next = newHead;
+		} else {
+			actions.push(SnakesActions.setTail(newHead, id));
+		}
+
 		actions.push(SnakesActions.setHead(newHead, id));
 
 		return actions;
