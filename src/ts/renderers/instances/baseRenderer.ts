@@ -2,7 +2,8 @@ import { CoinType, DrawingObject, GameStatus, Layer, NotifType, Player } from '.
 import { InputActions, state, BinActions, StatState } from '../../redux';
 import { Bullet, Coin, GameState, Notification, PlayerInput, Point, Size, SnakeData } from '../../utils/types';
 import { Renderer } from '../renderer';
-import { LINE_HEIGHT, LIVE_SIZE_CELLS, SCORE_SEPARATOR } from '../../utils/constants';
+import { LINE_HEIGHT, LIVE_SIZE_CELLS } from '../../utils/constants';
+import { HEAD, LIVES, PLAYER, RESTART_MSG, SCORE, SCORE_SEPARATOR, WINNER, WINNERS, X, Y } from '../../utils/labels';
 
 export abstract class BaseRenderer extends Renderer {
 	private static defaultPrevState = {
@@ -86,7 +87,7 @@ export abstract class BaseRenderer extends Renderer {
 		this.use(Layer.Service).clearRect();
 
 		if (winners.length) {
-			this.renderTextLine('WINNERS:', lineNumber++);
+			this.renderTextLine(WINNERS, lineNumber++);
 
 			for (let i = 0; i < winners.length; i++) {
 				this.renderTextLine(`${Player[winners[i]]}`, lineNumber++);
@@ -98,9 +99,9 @@ export abstract class BaseRenderer extends Renderer {
 		for (let i = 0; i < playersStat.length; i++) {
 			const { id, lives, score } = playersStat[i];
 
-			this.renderTextLine(`Player: ${Player[id]}`, lineNumber++);
-			this.renderTextLine(`Lives: ${lives}`, lineNumber++);
-			this.renderTextLine(`Score: ${score}`, lineNumber);
+			this.renderTextLine(`${PLAYER} ${Player[id]}`, lineNumber++);
+			this.renderTextLine(`${LIVES} ${lives}`, lineNumber++);
+			this.renderTextLine(`${SCORE} ${score}`, lineNumber);
 
 			lineNumber += 2;
 		}
@@ -111,7 +112,7 @@ export abstract class BaseRenderer extends Renderer {
 				id
 			} = snakes[i];
 
-			this.renderTextLine(`HEAD ${Player[id]}: x: ${x}, y: ${y}`, lineNumber++);
+			this.renderTextLine(`${HEAD} ${Player[id]}${SCORE_SEPARATOR} ${X} ${x}, ${Y} ${y}`, lineNumber++);
 		}
 
 		lineNumber++;
@@ -163,10 +164,8 @@ export abstract class BaseRenderer extends Renderer {
 		}
 
 		if (winners.length) {
-			const text = 'Press Esc / Enter to restart';
-			const sepLen = this.measureText(text, LINE_HEIGHT);
-
-			this.renderText(text, { x: baseX - sepLen / 2, y: 8 }, LINE_HEIGHT, DrawingObject.Bullet);
+			const sepLen = this.measureText(RESTART_MSG, LINE_HEIGHT);
+			this.renderText(RESTART_MSG, { x: baseX - sepLen / 2, y: 8 }, LINE_HEIGHT, DrawingObject.Bullet);
 		}
 
 		this.renderNotifications(notifications);
@@ -184,9 +183,19 @@ export abstract class BaseRenderer extends Renderer {
 		const liveH = wh * 2;
 		const baseY = this.size.height / 2;
 		const lineHeight = LINE_HEIGHT * 2;
-		const text = `WINNER${winners.length > 1 ? 'S' : ''}`;
+
+		let text: string;
+		let isSingleWinnerFactor: number;
+
+		if (winners.length === 1) {
+			text = WINNER;
+			isSingleWinnerFactor = 0;
+		} else {
+			text = WINNERS;
+			isSingleWinnerFactor = 1;
+		}
+
 		const textLength = this.measureText(text, lineHeight);
-		const isSingleWinnerFactor = winners.length === 1 ? 0 : 1;
 
 		for (let i = 0; i < winners.length; i++) {
 			this.renderLive(

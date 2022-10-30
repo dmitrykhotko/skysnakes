@@ -14,38 +14,42 @@ import { ReducerCollection } from './reducers/reducerCollection';
 export type Store = Record<string, unknown>;
 
 class State implements Observable {
-	public dispatch: (...actions: Action[]) => void;
+	public dispatch: (...actions: Action[]) => State;
 
 	private store: Store;
 	private traceShift = '';
 	private observers = {} as Record<string, Observer[]>;
 
 	constructor(private reducer: Reducer<Store>) {
-		const dispatch = TRACE_STATE ? this.traceDispatch : this.dispatchInternal;
-
+		this.dispatch = TRACE_STATE ? this.dispatchTrace : this.dispatchInternal;
 		this.store = reducer.getInitialState();
-		this.dispatch = (...actions: Action[]): void => (actions.length && dispatch(...actions)) as void;
 	}
 
 	get = <T extends Store>(): T => this.store as T;
 
-	subscribe = (observer: Observer, type: string): void => {
+	subscribe = (observer: Observer, type: string): State => {
 		!this.observers[type] && (this.observers[type] = []);
 		this.observers[type].push(observer);
+
+		return this;
 	};
 
-	unsubscribe = (observer: Observer, type: string): void => {
+	unsubscribe = (observer: Observer, type: string): State => {
 		const observers = this.observers[type];
 		const index = observers.indexOf(observer);
 		!!~index && observers.splice(index, 1);
+
+		return this;
 	};
 
-	unsubscribeByType = (type = ''): void => {
+	unsubscribeByType = (type = ''): State => {
 		if (type === '') {
 			this.observers = {} as Record<string, Observer[]>;
 		} else {
 			this.observers[type] = [];
 		}
+
+		return this;
 	};
 
 	notify = (type: string, newStore: Store, oldStore: Store): void => {
@@ -56,7 +60,7 @@ class State implements Observable {
 		}
 	};
 
-	private dispatchInternal = (...actions: Action[]): void => {
+	private dispatchInternal = (...actions: Action[]): State => {
 		const oldStore = this.store;
 
 		for (let i = 0; i < actions.length; i++) {
@@ -65,9 +69,11 @@ class State implements Observable {
 			this.store = this.reducer.reduce(this.store, action);
 			this.notify(action.type, this.store, oldStore);
 		}
+
+		return this;
 	};
 
-	private traceDispatch = (...actions: Action[]): void => {
+	private dispatchTrace = (...actions: Action[]): State => {
 		this.trace('-----------------------------');
 		this.trace(
 			'dispatch: action',
@@ -81,6 +87,8 @@ class State implements Observable {
 		this.traceShift = this.traceShift.substring(0, this.traceShift.length - 4);
 		this.trace('dispatch: new state', this.store);
 		this.trace('-----------------------------');
+
+		return this;
 	};
 
 	private trace = (message = '', ...args: unknown[]): void => {

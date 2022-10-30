@@ -1,4 +1,4 @@
-import { PLAYER_MODE, SET_INPUT } from '../utils/constants';
+import { FOCUS_CHANGED, PLAYER_MODE, SET_INPUT } from '../utils/constants';
 import { FireInput, GameStatus, MoveInput, ServiceInput } from '../utils/enums';
 import {
 	ArenaStore,
@@ -15,35 +15,27 @@ import {
 import { Arena } from '../arena/arena';
 import { Observer } from '../utils/observable/observer';
 import { Renderer } from '../renderers/renderer';
-import { fireInputToPlayerId, ControllerProps, defaultProps, inputToIdDirection, modeToInitialData } from './utils';
-import { GameState } from '../utils/types';
+import { fireInputToPlayerId, inputToIdDirection, modeToInitialData } from './utils';
+import { GameState, Size } from '../utils/types';
 import { Hlp } from '../utils';
 import { Snakes } from '../arena/characters/snakes';
 import { Bullets } from '../arena/characters/bullets';
 import { Timer } from '../timer/timer';
 import { DelayedTasks } from '../utils/delayedTasks';
+import { ControlsManager } from '../controlsManager/controlsManager';
 
 export class Controller {
-	private arena!: Arena;
-	private renderer: Renderer;
+	private arena = new Arena();
 	private timer: Timer;
+	private controls = new ControlsManager();
 
-	constructor(props: ControllerProps) {
-		const cProps = { ...defaultProps, ...props };
-		const { autostart } = cProps;
-
-		({ renderer: this.renderer } = cProps);
-
-		const {
-			size: { width, height }
-		} = cProps;
-
-		state.dispatch(ArenaActions.setSize({ width, height }));
-		this.arena = new Arena();
-		state.subscribe(this.handleInput as Observer, SET_INPUT);
+	constructor(private renderer: Renderer, size: Size, autostart = true) {
+		state
+			.dispatch(ArenaActions.setSize(size))
+			.subscribe(this.focusChanged as Observer, FOCUS_CHANGED)
+			.subscribe(this.handleInput as Observer, SET_INPUT);
 
 		this.timer = new Timer(this.render, this.calculate);
-
 		autostart && this.start();
 	}
 
@@ -89,6 +81,10 @@ export class Controller {
 		this.renderer.reset();
 		this.renderer.focus();
 		this.timer.start();
+	};
+
+	private focusChanged = (): void => {
+		this.renderer.focus();
 	};
 
 	private handleInput = (store: InputStore): void => {

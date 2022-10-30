@@ -1,15 +1,7 @@
 import { FireInput, Direction, MoveInput, Player, PlayerMode } from '../utils/enums';
-import { Size } from '../utils/types';
-import { Renderer } from '../renderers/renderer';
 
 const { Up, Down, Left, Right } = Direction;
 const { P1, P2 } = Player;
-
-export type ControllerProps = {
-	renderer: Renderer;
-	size: Size;
-	autostart?: boolean;
-};
 
 export const inputToIdDirection = {
 	[MoveInput.RUp]: { id: P2, direction: Up },
@@ -28,10 +20,6 @@ export const modeToInitialData = {
 		{ direction: Right, id: Player.P1 },
 		{ direction: Left, id: Player.P2 }
 	]
-};
-
-export const defaultProps = {
-	autostart: false
 };
 
 export const fireInputToPlayerId = {

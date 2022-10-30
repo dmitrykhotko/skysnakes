@@ -1,9 +1,7 @@
 import { Snakes } from '../arena/characters/snakes';
 import { StatActions, state } from '../redux';
 import {
-	DEATH_FUN_PRINT,
 	FACE_COIN_AWARD_LIFETIME,
-	KILL_FUN_PRINT,
 	NEGATIVE_OFFSET_X,
 	NEGATIVE_OFFSET_Y,
 	POSITIVE_OFFSET_X,
@@ -12,6 +10,7 @@ import {
 import { DelayedTasks } from './delayedTasks';
 import { DamageType, Direction, NotifType, Player } from './enums';
 import { Hlp } from './hlp';
+import { DEATH_FUN_PRINT, KILL_FUN_PRINT } from './labels';
 import { Point } from './types';
 
 export abstract class Notifier {

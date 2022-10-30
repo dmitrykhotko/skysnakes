@@ -36,20 +36,17 @@ export const POSITIVE_OFFSET_X = 3;
 export const NEGATIVE_OFFSET_X = -4;
 export const POSITIVE_OFFSET_Y = 4;
 export const NEGATIVE_OFFSET_Y = -2;
-export const DEATH_FUN_PRINT = 't(-_-t)';
-export const KILL_FUN_PRINT = 'ԅ(≖‿≖ԅ)';
 
 export const LIVES = 5;
 export const COINS_NUMBER = 50;
 export const PLAYER_MODE = PlayerMode.Multiplayer;
-
-export const SCORE_SEPARATOR = ':';
 
 // ACTIONS
 
 //// COMMON_ACTIONS
 
 export const GAME_RESET = 'COMMON_ACTIONS/GAME_RESET';
+export const FOCUS_CHANGED = 'COMMON_ACTIONS/FOCUS_CHANGED';
 
 //// ARENA ACTIONS
 export const SET_SIZE = 'ARENA/SET_SIZE';

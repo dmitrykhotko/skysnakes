@@ -56,6 +56,10 @@ export default ({ ENABLE_SOURCEMAPS = 'true' }) => ({
 					'css-loader?url=false',
 					'sass-loader'
 				]
+			},
+			{
+				test: /\.(woff|woff2|ttf|eot|png|jpg|svg|gif|mp3)$/i,
+				use: ['file-loader']
 			}
 		]
 	},
