@@ -1,4 +1,4 @@
-import { ArenaStore, state } from '../modules/redux';
+import { ArenaStore, state } from '../redux';
 import { Direction } from './enums';
 import { Id, ObjectWithId, Point, Size } from './types';
 

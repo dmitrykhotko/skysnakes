@@ -1,5 +1,5 @@
-import { Controller } from './modules/controller/controller';
-import { CanvasRenderer } from './modules/renderers/instances/canvasRenderer';
+import { Controller } from './controller/controller';
+import { CanvasRenderer } from './renderers/instances/canvasRenderer';
 import { CELL_SIZE } from './utils/constants';
 
 const run = (): void => {

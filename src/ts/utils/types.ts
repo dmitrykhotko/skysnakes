@@ -1,4 +1,4 @@
-import { Action, StatState } from '../modules/redux';
+import { Action, StatState } from '../redux';
 import { Direction, MoveInput, FireInput, Player, GameStatus, ServiceInput, CoinType, NotifType } from './enums';
 
 export type Point = {

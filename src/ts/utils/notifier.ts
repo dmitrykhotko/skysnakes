@@ -1,5 +1,5 @@
-import { Snakes } from '../modules/arena/characters/snakes';
-import { StatActions, state } from '../modules/redux';
+import { Snakes } from '../arena/characters/snakes';
+import { StatActions, state } from '../redux';
 import {
 	DEATH_FUN_PRINT,
 	FACE_COIN_AWARD_LIFETIME,
