@@ -71,8 +71,11 @@ export abstract class Stat {
 			return;
 		}
 
-		const maxScore = Math.max(...Hlp.mapByProp(playersStat, 'id'));
-		const winners = Hlp.mapByProp(Hlp.exclude(playersStat, 'score', maxScore), 'id');
+		const maxScore = Math.max(...Hlp.mapByProp(playersStat, 'score'));
+		const winners = Hlp.mapByProp(
+			Hlp.filter(playersStat, 'score', maxScore, (item1: number, item2: number) => item1 === item2),
+			'id'
+		);
 
 		winners.length && state.dispatch(ArenaActions.setGameStatus(GameStatus.Stop), StatActions.setWinners(winners));
 	};

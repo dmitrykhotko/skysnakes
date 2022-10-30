@@ -51,13 +51,18 @@ export abstract class Hlp {
 		return target;
 	};
 
-	static exclude = <T>(items: T[], prop: keyof T, value: T[keyof T]): T[] => {
+	static filter = <T>(
+		items: T[],
+		prop: keyof T,
+		value: T[keyof T],
+		predicate = (item1: T[keyof T], item2: T[keyof T]): boolean => item1 !== item2
+	): T[] => {
 		const targets = [];
 
 		for (let i = 0; i < items.length; i++) {
 			const item = items[i];
 
-			if (item[prop] !== value) {
+			if (predicate(item[prop], value)) {
 				targets.push(item);
 			}
 		}
@@ -65,18 +70,8 @@ export abstract class Hlp {
 		return targets;
 	};
 
-	static excludeById = <T extends ObjectWithId>(items: T[], id: Id): T[] => {
-		const targets = [];
-
-		for (let i = 0; i < items.length; i++) {
-			const item = items[i];
-
-			if (item.id !== id) {
-				targets.push(item);
-			}
-		}
-
-		return targets;
+	static excludeById = <T extends ObjectWithId>(items: T[], id: T[keyof T]): T[] => {
+		return this.filter(items, 'id', id);
 	};
 
 	static mapByProp = <T>(arr: T[], prop: keyof T): T[keyof T][] => {
