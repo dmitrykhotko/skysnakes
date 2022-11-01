@@ -9,7 +9,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --mode production",
-    "build:dev": "webpack --mode development",
+    "build:dev": "rm -rf dist; webpack --mode development",
     "build:nomaps": "webpack --mode production --env ENABLE_SOURCEMAPS=false",
     "dev": "webpack --mode development --watch",
     "dev:nomaps": "webpack --mode development --watch --env ENABLE_SOURCEMAPS=false",
@@ -49,6 +49,7 @@
     "postcss": "^8.3.0",
     "postcss-loader": "^5.2.0",
     "prettier": "^2.2.1",
+    "resolve-url-loader": "^5.0.0",
     "sass": "^1.32.8",
     "sass-loader": "^11.0.1",
     "scriptlint": "^2.1.2",

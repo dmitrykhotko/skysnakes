@@ -18,8 +18,8 @@ const getPlugins = enableSourceMaps => {
 					to: 'assets/images'
 				},
 				{
-					from: 'src/html',
-					to: 'html'
+					from: 'src/*.html',
+					to: '[name][ext]'
 				}
 			]
 		})
@@ -63,6 +63,9 @@ export default ({ ENABLE_SOURCEMAPS = 'true' }) => ({
 						options: { esModule: false }
 					},
 					'css-loader?url=false',
+					{
+						loader: 'resolve-url-loader'
+					},
 					'sass-loader'
 				]
 			},

@@ -8,11 +8,11 @@ app.use(express.static('dist'))
 
 // sendFile will go here
 app.get('/', function(req, res) {
-  res.sendFile(path.join(__dirname, 'dist/html/index.html'));
+  res.sendFile(path.join(__dirname, 'dist/index.html'));
 });
 
 app.get('/error', function(req, res) {
-  res.sendFile(path.join(__dirname, 'dist/html/error.html'));
+  res.sendFile(path.join(__dirname, 'dist/error.html'));
 });
 
 app.listen(port);
