@@ -12,7 +12,16 @@ const getPlugins = enableSourceMaps => {
 		new ESLintPlugin({ fix: true, extensions: ['js', 'jsx', 'ts', 'tsx'] }),
 		new StylelintPlugin({ fix: true, files: '**/*.scss' }),
 		new CopyWebpackPlugin({
-			patterns: [{ from: 'src/assets', to: 'assets' }]
+			patterns: [
+				{
+					from: 'src/assets/images',
+					to: 'assets/images'
+				},
+				{
+					from: 'src/html',
+					to: 'html'
+				}
+			]
 		})
 	];
 
@@ -58,8 +67,11 @@ export default ({ ENABLE_SOURCEMAPS = 'true' }) => ({
 				]
 			},
 			{
-				test: /\.(woff|woff2|ttf|eot|png|jpg|svg|gif|mp3)$/i,
-				use: ['file-loader']
+				test: /\.(mp3)$/i,
+				loader: 'file-loader',
+				options: {
+					name: 'assets/sounds/[name].[ext]'
+				}
 			}
 		]
 	},
