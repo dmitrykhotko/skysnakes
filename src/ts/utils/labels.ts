@@ -18,7 +18,7 @@ export const SOUND_OFF = 'Sound Off';
 
 export const WELCOME_MESSAGE = `
 <h3>SKY SNAKES</h3>
-<p>Collect coins, SHOT each other, have fun</p>
+<p>Collect coins, go through the walls, SHOT each other, have fun!</p>
 <br />
 <p>Player 1: Arrows to move, Space to shot</p>
 <p>Player 2: WASD to move, Tab to shot</p>
