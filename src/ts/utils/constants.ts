@@ -11,7 +11,7 @@ export const LINE_HEIGHT = 30;
 export const LIVE_SIZE_CELLS = 4;
 export const CIRCLE_RADIUS_CELLS = 0.5;
 
-export const SNAKE_LENGTH = 10;
+export const SNAKE_LENGTH = 2;
 
 export const FPS = 30; // Valid values are 60,30,20,15,10...
 export const SNAKE_SPEED = 1;

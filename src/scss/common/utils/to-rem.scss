@@ -1,0 +1,9 @@
+@import "is-number";
+
+@function rem($value, $base: 16, $toRem: true) {
+    $value: toPx($value);
+    $base: toPx($base);
+    $unit: if($toRem, 1rem, 1em);
+
+    @return calc($value / $base) * $unit;
+}

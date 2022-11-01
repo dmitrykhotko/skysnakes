@@ -23,11 +23,14 @@ import { Bullets } from '../arena/characters/bullets';
 import { Timer } from '../timer/timer';
 import { DelayedTasks } from '../utils/delayedTasks';
 import { ControlsManager } from '../controlsManager/controlsManager';
+import { Modal } from '../modal/modal';
+import { WELCOME_MESSAGE } from '../utils/labels';
 
 export class Controller {
 	private arena = new Arena();
 	private timer: Timer;
 	private controls = new ControlsManager();
+	private modal = new Modal();
 
 	constructor(private renderer: Renderer, size: Size, autostart = true) {
 		state
@@ -36,7 +39,7 @@ export class Controller {
 			.subscribe(this.handleInput as Observer, SET_INPUT);
 
 		this.timer = new Timer(this.render, this.calculate);
-		autostart && this.start();
+		autostart ? this.start() : this.modal.show(WELCOME_MESSAGE, this.start);
 	}
 
 	render = (): void => {

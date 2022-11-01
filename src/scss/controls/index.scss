@@ -1,7 +1,7 @@
-.Snake .Snake{
+.Snakes .Snakes{
 	&__Controls {
 		position: absolute;
-		padding: 5px;
+		padding: rem(5px);
 		z-index: 3;
 
 		button {
@@ -9,12 +9,6 @@
 				outline: none;
 			}
 		}
-	}
-
-	&__PlayMusic {
-		background: transparent;
-		border: none;
-		color: #FFFF00;
 	}
 }
 

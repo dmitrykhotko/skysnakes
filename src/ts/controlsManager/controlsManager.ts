@@ -7,7 +7,7 @@ export class ControlsManager {
 	private soundOnOffButton: HTMLButtonElement;
 
 	constructor() {
-		this.soundOnOffButton = document.querySelector('.Snake__PlayMusic') as HTMLButtonElement;
+		this.soundOnOffButton = document.querySelector('.js-Snakes__PlayMusic') as HTMLButtonElement;
 		this.init();
 	}
 

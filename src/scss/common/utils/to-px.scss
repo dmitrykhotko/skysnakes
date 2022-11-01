@@ -1,0 +1,9 @@
+@import "is-number";
+
+ @function toPx($value) {
+    @if not isNumber($value) or not unitless($value) {
+        @return $value;
+    }
+
+    @return $value * 1px;
+}

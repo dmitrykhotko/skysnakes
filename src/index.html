@@ -5,6 +5,7 @@
   <meta charset="utf-8">
 
   <title>Sky Snakes</title>
+
   <meta name="description" content="Sky Snakes">
   <meta name="author" content="DK">
 
@@ -12,14 +13,25 @@
 </head>
 
 <body>
-  <section class="Snake">
-    <div class="Snake__Controls">
-      <button class="Snake__PlayMusic"></button>
+  <section class="Snakes">
+    <div class="Snakes__Controls">
+      <button class="btn Snakes__PlayMusic js-Snakes__PlayMusic"></button>
     </div>
-    <canvas class="Snake__Layer Snake__Presenter js-Snake__Presenter" tabindex="1"></canvas>
-    <canvas class="Snake__Layer Snake__Stat js-Snake__Stat"></canvas>
-    <canvas class="Snake__Layer Snake__ServiceInfo js-Snake__ServiceInfo"></canvas>
+
+    <div class="Snakes__Modal js-Snakes__Modal -hidden">
+      <div class="Snakes__ModalDimmer js-Snakes__ModalDimmer"></div>
+
+      <div class="Snakes__ModalContentContainer js-Snakes__ModalContentContainer">
+        <div class="Snakes__ModalContent js-Snakes__ModalContent"></div>
+        <button class="btn Snakes__ModalClose js-Snakes__ModalClose">close</button>
+      </div>
+    </div>
+
+    <canvas class="Snakes__Layer Snakes__Presenter js-Snakes__Presenter" tabindex="1"></canvas>
+    <canvas class="Snakes__Layer Snakes__Stat js-Snakes__Stat"></canvas>
+    <canvas class="Snakes__Layer Snakes__ServiceInfo js-Snakes__ServiceInfo"></canvas>
   </section>
+
   <script type="text/javascript" src="js/index.js"></script>
 </body>
 </html>

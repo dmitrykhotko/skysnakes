@@ -1,12 +1,11 @@
-.Snake {
+.Snakes {
 	width: 100vw;
 	height: 100vh;
 	background: linear-gradient(0deg, transparent 50%, #0A045D 100%), url("../../assets/images/sw-bg2.jpeg");
 	background-position: center;
 	background-size: cover;
 
-	.Snake {
-	
+	.Snakes {
 		&__Layer {
 			position: absolute;
 		}

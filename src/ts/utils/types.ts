@@ -67,9 +67,9 @@ export interface ObjectWithId {
 	id: Id;
 }
 
-export type Task = (...params: unknown[]) => unknown;
-
 export type Size = {
 	width: number;
 	height: number;
 };
+
+export type Callback = () => void;
