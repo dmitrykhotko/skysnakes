@@ -31,7 +31,7 @@ export const STANDARD_COIN_LIFETIME = 90 * FPS;
 export const DEATH_COIN_LIFETIME = 180 * FPS;
 export const COINS_SPREAD = 5;
 
-export const FACE_COIN_AWARD_LIFETIME = 2 * FPS;
+export const FACE_COIN_AWARD_LIFETIME = 3 * FPS;
 export const POSITIVE_OFFSET_X = 3;
 export const NEGATIVE_OFFSET_X = -4;
 export const POSITIVE_OFFSET_Y = 4;
