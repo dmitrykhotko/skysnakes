@@ -232,6 +232,8 @@ export class CanvasRenderer extends BaseRenderer {
 		}
 
 		event.preventDefault();
+		event.stopPropagation();
+
 		this.input(playerInput);
 	};
 }

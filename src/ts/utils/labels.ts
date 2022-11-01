@@ -18,10 +18,12 @@ export const SOUND_OFF = 'Sound Off';
 
 export const WELCOME_MESSAGE = `
 <h3>SKY SNAKES</h3>
-<p>2 players</p>
+<p>Collect coins, SHOT each other, have fun</p>
+<br />
 <p>Player 1: Arrows to move, Space to shot</p>
 <p>Player 2: WASD to move, Tab to shot</p>
-<p>ESC, Enter -- play/pause</p>
-<p>Collect coins, kill each other, have fun</p>
-<p>Press Enter or click Close to start the game!</p>
+<p>ESC -- play/pause</p>
+<p>Enter -- restart</p>
+<br />
+<p>Press Enter/Esc or click Close to start/resume the game!</p>
 `;

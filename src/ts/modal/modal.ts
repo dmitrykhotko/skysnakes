@@ -9,7 +9,7 @@ export class Modal {
 	private isShown = false;
 	private onHide?: Callback;
 
-	constructor() {
+	constructor(private message = '') {
 		this.el = document.querySelector('.js-Snakes__Modal') as HTMLElement;
 		this.contentEl = this.el.querySelector('.js-Snakes__ModalContent') as HTMLElement;
 		this.closeBtn = this.el.querySelector('.js-Snakes__ModalClose') as HTMLButtonElement;
@@ -21,16 +21,17 @@ export class Modal {
 		return this.isShown;
 	}
 
-	show = (message: string, onHide?: Callback): void => {
+	show = (onHide?: Callback): void => {
 		if (this.isShown) {
 			return;
 		}
 
 		this.isShown = true;
-		this.contentEl.innerHTML = message;
+		this.onHide = onHide;
 		this.el.classList.remove('-hidden');
 		this.contentEl.focus();
-		this.onHide = onHide;
+
+		document.addEventListener('keydown', this.onKeyDown);
 	};
 
 	hide = (): void => {
@@ -43,19 +44,20 @@ export class Modal {
 		this.onHide && this.onHide();
 
 		state.dispatch(CommonActions.focusChanged());
+		document.removeEventListener('keydown', this.onKeyDown);
 	};
 
 	private init = (): void => {
+		this.contentEl.innerHTML = this.message;
+
 		this.closeBtn.addEventListener('click', this.hide);
 		this.el.querySelector('.js-Snakes__ModalDimmer')?.addEventListener('click', this.hide);
-
-		document.addEventListener('keydown', this.onKeyDown);
 	};
 
 	private onKeyDown = (event: KeyboardEvent): void => {
 		const playerInput = +KeyCode[event.code as unknown as KeyCode];
 
-		if (playerInput === ServiceInput.Enter) {
+		if (playerInput === ServiceInput.Enter || playerInput === ServiceInput.Escape) {
 			this.hide();
 		}
 	};

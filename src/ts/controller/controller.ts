@@ -30,7 +30,7 @@ export class Controller {
 	private arena = new Arena();
 	private timer: Timer;
 	private controls = new ControlsManager();
-	private modal = new Modal();
+	private modal: Modal;
 
 	constructor(private renderer: Renderer, size: Size, autostart = true) {
 		state
@@ -39,7 +39,9 @@ export class Controller {
 			.subscribe(this.handleInput as Observer, SET_INPUT);
 
 		this.timer = new Timer(this.render, this.calculate);
-		autostart ? this.start() : this.modal.show(WELCOME_MESSAGE, this.start);
+		this.modal = new Modal(WELCOME_MESSAGE);
+
+		autostart ? this.start() : this.modal.show(this.start);
 	}
 
 	render = (): void => {
@@ -94,7 +96,7 @@ export class Controller {
 		const { playerInput: input } = store.input;
 		const { gameStatus } = state.get<ArenaStore>().arena;
 
-		ServiceInput[input] && this.handleServiceInput();
+		ServiceInput[input] && this.handleServiceInput(input as ServiceInput);
 
 		if (gameStatus !== GameStatus.InProgress) {
 			return;
@@ -104,18 +106,26 @@ export class Controller {
 		FireInput[input] && this.handleFireInput(input as FireInput);
 	};
 
-	private handleServiceInput = (): void => {
+	private handleServiceInput = (input: ServiceInput): void => {
 		const { gameStatus } = state.get<ArenaStore>().arena;
 
 		switch (gameStatus) {
 			case GameStatus.InProgress:
+				if (input === ServiceInput.Enter) {
+					return this.start();
+				}
+
 				state.dispatch(ArenaActions.setGameStatus(GameStatus.Pause));
+
 				this.timer.stop();
+				this.modal.show();
 
 				break;
 			case GameStatus.Pause:
 				state.dispatch(ArenaActions.setGameStatus(GameStatus.InProgress));
+
 				this.timer.start();
+				this.modal.hide();
 
 				break;
 			case GameStatus.Stop:
@@ -124,8 +134,6 @@ export class Controller {
 			default:
 				break;
 		}
-
-		this.renderer.focus();
 	};
 
 	private handleMoveInput = (input: MoveInput): void => {
