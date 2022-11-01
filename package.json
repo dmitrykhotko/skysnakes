@@ -8,7 +8,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "build": "webpack --mode production",
+    "build": "rm -rf dist; webpack --mode production",
     "build:dev": "rm -rf dist; webpack --mode development",
     "build:nomaps": "webpack --mode production --env ENABLE_SOURCEMAPS=false",
     "dev": "webpack --mode development --watch",
