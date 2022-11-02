@@ -1,12 +1,12 @@
 {
-  "name": "ts-playground",
-  "description": "Typescript playground",
+  "name": "skysnakes",
+  "description": "Sky Snakes",
   "license": "ISC",
   "author": {
     "name": "Dmitry Khotko",
     "email": "dmitry.khotko@gmail.com"
   },
-  "main": "index.js",
+  "main": "server.ts",
   "scripts": {
     "build": "rm -rf dist; webpack --mode production",
     "build:dev": "rm -rf dist; webpack --mode development",
@@ -17,7 +17,7 @@
     "lint:dev": "eslint --quiet --fix src/**/*.ts server.js -o lint-log.txt",
     "lint:fix": "eslint --fix src/**/*.ts server.js",
     "lint:script": "scriptlint --fix && npmPkgJsonLint .",
-    "start": "nodemon server.js",
+    "start": "ts-node server.ts",
     "scsslint": "npx stylelint",
     "scsslint:fix": "npx stylelint --fix",
     "test": "echo No \"test\" script"
@@ -29,6 +29,8 @@
     "@babel/preset-env": "^7.13.12",
     "@babel/preset-react": "^7.13.13",
     "@babel/register": "^7.13.14",
+    "@types/express": "^4.17.14",
+    "@types/node": "^18.11.9",
     "@typescript-eslint/eslint-plugin": "^4.26.0",
     "@typescript-eslint/parser": "^4.26.0",
     "babel-loader": "^8.2.2",
@@ -59,6 +61,7 @@
     "stylelint-scss": "^3.19.0",
     "stylelint-webpack-plugin": "^2.4.0",
     "ts-loader": "^9.2.2",
+    "ts-node": "^10.9.1",
     "typescript": "^4.3.2",
     "webpack": "^5.28.0",
     "webpack-cli": "^4.6.0",

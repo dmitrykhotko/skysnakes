@@ -1,5 +1,5 @@
-export const WINNER = 'WINNER: ';
-export const WINNERS = 'WINNERS: ';
+export const WINNER = 'WINNER ';
+export const WINNERS = 'WINNERS ';
 export const PLAYER = 'Player:';
 export const LIVES = 'Lives:';
 export const SCORE = 'Score:';
@@ -20,8 +20,8 @@ export const WELCOME_MESSAGE = `
 <h3>SKY SNAKES</h3>
 <p>Collect coins, go through the walls, SHOT each other, have fun!</p>
 <br />
-<p>Player 1: Arrows to move, Space to shot</p>
-<p>Player 2: WASD to move, Tab to shot</p>
+<p>Player 1: WASD to move, Tab to shot</p>
+<p>Player 2: Arrows to move, Space to shot</p>
 <p>ESC -- play/pause</p>
 <p>Enter -- restart</p>
 <br />
