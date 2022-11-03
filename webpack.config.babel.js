@@ -9,17 +9,21 @@ import ESLintPlugin from 'eslint-webpack-plugin';
 const getPlugins = enableSourceMaps => {
 	const plugins = [
 		new MiniCssExtractPlugin({ filename: '[name].css' }),
-		new ESLintPlugin({ fix: true, extensions: ['js', 'jsx', 'ts', 'tsx'] }),
+		new ESLintPlugin({ fix: true, extensions: ['js', 'jsx', 'ts', 'tsx'], context: '/' }),
 		new StylelintPlugin({ fix: true, files: '**/*.scss' }),
 		new CopyWebpackPlugin({
 			patterns: [
 				{
-					from: 'src/assets/images',
-					to: 'assets/images'
+					from: 'src/server',
+					to: 'server'
 				},
 				{
-					from: 'src/*.html',
-					to: '[name][ext]'
+					from: 'src/client/assets/images',
+					to: 'client/assets/images'
+				},
+				{
+					from: 'src/client/*.html',
+					to: 'client/[name][ext]'
 				}
 			]
 		})
@@ -34,8 +38,8 @@ const getPlugins = enableSourceMaps => {
 
 export default ({ ENABLE_SOURCEMAPS = 'true' }) => ({
 	entry: {
-		'js/index': './src/ts/index.ts',
-		'css/index': './src/scss/index.scss'
+		'client/js/index': './src/client/ts/index.ts',
+		'client/css/index': './src/client/scss/index.scss'
 	},
 	output: {
 		libraryTarget: 'window',
