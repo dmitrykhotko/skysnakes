@@ -17,8 +17,8 @@ export const WELCOME_MESSAGE = `
 <h3>SKY SNAKES</h3>
 <p>Collect coins, go through the walls, SHOOT each other, have fun!</p>
 <br />
-<p>Player 1: WASD to move, Tab to shot</p>
-<p>Player 2: Arrows to move, Space to shot</p>
+<p>Player 1: WASD to move, Tab to shoot</p>
+<p>Player 2: Arrows to move, Space to shoot</p>
 <p>ESC -- play/pause</p>
 <p>Enter -- restart</p>
 <br />

@@ -36,12 +36,12 @@ export class Controller {
 		this.initConnection();
 	}
 
-	calculate = (): void => {
+	private calculate = (): void => {
 		DelayedTasks.run();
 		this.arena.tick();
 	};
 
-	getData = (): GameState => {
+	private getData = (): GameState => {
 		const { arena, snakes, bullets, bin, stat } = state.get<
 			ArenaStore & SnakesStore & BulletsStore & BinStore & StatStore
 		>();
@@ -59,7 +59,7 @@ export class Controller {
 		} as GameState;
 	};
 
-	start = (): void => {
+	private start = (): void => {
 		this.ws.send(JSON.stringify({ type: MessageType.START }));
 		const initialData = modeToInitialData[PLAYER_MODE];
 
