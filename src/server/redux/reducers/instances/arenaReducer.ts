@@ -1,15 +1,8 @@
 import { Action, SetValueAction } from '../..';
 import { GameStatus } from '../../../../common/enums';
 import { Coin, Id, Size } from '../../../../common/types';
-import {
-	FLUSH_COINS_BUFFER,
-	GAME_RESET,
-	REMOVE_COIN,
-	SET_COIN,
-	SET_GAME_STATUS,
-	SET_SIZE
-} from '../../../utils/constants';
 import { Hlp } from '../../../utils/hlp';
+import { ActionType } from '../../actions/actionType';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
 import { setValue } from '../utils';
@@ -42,11 +35,11 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 		const arenaStore = state as ArenaStore;
 
 		switch (type) {
-			case SET_SIZE:
+			case ActionType.SET_SIZE:
 				return setValue(arenaStore, action, 'arena', 'size');
-			case SET_COIN:
+			case ActionType.SET_COIN:
 				return this.addCoin(state, action);
-			case FLUSH_COINS_BUFFER:
+			case ActionType.FLUSH_COINS_BUFFER:
 				return {
 					...state,
 					arena: {
@@ -54,11 +47,11 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 						coinsBuffer: []
 					}
 				};
-			case REMOVE_COIN:
+			case ActionType.REMOVE_COIN:
 				return this.removeCoin(state, action);
-			case SET_GAME_STATUS:
+			case ActionType.SET_GAME_STATUS:
 				return setValue(arenaStore, action, 'arena', 'status');
-			case GAME_RESET:
+			case ActionType.GAME_RESET:
 				const { size } = arenaStore.arena;
 				return { ...state, ...{ arena: { ...this.initialState.arena, size } } };
 			default:

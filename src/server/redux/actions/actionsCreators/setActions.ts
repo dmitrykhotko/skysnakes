@@ -1,4 +1,5 @@
 import { Action } from '../action';
+import { ActionType } from '../actionType';
 
 export interface SetValueAction<T> extends Action {
 	value: T;
@@ -10,27 +11,27 @@ export interface SetValueByIdAction<T, K> extends SetValueAction<T> {
 
 export abstract class SetActions {
 	static set =
-		(type: string): (() => Action) =>
-		(): { type: string } => ({
+		(type: ActionType): (() => Action) =>
+		(): { type: ActionType } => ({
 			type
 		});
 
 	static setValue =
-		<T>(type: string): ((value: T) => SetValueAction<T>) =>
+		<T>(type: ActionType): ((value: T) => SetValueAction<T>) =>
 		(value: T): SetValueAction<T> => ({
 			type,
 			value
 		});
 
 	static setStaticValue =
-		<T>(type: string, value: T): (() => SetValueAction<T>) =>
+		<T>(type: ActionType, value: T): (() => SetValueAction<T>) =>
 		(): SetValueAction<T> => ({
 			type,
 			value
 		});
 
 	static setValueById =
-		<T, K>(type: string): ((value: T, id: K) => SetValueByIdAction<T, K>) =>
+		<T, K>(type: ActionType): ((value: T, id: K) => SetValueByIdAction<T, K>) =>
 		(value: T, id: K): SetValueByIdAction<T, K> => ({
 			type,
 			value,

@@ -1,18 +1,10 @@
 import { Action, SetValueAction, SetValueByIdAction } from '../..';
 import { Player } from '../../../../common/enums';
 import { Id, Notification, PlayerStat, StatState } from '../../../../common/types';
-import {
-	ADD_NOTIFICATION,
-	CHANGE_SCORE,
-	DEC_LIVES,
-	GAME_RESET,
-	LIVES,
-	REMOVE_NOTIFICATION,
-	RESET_SCORE,
-	SET_WINNERS
-} from '../../../utils/constants';
+import { LIVES } from '../../../utils/constants';
 import { Hlp } from '../../../utils/hlp';
 import { DirectionWithId } from '../../../utils/types';
+import { ActionType } from '../../actions/actionType';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
 import { setValue } from '../utils';
@@ -37,9 +29,9 @@ export abstract class StatReducer extends Reducer<StatStore> {
 		const statStore = state as StatStore;
 
 		switch (type) {
-			case SET_WINNERS:
+			case ActionType.SET_WINNERS:
 				return setValue(statStore, action, 'stat', 'winners');
-			case RESET_SCORE:
+			case ActionType.RESET_SCORE:
 				return {
 					...state,
 					stat: {
@@ -47,16 +39,16 @@ export abstract class StatReducer extends Reducer<StatStore> {
 						playersStat: (action as SetValueAction<PlayerStat[]>).value
 					}
 				};
-			case CHANGE_SCORE:
+			case ActionType.CHANGE_SCORE:
 				const { id, value } = action as SetValueByIdAction<number, Player>;
 				return this.changeStat(statStore, id, 'score', value);
-			case DEC_LIVES:
+			case ActionType.DEC_LIVES:
 				return this.changeStat(statStore, (action as SetValueAction<Player>).value, 'lives', -1);
-			case ADD_NOTIFICATION:
+			case ActionType.ADD_NOTIFICATION:
 				return this.addNotification(statStore, (action as SetValueAction<Notification>).value);
-			case REMOVE_NOTIFICATION:
+			case ActionType.REMOVE_NOTIFICATION:
 				return this.removeNotification(statStore, (action as SetValueAction<Id>).value);
-			case GAME_RESET:
+			case ActionType.GAME_RESET:
 				const initialData = (action as SetValueAction<DirectionWithId[]>).value;
 				const playersStat = initialData.map(({ id }) => ({ id, lives: LIVES, score: 0 }));
 

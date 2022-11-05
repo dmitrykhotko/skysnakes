@@ -1,7 +1,7 @@
 import { Action } from '../..';
 import { MoveInput } from '../../../../common/enums';
 import { PlayerInput } from '../../../../common/types';
-import { GAME_RESET, SET_INPUT } from '../../../utils/constants';
+import { ActionType } from '../../actions/actionType';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
 import { setValue } from '../utils';
@@ -27,9 +27,9 @@ export abstract class InputReducer extends Reducer<InputStore> {
 		const { type } = action;
 
 		switch (type) {
-			case SET_INPUT:
+			case ActionType.SET_INPUT:
 				return setValue(state as InputStore, action, 'input', 'playerInput');
-			case GAME_RESET:
+			case ActionType.GAME_RESET:
 				return { ...state, ...this.initialState };
 			default:
 				return state;

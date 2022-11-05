@@ -1,3 +1,5 @@
+import { ActionType } from './actionType';
+
 export interface Action {
-	type: string;
+	type: ActionType;
 }

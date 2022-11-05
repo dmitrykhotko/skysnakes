@@ -1,10 +1,10 @@
 import { GameStatus, Player } from '../../common/enums';
 import { Coin } from '../../common/types';
 import { Action, ArenaActions, StatActions, state, StatStore } from '../redux';
+import { ActionType } from '../redux/actions/actionType';
 import {
 	DAMAGE_FACTOR,
 	DEATH_ENEMY_COIN_AWARD,
-	DEC_LIVES,
 	HEAD_SHOT_AWARD,
 	KILL_AWARD,
 	STANDARD_COIN_AWARD
@@ -15,7 +15,7 @@ import { Notifier } from '../utils/notifier';
 
 export abstract class Stat {
 	static init = (): void => {
-		state.subscribe(this.judge, DEC_LIVES);
+		state.subscribe(this.judge, ActionType.DEC_LIVES);
 	};
 
 	static setDamage = (victim: Player, damage: number, damageType?: DamageType): Action[] => {

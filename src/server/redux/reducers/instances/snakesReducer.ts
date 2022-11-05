@@ -1,9 +1,9 @@
 import { Action, SetValueAction, SetValueByIdAction } from '../..';
 import { Direction, Player } from '../../../../common/enums';
 import { LinkedPoint } from '../../../../common/types';
-import { GAME_RESET, NEW_DIRECTION, REMOVE_SNAKE, SET_HEAD, SET_SNAKE, SET_TAIL } from '../../../utils/constants';
 import { Hlp } from '../../../utils/hlp';
 import { SnakeData } from '../../../utils/types';
+import { ActionType } from '../../actions/actionType';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
 
@@ -25,25 +25,25 @@ export abstract class SnakesReducer extends Reducer<SnakesStore> {
 		const { type } = action;
 
 		switch (type) {
-			case SET_SNAKE:
+			case ActionType.SET_SNAKE:
 				return this.setSnake(state, action);
-			case REMOVE_SNAKE:
+			case ActionType.REMOVE_SNAKE:
 				return {
 					...state,
 					snakes: [
 						...Hlp.excludeById((state as SnakesStore).snakes, (action as SetValueAction<Player>).value)
 					]
 				};
-			case SET_HEAD:
+			case ActionType.SET_HEAD:
 				propName = 'head';
 				break;
-			case SET_TAIL:
+			case ActionType.SET_TAIL:
 				propName = 'tail';
 				break;
-			case NEW_DIRECTION:
+			case ActionType.NEW_DIRECTION:
 				propName = 'newDirection';
 				break;
-			case GAME_RESET:
+			case ActionType.GAME_RESET:
 				return { ...state, ...this.initialState };
 			default:
 				return state;

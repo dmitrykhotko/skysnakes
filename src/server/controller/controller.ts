@@ -19,8 +19,9 @@ import {
 	state,
 	StatStore
 } from '../redux';
+import { ActionType } from '../redux/actions/actionType';
 import { Timer } from '../timer/timer';
-import { PLAYER_MODE, SET_INPUT } from '../utils/constants';
+import { PLAYER_MODE } from '../utils/constants';
 import { DelayedTasks } from '../utils/delayedTasks';
 import { Hlp } from '../utils/hlp';
 import { SnakeData } from '../utils/types';
@@ -31,7 +32,7 @@ export class Controller {
 	private arena = new Arena();
 
 	constructor(private ws: WebSocket) {
-		state.resetState().subscribe(this.handleInput as Observer, SET_INPUT);
+		state.resetState().subscribe(this.handleInput as Observer, ActionType.SET_INPUT);
 		this.initConnection();
 	}
 
@@ -137,9 +138,6 @@ export class Controller {
 
 	private handleServiceInput = (input: ServiceInput): void => {
 		const { status } = state.get<ArenaStore>().arena;
-
-		console.log('input: ', ServiceInput[input]);
-		console.log('status: ', GameStatus[status]);
 
 		switch (status) {
 			case GameStatus.InProgress:

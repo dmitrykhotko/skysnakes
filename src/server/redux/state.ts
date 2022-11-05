@@ -84,13 +84,13 @@ class State {
 			'dispatch: action',
 			actions.reduce((acc, { type }) => `${acc} -> ${type}`, '')
 		);
-		this.trace('dispatch: old state', this.store);
+		// this.trace('dispatch: old state', this.store);
 		this.traceShift += '|   ';
 
 		this.dispatchInternal(...actions);
 
 		this.traceShift = this.traceShift.substring(0, this.traceShift.length - 4);
-		this.trace('dispatch: new state', this.store);
+		// this.trace('dispatch: new state', this.store);
 		this.trace('-----------------------------');
 
 		return this;

@@ -1,6 +1,6 @@
 import { Action, SetValueAction } from '../..';
 import { Bullet, Id } from '../../../../common/types';
-import { GAME_RESET, REMOVE_BULLET, RESET_BULLETS, SET_BULLET } from '../../../utils/constants';
+import { ActionType } from '../../actions/actionType';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
 
@@ -21,12 +21,12 @@ export abstract class BulletsReducer extends Reducer<BulletsStore> {
 		const { type } = action;
 
 		switch (type) {
-			case SET_BULLET:
+			case ActionType.SET_BULLET:
 				return this.set(state, action);
-			case REMOVE_BULLET:
+			case ActionType.REMOVE_BULLET:
 				return this.remove(state, action);
-			case RESET_BULLETS:
-			case GAME_RESET:
+			case ActionType.RESET_BULLETS:
+			case ActionType.GAME_RESET:
 				return { ...state, ...this.initialState };
 			default:
 				return state;

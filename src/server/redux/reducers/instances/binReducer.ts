@@ -1,7 +1,7 @@
 import { Action, SetValueAction } from '../..';
 import { Point } from '../../../../common/types';
-import { EMPTY_BIN, MOVE_TO_BIN } from '../../../utils/constants';
 import { Hlp } from '../../../utils/hlp';
+import { ActionType } from '../../actions/actionType';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
 
@@ -25,12 +25,12 @@ export abstract class BinReducer extends Reducer<BinStore> {
 		let bin: BinState;
 
 		switch (type) {
-			case MOVE_TO_BIN:
+			case ActionType.MOVE_TO_BIN:
 				const points = Hlp.lPointsToPoints((action as SetValueAction<Point[]>).value);
 
 				bin = [...binStore.bin, ...points];
 				break;
-			case EMPTY_BIN:
+			case ActionType.EMPTY_BIN:
 				bin = [];
 				break;
 			default:
