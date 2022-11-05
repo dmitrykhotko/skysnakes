@@ -1,7 +1,7 @@
 // get ri of server dependency
 import { Direction, Player } from '../../common/enums';
 import { Id, LinkedPoint } from '../../common/types';
-import { Action } from '../redux';
+import { Action } from '../redux/actions';
 
 export type SnakeData = {
 	id: Player;

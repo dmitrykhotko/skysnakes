@@ -1,6 +1,7 @@
 import { GameStatus, Player } from '../../common/enums';
 import { Coin } from '../../common/types';
-import { Action, ArenaActions, StatActions, state, StatStore } from '../redux';
+import { state, StatStore } from '../redux';
+import { Action, ArenaActions, StatActions } from '../redux/actions';
 import { ActionType } from '../redux/actions/actionType';
 import {
 	DAMAGE_FACTOR,

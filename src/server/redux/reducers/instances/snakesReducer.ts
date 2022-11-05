@@ -1,4 +1,4 @@
-import { Action, SetValueAction, SetValueByIdAction } from '../..';
+import { Action, SetValueAction, SetValueByIdAction } from '../../actions';
 import { Direction, Player } from '../../../../common/enums';
 import { LinkedPoint } from '../../../../common/types';
 import { Hlp } from '../../../utils/hlp';

@@ -1,6 +1,7 @@
 import { Direction, Player } from '../../../common/enums';
 import { Bullet, LinkedPoint } from '../../../common/types';
-import { Action, BinActions, BulletsActions, BulletsStore, state } from '../../redux';
+import { BulletsStore, state } from '../../redux';
+import { Action, BinActions, BulletsActions } from '../../redux/actions';
 import { Hlp } from '../../utils/hlp';
 
 export abstract class Bullets {

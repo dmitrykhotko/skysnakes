@@ -1,7 +1,8 @@
 import { Direction, NotifType, Player } from '../../common/enums';
 import { LinkedPoint } from '../../common/types';
 import { Snakes } from '../arena/characters/snakes';
-import { StatActions, state } from '../redux';
+import { state } from '../redux';
+import { StatActions } from '../redux/actions';
 import {
 	FACE_COIN_AWARD_LIFETIME,
 	NEGATIVE_OFFSET_X,

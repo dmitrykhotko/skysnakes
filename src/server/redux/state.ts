@@ -1,4 +1,4 @@
-import { Action } from '.';
+import { Action } from './actions';
 import { Observer } from '../../common/types';
 import { TRACE_STATE } from '../utils/constants';
 import { ArenaReducer } from './reducers/instances/arenaReducer';

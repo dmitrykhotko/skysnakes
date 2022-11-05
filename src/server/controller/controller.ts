@@ -5,20 +5,8 @@ import { GameState, Message, Observer, PlayerInput, Size, SnakeArrayData } from 
 import { Arena } from '../arena/arena';
 import { Bullets } from '../arena/characters/bullets';
 import { Snakes } from '../arena/characters/snakes';
-import {
-	ArenaActions,
-	ArenaStore,
-	BinActions,
-	BinStore,
-	BulletsStore,
-	CommonActions,
-	InputActions,
-	InputStore,
-	SnakesActions,
-	SnakesStore,
-	state,
-	StatStore
-} from '../redux';
+import { ArenaStore, BinStore, BulletsStore, InputStore, SnakesStore, state, StatStore } from '../redux';
+import { ArenaActions, BinActions, CommonActions, InputActions, SnakesActions } from '../redux/actions';
 import { ActionType } from '../redux/actions/actionType';
 import { Timer } from '../timer/timer';
 import { PLAYER_MODE } from '../utils/constants';

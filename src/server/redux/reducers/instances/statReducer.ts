@@ -1,4 +1,4 @@
-import { Action, SetValueAction, SetValueByIdAction } from '../..';
+import { Action, SetValueAction, SetValueByIdAction } from '../../actions';
 import { Player } from '../../../../common/enums';
 import { Id, Notification, PlayerStat, StatState } from '../../../../common/types';
 import { LIVES } from '../../../utils/constants';

@@ -1,12 +1,3 @@
-export { Action } from './actions/action';
-export { ArenaActions } from './actions/actionsCreators/arenaActions';
-export { BinActions } from './actions/actionsCreators/binActions';
-export { BulletsActions } from './actions/actionsCreators/bulletsActions';
-export { CommonActions } from './actions/actionsCreators/commonActions';
-export { InputActions } from './actions/actionsCreators/inputActions';
-export { SetActions, SetValueAction, SetValueByIdAction } from './actions/actionsCreators/setActions';
-export { SnakesActions } from './actions/actionsCreators/snakesActions';
-export { StatActions } from './actions/actionsCreators/statActions';
 export { ArenaReducer, ArenaState, ArenaStore } from './reducers/instances/arenaReducer';
 export { BinReducer, BinState, BinStore } from './reducers/instances/binReducer';
 export { BulletsReducer, BulletsState, BulletsStore } from './reducers/instances/bulletsReducer';

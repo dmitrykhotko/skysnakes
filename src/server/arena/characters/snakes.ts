@@ -1,6 +1,7 @@
 import { Direction, Player } from '../../../common/enums';
 import { LinkedPoint, Point, PointWithId } from '../../../common/types';
-import { Action, BinActions, SnakesActions, state } from '../../redux';
+import { state } from '../../redux';
+import { Action, BinActions, SnakesActions } from '../../redux/actions';
 import { SnakesStore, SnakeState } from '../../redux/reducers/instances/snakesReducer';
 import { SNAKE_LENGTH } from '../../utils/constants';
 import { Hlp } from '../../utils/hlp';

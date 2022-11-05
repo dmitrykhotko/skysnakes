@@ -1,6 +1,7 @@
 import { CoinType, Player } from '../../../common/enums';
 import { Coin, Id, LinkedPoint, Size } from '../../../common/types';
-import { ArenaActions, ArenaStore, BinActions, state } from '../../redux';
+import { ArenaStore, state } from '../../redux';
+import { ArenaActions, BinActions } from '../../redux/actions';
 import {
 	COINS_NUMBER,
 	COINS_SPREAD,

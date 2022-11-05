@@ -1,4 +1,4 @@
-import { Action } from '../..';
+import { Action } from '../../actions';
 import { MoveInput } from '../../../../common/enums';
 import { PlayerInput } from '../../../../common/types';
 import { ActionType } from '../../actions/actionType';

@@ -1,4 +1,4 @@
-import { Action, SetValueAction } from '../..';
+import { Action, SetValueAction } from '../../actions';
 import { Point } from '../../../../common/types';
 import { Hlp } from '../../../utils/hlp';
 import { ActionType } from '../../actions/actionType';

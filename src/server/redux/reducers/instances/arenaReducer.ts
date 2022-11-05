@@ -1,4 +1,4 @@
-import { Action, SetValueAction } from '../..';
+import { Action, SetValueAction } from '../../actions';
 import { GameStatus } from '../../../../common/enums';
 import { Coin, Id, Size } from '../../../../common/types';
 import { Hlp } from '../../../utils/hlp';

@@ -1,4 +1,4 @@
-import { Action, SetValueAction } from '../..';
+import { Action, SetValueAction } from '../../actions';
 import { Bullet, Id } from '../../../../common/types';
 import { ActionType } from '../../actions/actionType';
 import { Store } from '../../state';

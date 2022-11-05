@@ -1,6 +1,7 @@
 import { GameStatus, Player } from '../../common/enums';
 import { Id, LinkedPoint, Size } from '../../common/types';
-import { Action, ArenaState, ArenaStore, BulletsStore, SnakesActions, StatActions, state } from '../redux';
+import { ArenaState, ArenaStore, BulletsStore, state } from '../redux';
+import { Action, SnakesActions, StatActions } from '../redux/actions';
 import { Stat } from '../stat/stat';
 import { BULLET_SPEED, RESPAWN_SNAKE_DELAY, SNAKE_SPEED } from '../utils/constants';
 import { DelayedTasks } from '../utils/delayedTasks';
