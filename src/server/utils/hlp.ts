@@ -1,7 +1,6 @@
 import { Direction } from '../../common/enums';
-import { Id, LinkedPoint, Point, Size } from '../../common/types';
+import { Id, LinkedPoint, ObjectWithId, Point, Size } from '../../common/types';
 import { ArenaStore, state } from '../redux';
-import { ObjectWithId } from './types';
 
 export abstract class Hlp {
 	private static id = 0;

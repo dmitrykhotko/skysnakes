@@ -1,57 +1,56 @@
 import { CoinType, Direction, FireInput, GameStatus, MoveInput, NotifType, Player, ServiceInput } from './enums';
 
+export type Id = number;
+
+export type PlayerInput = FireInput | MoveInput | ServiceInput;
+
+export interface ObjectWithId {
+	id: Id;
+}
+export interface PlayerStat extends ObjectWithId {
+	lives: number;
+	score: number;
+}
+
 export interface Point {
 	x: number;
 	y: number;
 }
-
 export interface LinkedPoint extends Point {
 	next?: LinkedPoint;
 	prev?: LinkedPoint;
 }
-
-export type SnakeArrayData = {
-	id: Player;
-	body: Point[];
-	direction: Direction;
-};
-
-export type Id = number;
-
-export type PlayerStat = {
-	id: Id;
-	lives: number;
-	score: number;
-};
-
-export type Bullet = {
-	id: Id;
-	player: Player;
-	point: Point;
-	direction: Direction;
-};
-
-export type PlayerInput = FireInput | MoveInput | ServiceInput;
-
-export type PointWithId<T extends Point = Point> = { point: T; id: Id };
-
-export type Coin = PointWithId & {
-	type: CoinType;
-	player?: Player;
-};
-
-export type Notification = {
-	id: Id;
+export interface Notification extends ObjectWithId {
 	type: NotifType;
 	value: string;
 	point: LinkedPoint;
-};
+}
 
 export type StatState = {
 	playersStat: PlayerStat[];
 	winners: Player[];
 	notifications: Notification[];
 };
+
+export interface SnakeArrayData extends ObjectWithId {
+	body: Point[];
+	direction: Direction;
+}
+
+export interface Bullet extends ObjectWithId {
+	player: Player;
+	point: Point;
+	direction: Direction;
+}
+
+export interface PointWithId<T extends Point = Point> extends ObjectWithId {
+	point: T;
+}
+
+export interface Coin extends PointWithId {
+	type: CoinType;
+	player?: Player;
+}
 
 export type GameState = {
 	status: GameStatus;

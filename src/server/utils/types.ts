@@ -1,22 +1,18 @@
-// get ri of server dependency
-import { Direction, Player } from '../../common/enums';
-import { Id, LinkedPoint } from '../../common/types';
+import { Direction } from '../../common/enums';
+import { LinkedPoint, ObjectWithId } from '../../common/types';
 import { Action } from '../redux/actions';
 
-export type SnakeData = {
-	id: Player;
+export interface SnakeData extends ObjectWithId {
 	head: LinkedPoint;
 	tail: LinkedPoint;
 	direction: Direction;
-};
+}
 
-export type DirectionWithId = { direction: Direction; id: Id };
+export interface DirectionWithId extends ObjectWithId {
+	direction: Direction;
+}
 
-export type ResultWitActions<T = boolean> = {
+export interface ResultWitActions<T = boolean> {
 	result: T;
 	actions: Action[];
-};
-
-export interface ObjectWithId {
-	id: Id;
 }
