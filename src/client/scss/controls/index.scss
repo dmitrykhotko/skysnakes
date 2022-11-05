@@ -3,12 +3,6 @@
 		position: absolute;
 		padding: rem(5px);
 		z-index: 3;
-
-		button {
-			&:focus{
-				outline: none;
-			}
-		}
 	}
 }
 

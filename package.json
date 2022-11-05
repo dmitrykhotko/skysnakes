@@ -12,10 +12,11 @@
     "build:nomaps": "webpack --mode production --env ENABLE_SOURCEMAPS=false",
     "dev": "webpack --mode development --watch",
     "dev:nomaps": "webpack --mode development --watch --env ENABLE_SOURCEMAPS=false",
-    "lint:dev": "eslint --quiet --fix *.ts -o lint-log.txt",
-    "lint:fix": "eslint --fix src/**/*.ts server.js",
+    "lint:dev": "eslint --quiet --fix **/*.ts -o lint-log.txt",
+    "lint:fix": "eslint --fix src/**/*.ts",
     "lint:script": "scriptlint --fix && npmPkgJsonLint .",
     "start": "nodemon dist/server/server.ts",
+    "start:dev": "nodemon src/server/server.ts",
     "scsslint": "npx stylelint",
     "scsslint:fix": "npx stylelint --fix",
     "test": "echo No \"test\" script"

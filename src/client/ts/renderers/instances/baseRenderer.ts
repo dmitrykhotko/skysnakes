@@ -1,13 +1,23 @@
-import { CoinType, DrawingObject, GameStatus, Layer, NotifType, Player } from '../../utils/enums';
-import { InputActions, state, BinActions, StatState } from '../../redux';
-import { Bullet, Coin, GameState, Notification, PlayerInput, Point, Size, SnakeData } from '../../utils/types';
-import { Renderer } from '../renderer';
+import { CoinType, GameStatus, NotifType, Player } from '../../../../common/enums';
+import {
+	Bullet,
+	Coin,
+	GameState,
+	LinkedPoint,
+	Notification,
+	Observer,
+	Size,
+	SnakeArrayData,
+	StatState
+} from '../../../../common/types';
 import { LINE_HEIGHT, LIVE_SIZE_CELLS } from '../../utils/constants';
+import { DrawingObject, Layer } from '../../utils/enums';
 import { HEAD, LIVES, PLAYER, RESTART_MSG, SCORE, SCORE_SEPARATOR, WINNER, WINNERS, X, Y } from '../../utils/labels';
+import { Renderer } from '../renderer';
 
 export abstract class BaseRenderer extends Renderer {
 	private static defaultPrevState = {
-		gameStatus: GameStatus.Stop,
+		status: GameStatus.Stop,
 		coins: [],
 		snakes: [],
 		bullets: [],
@@ -34,46 +44,49 @@ export abstract class BaseRenderer extends Renderer {
 	private isInitialized = false;
 
 	protected abstract use: (layer: Layer) => BaseRenderer;
-	protected abstract renderRect: (point: Point, w: number, h: number, type: DrawingObject) => void;
-	protected abstract renderCell: (point: Point, type: DrawingObject) => void;
-	protected abstract renderCircle: (point: Point, type: DrawingObject, radius?: number, fitToCell?: boolean) => void;
+	protected abstract renderRect: (point: LinkedPoint, w: number, h: number, type: DrawingObject) => void;
+	protected abstract renderCell: (point: LinkedPoint, type: DrawingObject) => void;
+	protected abstract renderCircle: (
+		point: LinkedPoint,
+		type: DrawingObject,
+		radius?: number,
+		fitToCell?: boolean
+	) => void;
 	protected abstract measureText: (text: string, lineHeight: number) => number;
-	protected abstract renderText: (text: string, point: Point, lineHeight: number, type: DrawingObject) => void;
+	protected abstract renderText: (text: string, point: LinkedPoint, lineHeight: number, type: DrawingObject) => void;
 	protected abstract renderTextLine: (text: string, lineNumber: number) => void;
-	protected abstract clearRect: (point?: Point, size?: Size) => void;
-	protected abstract clearCell: (point: Point) => void;
-	protected abstract renderLive: (point: Point, size: Size, type: DrawingObject, factor?: number) => void;
+	protected abstract clearRect: (point?: LinkedPoint, size?: Size) => void;
+	protected abstract clearCell: (point: LinkedPoint) => void;
+	protected abstract renderLive: (point: LinkedPoint, size: Size, type: DrawingObject, factor?: number) => void;
 
-	constructor(protected size: Size, private serviceInfoFlag = true) {
+	constructor(protected size: Size, protected onInput: Observer, private serviceInfoFlag = true) {
 		super();
 	}
 
 	render = (state: GameState): void => {
-		const { snakes, bullets, bin, stat } = state;
+		requestAnimationFrame(() => {
+			const { snakes, bullets, bin, stat } = state;
 
-		if (!this.isInitialized) {
-			this.use(Layer.Presenter).clearRect();
-		}
+			if (!this.isInitialized) {
+				this.use(Layer.Presenter).clearRect();
+			}
 
-		this.emptyBin(bin);
-		this.renderSnakes(snakes);
-		this.renderCoins(state.coins);
-		this.renderBullets(bullets);
-		this.renderStat(stat);
+			this.emptyBin(bin);
+			this.renderSnakes(snakes);
+			this.renderCoins(state.coins);
+			this.renderBullets(bullets);
+			this.renderStat(stat);
 
-		this.serviceInfoFlag && this.renderServiceInfo(state);
+			this.serviceInfoFlag && this.renderServiceInfo(state);
 
-		!this.isInitialized && (this.isInitialized = true);
-		this.prevState = state;
+			!this.isInitialized && (this.isInitialized = true);
+			this.prevState = state;
+		});
 	};
 
 	reset = (): void => {
 		this.prevState = BaseRenderer.defaultPrevState;
 		this.isInitialized = false;
-	};
-
-	protected input = (input: PlayerInput): void => {
-		state.dispatch(InputActions.setInput(input));
 	};
 
 	protected renderServiceInfo(state: GameState): void {
@@ -107,10 +120,13 @@ export abstract class BaseRenderer extends Renderer {
 		}
 
 		for (let i = 0; i < snakes.length; i++) {
-			const {
-				head: { x, y },
-				id
-			} = snakes[i];
+			const { body, id } = snakes[i];
+
+			if (!body.length) {
+				return;
+			}
+
+			const { x, y } = body[0];
 
 			this.renderTextLine(`${HEAD} ${Player[id]}${SCORE_SEPARATOR} ${X} ${x}, ${Y} ${y}`, lineNumber++);
 		}
@@ -230,26 +246,29 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	};
 
-	private renderSnakes = (snakes: SnakeData[]): void => {
+	private renderSnakes = (snakes: SnakeArrayData[]): void => {
 		this.use(Layer.Presenter);
 
 		for (let i = 0; i < snakes.length; i++) {
-			const { id, head, tail } = snakes[i];
+			const { id, body } = snakes[i];
+
+			if (!body.length) {
+				return;
+			}
+
+			const head = body[0];
 			const type = this.getSnakeDrawingObject(id);
 
 			if (this.isInitialized) {
 				this.renderCell(head, type);
 				this.renderCircle(head, DrawingObject.Empty);
-				head.prev && this.renderCell(head.prev, type);
+				body[1] && this.renderCell(body[1], type);
 
 				continue;
 			}
 
-			let current: Point | undefined = tail;
-
-			while (current) {
-				this.renderCell(current, type);
-				current = current.next;
+			for (let j = 0; j < body.length - 1; j++) {
+				this.renderCell(body[j], type);
 			}
 
 			this.renderCircle(head, DrawingObject.Empty);
@@ -269,7 +288,7 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	};
 
-	private emptyBin = (bin: Point[]): void => {
+	private emptyBin = (bin: LinkedPoint[]): void => {
 		this.use(Layer.Presenter);
 
 		if (!bin.length) {
@@ -279,7 +298,5 @@ export abstract class BaseRenderer extends Renderer {
 		for (let i = 0; i < bin.length; i++) {
 			this.clearCell(bin[i]);
 		}
-
-		state.dispatch(BinActions.emptyBin());
 	};
 }

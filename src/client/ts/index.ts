@@ -1,5 +1,4 @@
 import { Controller } from './controller/controller';
-import { CanvasRenderer } from './renderers/instances/canvasRenderer';
 import { CELL_SIZE } from './utils/constants';
 
 const run = (): void => {
@@ -13,8 +12,6 @@ const run = (): void => {
 
 	const urlParams = new URLSearchParams(window.location.search);
 	const serviceInfoFlag = urlParams.get('serviceInfo') === 'true';
-	const autostart = urlParams.get('autostart') === 'true';
-
 	const cellSize = CELL_SIZE;
 	const dpr = window.devicePixelRatio;
 
@@ -29,8 +26,7 @@ const run = (): void => {
 	width /= cellSize;
 	height /= cellSize;
 
-	const renderer = new CanvasRenderer({ presenterEl, statEl, serviceEl, size: { width, height } }, serviceInfoFlag);
-	new Controller(renderer, { width, height }, autostart);
+	new Controller({ presenterEl, statEl, serviceEl, size: { width, height } }, { width, height }, serviceInfoFlag);
 };
 
 run();

@@ -1,6 +1,6 @@
+import { LinkedPoint, Observer, Size } from '../../../../common/types';
 import { CELL_SIZE, CIRCLE_RADIUS_CELLS, LINE_HEIGHT } from '../../utils/constants';
 import { DrawingObject, KeyCode, Layer } from '../../utils/enums';
-import { Point, Size } from '../../utils/types';
 import { BaseRenderer } from './baseRenderer';
 
 export type CanvasRendererProps = {
@@ -41,11 +41,11 @@ export class CanvasRenderer extends BaseRenderer {
 	private activeLayer = this.presenterLayer;
 	private layers!: Record<Layer, CanvasRenderingContext2D>;
 
-	constructor(props: CanvasRendererProps, serviceInfoFlag: boolean) {
+	constructor(props: CanvasRendererProps, onInput: Observer, serviceInfoFlag: boolean) {
 		const cProps = { ...CanvasRenderer.defaultProps, ...props };
 		const { size } = cProps;
 
-		super(size, serviceInfoFlag);
+		super(size, onInput, serviceInfoFlag);
 
 		({
 			presenterEl: this.presenterEl,
@@ -67,12 +67,12 @@ export class CanvasRenderer extends BaseRenderer {
 		return this;
 	};
 
-	protected renderRect = ({ x, y }: Point, w: number, h: number, type: DrawingObject): void => {
+	protected renderRect = ({ x, y }: LinkedPoint, w: number, h: number, type: DrawingObject): void => {
 		this.activeLayer.fillStyle = CanvasRenderer.colors[type];
 		this.activeLayer.fillRect(x, y, w * this.cellSize, h * this.cellSize);
 	};
 
-	protected renderCell = (point: Point, type: DrawingObject): void => {
+	protected renderCell = (point: LinkedPoint, type: DrawingObject): void => {
 		const { x, y } = this.weightPoint(point);
 
 		if (type !== DrawingObject.Empty) {
@@ -91,12 +91,12 @@ export class CanvasRenderer extends BaseRenderer {
 		this.activeLayer.clearRect(x, y, width, height);
 	};
 
-	protected clearCell = (point: Point): void => {
+	protected clearCell = (point: LinkedPoint): void => {
 		this.clearRect(point, { width: 1, height: 1 });
 	};
 
 	protected renderCircle = (
-		point: Point,
+		point: LinkedPoint,
 		type: DrawingObject,
 		radius = CIRCLE_RADIUS_CELLS,
 		fitToCell = true
@@ -116,7 +116,7 @@ export class CanvasRenderer extends BaseRenderer {
 		this.activeLayer.fillText(text, this.cellSize, this.lineHeight * lineNumber);
 	};
 
-	protected renderText = (text: string, point: Point, lineHeight: number, type: DrawingObject): void => {
+	protected renderText = (text: string, point: LinkedPoint, lineHeight: number, type: DrawingObject): void => {
 		const { x, y } = this.weightPoint(point);
 
 		this.activeLayer.fillStyle = CanvasRenderer.colors[type];
@@ -129,12 +129,12 @@ export class CanvasRenderer extends BaseRenderer {
 		return this.activeLayer.measureText(text).width / this.cellSize;
 	};
 
-	protected renderLive = (point: Point, { width, height }: Size, type: DrawingObject, factor = 1): void => {
+	protected renderLive = (point: LinkedPoint, { width, height }: Size, type: DrawingObject, factor = 1): void => {
 		const fSize = { width: width * factor, height: height * factor };
 		this.renderHeart(point, fSize, type);
 	};
 
-	private renderHeart = (point: Point, size: Size, type: DrawingObject): void => {
+	private renderHeart = (point: LinkedPoint, size: Size, type: DrawingObject): void => {
 		const { width, height } = this.weightSize(size);
 		const { x, y } = this.weightPoint(point);
 		const topCurveHeight = height * 0.3;
@@ -175,7 +175,7 @@ export class CanvasRenderer extends BaseRenderer {
 	};
 
 	// make a single weight method
-	private weightPoint = ({ x, y }: Point, extra = 0): Point => ({
+	private weightPoint = ({ x, y }: LinkedPoint, extra = 0): LinkedPoint => ({
 		x: x * this.cellSize + extra,
 		y: y * this.cellSize + extra
 	});
@@ -234,6 +234,6 @@ export class CanvasRenderer extends BaseRenderer {
 		event.preventDefault();
 		event.stopPropagation();
 
-		this.input(playerInput);
+		this.onInput(playerInput);
 	};
 }

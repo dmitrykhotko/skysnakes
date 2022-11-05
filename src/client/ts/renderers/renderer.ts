@@ -1,4 +1,4 @@
-import { GameState } from '../utils/types';
+import { GameState } from '../../../common/types';
 
 export abstract class Renderer {
 	abstract render(states: GameState): void;

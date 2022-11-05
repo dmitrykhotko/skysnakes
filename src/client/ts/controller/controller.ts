@@ -1,157 +1,107 @@
-import { FOCUS_CHANGED, PLAYER_MODE, SET_INPUT } from '../utils/constants';
-import { FireInput, GameStatus, MoveInput, ServiceInput } from '../utils/enums';
-import {
-	ArenaStore,
-	BulletsStore,
-	InputStore,
-	SnakesActions,
-	SnakesStore,
-	state,
-	BinStore,
-	CommonActions,
-	StatStore,
-	ArenaActions
-} from '../redux';
-import { Arena } from '../arena/arena';
-import { Observer } from '../utils/observable/observer';
-import { Renderer } from '../renderers/renderer';
-import { fireInputToPlayerId, inputToIdDirection, modeToInitialData } from './utils';
-import { GameState, Size } from '../utils/types';
-import { Hlp } from '../utils';
-import { Snakes } from '../arena/characters/snakes';
-import { Bullets } from '../arena/characters/bullets';
-import { Timer } from '../timer/timer';
-import { DelayedTasks } from '../utils/delayedTasks';
+import { GameStatus } from '../../../common/enums';
+import { MessageType } from '../../../common/messageType';
+import { GameState, Message, Observer, PlayerInput, Size } from '../../../common/types';
 import { ControlsManager } from '../controlsManager/controlsManager';
 import { Modal } from '../modal/modal';
+import { CanvasRenderer, CanvasRendererProps } from '../renderers/instances/canvasRenderer';
 import { WELCOME_MESSAGE } from '../utils/labels';
 
 export class Controller {
-	private arena = new Arena();
-	private timer: Timer;
-	private controls = new ControlsManager();
+	private prevState?: GameState;
+	private renderer: CanvasRenderer;
+	private controls: ControlsManager;
 	private modal: Modal;
+	private ws!: WebSocket;
 
-	constructor(private renderer: Renderer, size: Size, autostart = true) {
-		state
-			.dispatch(ArenaActions.setSize(size))
-			.subscribe(this.focusChanged as Observer, FOCUS_CHANGED)
-			.subscribe(this.handleInput as Observer, SET_INPUT);
+	constructor(rProps: CanvasRendererProps, size: Size, serviceInfoFlag = false) {
+		const onInputObserver = this.onInput as Observer;
 
-		this.timer = new Timer(this.render, this.calculate);
-		this.modal = new Modal(WELCOME_MESSAGE);
+		this.renderer = new CanvasRenderer(rProps, onInputObserver, serviceInfoFlag);
+		this.controls = new ControlsManager(this.renderer.focus);
+		this.modal = new Modal(WELCOME_MESSAGE, ((input: PlayerInput): void => {
+			this.onInput(input);
+			this.renderer.focus();
+		}) as Observer);
 
-		autostart ? this.start() : this.modal.show(this.start);
+		this.initConnection(size);
+		this.modal.show();
 	}
 
-	render = (): void => {
-		const arenaState = this.getArenaData();
+	private initConnection = (size: Size): void => {
+		this.ws = new WebSocket('ws://localhost:8080');
 
-		this.renderer.render(arenaState);
-		state.dispatch(ArenaActions.flushCoinsBuffer());
+		this.ws.onopen = (): void => {
+			console.log('Connection established.');
 
-		if (arenaState.gameStatus !== GameStatus.InProgress) {
-			return this.timer.stop();
-		}
+			this.ws.send(
+				JSON.stringify({
+					type: MessageType.SET_SIZE,
+					data: size
+				})
+			);
+		};
+
+		this.ws.onmessage = (event: MessageEvent): void => {
+			const { type, data } = JSON.parse(event.data) as Message<unknown>;
+
+			switch (type) {
+				case MessageType.START:
+					this.start();
+					break;
+				case MessageType.TICK:
+					this.tick(data as GameState);
+
+					break;
+				default:
+					break;
+			}
+		};
+
+		this.ws.onclose = (): void => {
+			console.log('Connection closed.');
+		};
 	};
 
-	calculate = (): void => {
-		DelayedTasks.run();
-		this.arena.step();
+	private tick = (state: GameState): void => {
+		this.renderer.render(state);
+		this.checkStatusChanged(state.status);
+
+		this.prevState = state;
 	};
 
-	private getArenaData = (): GameState => {
-		const { arena, snakes, bullets, bin, stat } = state.get<
-			ArenaStore & SnakesStore & BulletsStore & BinStore & StatStore
-		>();
+	private checkStatusChanged = (status: GameStatus): void => {
+		const prevStatus = this.prevState?.status ?? GameStatus.Pause;
 
-		return {
-			...arena,
-			stat,
-			snakes,
-			bullets,
-			bin,
-			coins: arena.coinsBuffer,
-			additionalInfo: { coinsNum: arena.coins.length }
-		} as GameState;
-	};
-
-	private start = (): void => {
-		const initialData = modeToInitialData[PLAYER_MODE];
-
-		DelayedTasks.reset();
-		state.dispatch(CommonActions.resetGame(initialData));
-
-		this.arena.start(initialData);
-		this.renderer.reset();
-		this.renderer.focus();
-		this.timer.start();
-	};
-
-	private focusChanged = (): void => {
-		this.renderer.focus();
-	};
-
-	private handleInput = (store: InputStore): void => {
-		const { playerInput: input } = store.input;
-		const { gameStatus } = state.get<ArenaStore>().arena;
-
-		ServiceInput[input] && this.handleServiceInput(input as ServiceInput);
-
-		if (gameStatus !== GameStatus.InProgress) {
-			return;
-		}
-
-		MoveInput[input] && this.handleMoveInput(input as MoveInput);
-		FireInput[input] && this.handleFireInput(input as FireInput);
-	};
-
-	private handleServiceInput = (input: ServiceInput): void => {
-		const { gameStatus } = state.get<ArenaStore>().arena;
-
-		switch (gameStatus) {
-			case GameStatus.InProgress:
-				if (input === ServiceInput.Enter) {
-					return this.start();
+		switch (status) {
+			case GameStatus.Pause:
+				if (prevStatus === GameStatus.InProgress) {
+					this.modal.show();
 				}
 
-				state.dispatch(ArenaActions.setGameStatus(GameStatus.Pause));
-
-				this.timer.stop();
-				this.modal.show();
-
 				break;
-			case GameStatus.Pause:
-				state.dispatch(ArenaActions.setGameStatus(GameStatus.InProgress));
+			case GameStatus.InProgress:
+				if (prevStatus === GameStatus.Pause) {
+					this.modal.hide();
+				}
 
-				this.timer.start();
-				this.modal.hide();
-
-				break;
-			case GameStatus.Stop:
-				this.start();
 				break;
 			default:
 				break;
 		}
 	};
 
-	private handleMoveInput = (input: MoveInput): void => {
-		const { id, direction } = inputToIdDirection[input];
-		const snake = Snakes.getById(id);
-
-		snake && state.dispatch(SnakesActions.newDirection(direction, id));
+	private onInput = (input: PlayerInput): void => {
+		this.ws.readyState === WebSocket.OPEN &&
+			this.ws.send(
+				JSON.stringify({
+					type: MessageType.USER_INPUT,
+					data: input
+				})
+			);
 	};
 
-	private handleFireInput = (input: FireInput): void => {
-		const id = fireInputToPlayerId[input];
-		const snake = Snakes.getById(id);
-
-		if (!snake) {
-			return;
-		}
-
-		const { head, direction } = snake;
-		Bullets.create(id, Hlp.nextPoint(head, direction), direction);
+	private start = (): void => {
+		this.renderer.reset();
+		this.renderer.focus();
 	};
 }

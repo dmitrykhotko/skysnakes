@@ -18,6 +18,10 @@ const getPlugins = enableSourceMaps => {
 					to: 'server'
 				},
 				{
+					from: 'src/common',
+					to: 'common'
+				},
+				{
 					from: 'src/client/assets/images',
 					to: 'client/assets/images'
 				},
@@ -77,7 +81,7 @@ export default ({ ENABLE_SOURCEMAPS = 'true' }) => ({
 				test: /\.(mp3)$/i,
 				loader: 'file-loader',
 				options: {
-					name: 'assets/sounds/[name].[ext]'
+					name: 'client/assets/sounds/[name].[ext]'
 				}
 			}
 		]
