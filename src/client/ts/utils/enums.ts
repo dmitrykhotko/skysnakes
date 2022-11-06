@@ -1,5 +1,3 @@
-// get rid of defining enum values
-
 import { FireInput, MoveInput, ServiceInput } from '../../../common/enums';
 
 export enum KeyCode {
@@ -7,11 +5,6 @@ export enum KeyCode {
 	ArrowDown = MoveInput.RDown,
 	ArrowLeft = MoveInput.RLeft,
 	ArrowRight = MoveInput.RRight,
-	KeyW = MoveInput.LUp,
-	KeyS = MoveInput.LDown,
-	KeyA = MoveInput.LLeft,
-	KeyD = MoveInput.LRight,
-	Tab = FireInput.LFire,
 	Space = FireInput.RFire,
 	Escape = ServiceInput.Escape,
 	Enter = ServiceInput.Enter

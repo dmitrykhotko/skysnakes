@@ -12,21 +12,15 @@ import { PLAYER_MODE } from '../utils/constants';
 import { DelayedTasks } from '../utils/delayedTasks';
 import { Hlp } from '../utils/hlp';
 import { SnakeData, SocketWithId } from '../utils/types';
-import { fireInputToPlayerId, inputToIdDirection, modeToInitialData } from './utils';
+import { inputToDirection, modeToInitialData } from './utils';
 
 export class Controller {
 	private timer!: Timer;
 	private arena = new Arena();
 	private size?: Size;
-	private playersDicto = {} as Record<Player, WebSocket>;
 
 	constructor(private players: SocketWithId[]) {
 		state.resetState();
-
-		this.playersDicto = players.reduce((acc, player) => {
-			acc[player.id as Player] = player.ws;
-			return acc;
-		}, {} as Record<Player, WebSocket>);
 
 		this.initConnection();
 		this.broadcast({
@@ -95,7 +89,13 @@ export class Controller {
 
 						break;
 					case MessageType.USER_INPUT:
-						this.handleInputMsg(data as PlayerInput);
+						const index = this.players.findIndex(player => player.ws === ws);
+
+						if (!~index) {
+							break;
+						}
+
+						this.handleInputMsg(data as PlayerInput, this.players[index].id);
 						break;
 					default:
 						break;
@@ -146,7 +146,7 @@ export class Controller {
 		return arr;
 	};
 
-	private handleInputMsg = (input: PlayerInput): void => {
+	private handleInputMsg = (input: PlayerInput, id: Player): void => {
 		const { status } = state.get<ArenaStore>().arena;
 
 		ServiceInput[input] && this.handleServiceInput(input as ServiceInput);
@@ -155,8 +155,8 @@ export class Controller {
 			return;
 		}
 
-		MoveInput[input] && this.handleMoveInput(input as MoveInput);
-		FireInput[input] && this.handleFireInput(input as FireInput);
+		MoveInput[input] && this.handleMoveInput(input as MoveInput, id);
+		FireInput[input] && this.handleFireInput(input as FireInput, id);
 	};
 
 	private handleServiceInput = (input: ServiceInput): void => {
@@ -179,15 +179,14 @@ export class Controller {
 		}
 	};
 
-	private handleMoveInput = (input: MoveInput): void => {
-		const { id, direction } = inputToIdDirection[input];
+	private handleMoveInput = (input: MoveInput, id: Player): void => {
+		const direction = inputToDirection[input];
 		const snake = Snakes.getById(id);
 
 		snake && state.dispatch(SnakesActions.newDirection(direction, id));
 	};
 
-	private handleFireInput = (input: FireInput): void => {
-		const id = fireInputToPlayerId[input];
+	private handleFireInput = (input: FireInput, id: Player): void => {
 		const snake = Snakes.getById(id);
 
 		if (!snake) {

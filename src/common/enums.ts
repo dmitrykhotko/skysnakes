@@ -17,16 +17,11 @@ export enum MoveInput {
 	RUp = 1,
 	RDown = 2,
 	RLeft = 3,
-	RRight = 4,
-	LUp = 5,
-	LDown = 6,
-	LLeft = 7,
-	LRight = 8
+	RRight = 4
 }
 
 export enum FireInput {
-	RFire = 9,
-	LFire = 10
+	RFire = 9
 }
 
 export enum ServiceInput {

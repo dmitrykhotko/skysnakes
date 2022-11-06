@@ -1,9 +1,6 @@
 import { v4 } from 'node-uuid';
 import WebSocket from 'ws';
-import { Player } from '../../common/enums';
-import { Id } from '../../common/types';
 import { Controller } from './../controller/controller';
-import { SocketWithId } from './../utils/types';
 import { WaitingRoom } from './waitingRoom';
 
 declare module 'ws' {
