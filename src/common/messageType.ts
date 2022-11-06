@@ -6,6 +6,7 @@ export enum MessageType {
 	USER_INPUT = 'CLIENT/USER_INPUT',
 
 	// messages from server
+	GET_SIZE = 'SERVER/GET_SIZE',
 	START = 'SERVER/START',
 	TICK = 'SERVER/TICK'
 }

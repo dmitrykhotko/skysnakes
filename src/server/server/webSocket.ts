@@ -1,6 +1,10 @@
 import { v4 } from 'node-uuid';
 import WebSocket from 'ws';
-import { Controller } from './controller/controller';
+import { Player } from '../../common/enums';
+import { Id } from '../../common/types';
+import { Controller } from './../controller/controller';
+import { SocketWithId } from './../utils/types';
+import { WaitingRoom } from './waitingRoom';
 
 declare module 'ws' {
 	interface WebSocket {
@@ -16,19 +20,30 @@ const wss = new WebSocket.WebSocketServer({ port: 8080 }, () => {
 //Object that stores player data
 // const clients = {} as Record<string, string>;
 
-wss.on('connection', function connection(ws) {
+let wRoom = new WaitingRoom();
+
+wss.on('connection', ws => {
 	ws.id = v4();
+
+	ws.on('close', () => {
+		console.log('This Connection Closed!');
+		console.log(`Removing Client: ${ws.id}`);
+
+		wRoom.removePlayer(ws);
+	});
+
+	wRoom.addPlayer(ws);
+
+	if (!wRoom.isFull) {
+		return;
+	}
 
 	// console.log(`Client ${ws.id} Connected!`);
 
 	// ws.send(`{"id": '${ws.id}'}`);
 
-	const controller = new Controller(ws);
-
-	ws.on('close', () => {
-		console.log('This Connection Closed!');
-		console.log(`Removing Client: ${ws.id}`);
-	});
+	new Controller(wRoom.toArray());
+	wRoom = new WaitingRoom();
 
 	// ws.isAlive = true;
 

@@ -27,29 +27,32 @@ export class Controller {
 		this.modal.show();
 	}
 
+	private sendMsg = (msg: Message): void => this.ws.send(JSON.stringify(msg));
+
 	private initConnection = (size: Size): void => {
 		this.ws = new WebSocket('ws://localhost:8080');
 
 		this.ws.onopen = (): void => {
 			console.log('Connection established.');
-
-			this.ws.send(
-				JSON.stringify({
-					type: MessageType.SET_SIZE,
-					data: size
-				})
-			);
 		};
 
 		this.ws.onmessage = (event: MessageEvent): void => {
 			const { type, data } = JSON.parse(event.data) as Message<unknown>;
 
 			switch (type) {
+				case MessageType.GET_SIZE:
+					this.sendMsg({
+						type: MessageType.SET_SIZE,
+						data: size
+					});
+
+					break;
 				case MessageType.START:
-					this.start();
+					this.handleStartMsg();
+
 					break;
 				case MessageType.TICK:
-					this.tick(data as GameState);
+					this.handleTickMsg(data as GameState);
 
 					break;
 				default:
@@ -62,7 +65,12 @@ export class Controller {
 		};
 	};
 
-	private tick = (state: GameState): void => {
+	private handleStartMsg = (): void => {
+		this.renderer.reset();
+		this.renderer.focus();
+	};
+
+	private handleTickMsg = (state: GameState): void => {
 		this.renderer.render(state);
 		this.checkStatusChanged(state.status);
 
@@ -92,16 +100,9 @@ export class Controller {
 
 	private onInput = (input: PlayerInput): void => {
 		this.ws.readyState === WebSocket.OPEN &&
-			this.ws.send(
-				JSON.stringify({
-					type: MessageType.USER_INPUT,
-					data: input
-				})
-			);
-	};
-
-	private start = (): void => {
-		this.renderer.reset();
-		this.renderer.focus();
+			this.sendMsg({
+				type: MessageType.USER_INPUT,
+				data: input
+			});
 	};
 }

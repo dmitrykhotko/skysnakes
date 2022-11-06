@@ -1,27 +1,37 @@
 import WebSocket from 'ws';
-import { FireInput, GameStatus, MoveInput, ServiceInput } from '../../common/enums';
+import { FireInput, GameStatus, MoveInput, Player, ServiceInput } from '../../common/enums';
 import { MessageType } from '../../common/messageType';
-import { GameState, Message, Observer, PlayerInput, Size, SnakeArrayData } from '../../common/types';
+import { GameState, Message, PlayerInput, Size, SnakeArrayData } from '../../common/types';
 import { Arena } from '../arena/arena';
 import { Bullets } from '../arena/characters/bullets';
 import { Snakes } from '../arena/characters/snakes';
-import { ArenaStore, BinStore, BulletsStore, InputStore, SnakesStore, state, StatStore } from '../redux';
-import { ArenaActions, BinActions, CommonActions, InputActions, SnakesActions } from '../redux/actions';
-import { ActionType } from '../redux/actions/actionType';
+import { ArenaStore, BinStore, BulletsStore, SnakesStore, state, StatStore } from '../redux';
+import { ArenaActions, BinActions, CommonActions, SnakesActions } from '../redux/actions';
 import { Timer } from '../timer/timer';
 import { PLAYER_MODE } from '../utils/constants';
 import { DelayedTasks } from '../utils/delayedTasks';
 import { Hlp } from '../utils/hlp';
-import { SnakeData } from '../utils/types';
+import { SnakeData, SocketWithId } from '../utils/types';
 import { fireInputToPlayerId, inputToIdDirection, modeToInitialData } from './utils';
 
 export class Controller {
 	private timer!: Timer;
 	private arena = new Arena();
+	private size?: Size;
+	private playersDicto = {} as Record<Player, WebSocket>;
 
-	constructor(private ws: WebSocket) {
-		state.resetState().subscribe(this.handleInput as Observer, ActionType.SET_INPUT);
+	constructor(private players: SocketWithId[]) {
+		state.resetState();
+
+		this.playersDicto = players.reduce((acc, player) => {
+			acc[player.id as Player] = player.ws;
+			return acc;
+		}, {} as Record<Player, WebSocket>);
+
 		this.initConnection();
+		this.broadcast({
+			type: MessageType.GET_SIZE
+		});
 	}
 
 	private calculate = (): void => {
@@ -47,8 +57,16 @@ export class Controller {
 		} as GameState;
 	};
 
+	private broadcast = (msg: Message): void => {
+		for (let i = 0; i < this.players.length; i++) {
+			const { ws } = this.players[i];
+
+			ws.readyState === WebSocket.OPEN && ws.send(JSON.stringify(msg));
+		}
+	};
+
 	private start = (): void => {
-		this.ws.send(JSON.stringify({ type: MessageType.START }));
+		this.broadcast({ type: MessageType.START });
 		const initialData = modeToInitialData[PLAYER_MODE];
 
 		DelayedTasks.reset();
@@ -60,39 +78,57 @@ export class Controller {
 
 	private initConnection = (): void => {
 		this.timer = new Timer(this.tick);
-		this.ws.on('message', (message: string) => {
-			const { type, data } = JSON.parse(message) as Message<unknown>;
 
-			switch (type) {
-				case MessageType.SET_SIZE:
-					this.setSize(data as Size);
-					break;
-				case MessageType.USER_INPUT:
-					state.dispatch(InputActions.setInput(data as PlayerInput));
-					break;
-				default:
-					break;
-			}
-		});
+		this.players.forEach(({ ws }) => {
+			ws.on('message', (message: string) => {
+				const { type, data } = JSON.parse(message) as Message<unknown>;
 
-		this.ws.on('close', () => {
-			this.timer.stop();
+				switch (type) {
+					case MessageType.SET_SIZE:
+						const isSet = this.handleSetSizeMsg(data as Size);
+
+						if (!isSet) {
+							break;
+						}
+
+						this.start();
+
+						break;
+					case MessageType.USER_INPUT:
+						this.handleInputMsg(data as PlayerInput);
+						break;
+					default:
+						break;
+				}
+			});
+
+			ws.on('close', () => {
+				this.timer.stop();
+			});
 		});
 	};
 
 	private tick = (): void => {
-		this.ws.send(
-			JSON.stringify({
-				type: MessageType.TICK,
-				data: this.getData()
-			})
-		);
+		this.broadcast({
+			type: MessageType.TICK,
+			data: this.getData()
+		});
 
 		this.calculate();
 	};
 
-	private setSize = (size: Size): void => {
-		state.dispatch(ArenaActions.setSize(size));
+	private handleSetSizeMsg = (size: Size): boolean => {
+		if (!this.size) {
+			this.size = size;
+			return false;
+		}
+
+		const width = Math.min(this.size.width, size.width);
+		const height = Math.min(this.size.height, size.height);
+
+		state.dispatch(ArenaActions.setSize({ width, height }));
+
+		return true;
 	};
 
 	private convertSnakes = (snakes: SnakeData[]): SnakeArrayData[] => {
@@ -110,8 +146,7 @@ export class Controller {
 		return arr;
 	};
 
-	private handleInput = (store: InputStore): void => {
-		const { playerInput: input } = store.input;
+	private handleInputMsg = (input: PlayerInput): void => {
 		const { status } = state.get<ArenaStore>().arena;
 
 		ServiceInput[input] && this.handleServiceInput(input as ServiceInput);

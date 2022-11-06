@@ -73,6 +73,8 @@ export class Arena {
 		}
 
 		state.dispatch(...actions);
+		Stat.judge();
+
 		victim && this.respawn(victim);
 	};
 
@@ -117,6 +119,8 @@ export class Arena {
 		const { result: victim, actions: hitsActions } = this.checkHits();
 
 		state.dispatch(...hitsActions);
+		Stat.judge();
+
 		victim && victims.push(victim);
 		victims.length && this.respawn(...victims);
 	};

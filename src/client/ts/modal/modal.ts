@@ -33,16 +33,14 @@ export class Modal {
 		document.addEventListener('keydown', this.onKeyDown);
 	};
 
-	hide = (playerInput = ServiceInput.Escape): void => {
+	hide = (): void => {
 		if (!this.isShown) {
 			return;
 		}
 
 		this.isShown = false;
 		this.el.classList.add('-hidden');
-		this.onHide && this.onHide(playerInput);
 
-		// state.dispatch(CommonActions.focusChanged());
 		document.removeEventListener('keydown', this.onKeyDown);
 	};
 
@@ -55,13 +53,15 @@ export class Modal {
 
 	private onCloseBtnClick = (): void => {
 		this.hide();
+		this.onHide && this.onHide(ServiceInput.Escape);
 	};
 
 	private onKeyDown = (event: KeyboardEvent): void => {
 		const playerInput = +KeyCode[event.code as unknown as KeyCode];
 
 		if (playerInput === ServiceInput.Enter || playerInput === ServiceInput.Escape) {
-			this.hide(playerInput);
+			this.hide();
+			this.onHide && this.onHide(playerInput);
 		}
 
 		event.stopPropagation();

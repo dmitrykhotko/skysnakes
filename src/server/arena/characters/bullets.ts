@@ -12,10 +12,6 @@ export abstract class Bullets {
 		for (let i = 0; i < bullets.length; i++) {
 			const { id, player, point, direction } = bullets[i];
 			const nextPoint = Hlp.nextPoint(point, direction);
-
-			// point.prev = undefined;
-			// nextPoint.prev = point;
-
 			const newBullet = { id, player, point: nextPoint, direction };
 
 			state.dispatch(BulletsActions.setBullet(newBullet), BinActions.moveToBin([point]));
@@ -39,8 +35,6 @@ export abstract class Bullets {
 	static remove = (bullet: Bullet): Action[] => {
 		const { id, point } = bullet;
 		const bin = [point];
-
-		// point.prev && bin.push(point.prev);
 
 		return [BulletsActions.remove(id), BinActions.moveToBin(bin)];
 	};

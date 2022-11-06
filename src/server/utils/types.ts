@@ -1,3 +1,4 @@
+import { WebSocket } from 'ws';
 import { Direction } from '../../common/enums';
 import { LinkedPoint, ObjectWithId } from '../../common/types';
 import { Action } from '../redux/actions';
@@ -15,4 +16,8 @@ export interface DirectionWithId extends ObjectWithId {
 export interface ResultWitActions<T = boolean> {
 	result: T;
 	actions: Action[];
+}
+
+export interface SocketWithId extends ObjectWithId {
+	ws: WebSocket;
 }

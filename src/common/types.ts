@@ -69,7 +69,7 @@ export type Size = {
 
 export type Observer = (...params: unknown[]) => void;
 
-export interface Message<T> {
+export interface Message<T = unknown> {
 	type: string;
-	data: T;
+	data?: T;
 }

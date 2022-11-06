@@ -2,7 +2,7 @@ import { GameStatus, Player } from '../../common/enums';
 import { Coin } from '../../common/types';
 import { state, StatStore } from '../redux';
 import { Action, ArenaActions, StatActions } from '../redux/actions';
-import { ActionType } from '../redux/actions/actionType';
+// import { ActionType } from '../redux/actions/actionType';
 import {
 	DAMAGE_FACTOR,
 	DEATH_ENEMY_COIN_AWARD,
@@ -12,13 +12,9 @@ import {
 } from '../utils/constants';
 import { DamageType } from '../utils/enums';
 import { Hlp } from '../utils/hlp';
-import { Notifier } from '../utils/notifier';
+import { Notifier } from '../notifier/notifier';
 
 export abstract class Stat {
-	static init = (): void => {
-		state.subscribe(this.judge, ActionType.DEC_LIVES);
-	};
-
 	static setDamage = (victim: Player, damage: number, damageType?: DamageType): Action[] => {
 		const resultDamage = Math.ceil(damage * DAMAGE_FACTOR);
 
@@ -66,7 +62,7 @@ export abstract class Stat {
 		state.dispatch(StatActions.changeScore(award, id));
 	};
 
-	private static judge = (): void => {
+	static judge = (): void => {
 		const { playersStat } = state.get<StatStore>().stat;
 
 		if (!playersStat.some(({ lives }) => lives === 0)) {
@@ -82,5 +78,3 @@ export abstract class Stat {
 		winners.length && state.dispatch(ArenaActions.setGameStatus(GameStatus.Stop), StatActions.setWinners(winners));
 	};
 }
-
-Stat.init();

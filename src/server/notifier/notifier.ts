@@ -9,11 +9,11 @@ import {
 	NEGATIVE_OFFSET_Y,
 	POSITIVE_OFFSET_X,
 	POSITIVE_OFFSET_Y
-} from './constants';
-import { DelayedTasks } from './delayedTasks';
-import { DamageType } from './enums';
-import { Hlp } from './hlp';
-import { DEATH_FUN_PRINT, KILL_FUN_PRINT } from './labels';
+} from '../utils/constants';
+import { DelayedTasks } from '../utils/delayedTasks';
+import { DamageType } from '../utils/enums';
+import { Hlp } from '../utils/hlp';
+import { DEATH_FUN_PRINT, KILL_FUN_PRINT } from '../utils/labels';
 
 export abstract class Notifier {
 	static incScore = (award: number, id: Player, damageType?: DamageType): void => {

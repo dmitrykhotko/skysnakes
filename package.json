@@ -15,8 +15,8 @@
     "lint:dev": "eslint --quiet --fix **/*.ts -o lint-log.txt",
     "lint:fix": "eslint --fix src/**/*.ts",
     "lint:script": "scriptlint --fix && npmPkgJsonLint .",
-    "start": "nodemon dist/server/server.ts",
-    "start:dev": "nodemon src/server/server.ts",
+    "start": "nodemon dist/server/server/server.ts",
+    "start:dev": "nodemon src/server/server/server.ts",
     "scsslint": "npx stylelint",
     "scsslint:fix": "npx stylelint --fix",
     "test": "echo No \"test\" script"
