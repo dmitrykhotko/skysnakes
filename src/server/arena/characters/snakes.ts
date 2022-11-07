@@ -1,13 +1,13 @@
 import { Direction, Player } from '../../../common/enums';
 import { LinkedPoint, Point, PointWithId } from '../../../common/types';
-import { state } from '../../redux';
 import { Action, BinActions, SnakesActions } from '../../redux/actions';
 import { SnakesStore, SnakeState } from '../../redux/reducers/instances/snakesReducer';
+import { State } from '../../redux/state';
 import { SNAKE_LENGTH } from '../../utils/constants';
 import { Hlp } from '../../utils/hlp';
 import { DirectionWithId, ResultWitActions } from '../../utils/types';
 
-export abstract class Snakes {
+export class Snakes {
 	private static directionWeights = {
 		[Direction.Up]: -1,
 		[Direction.Down]: 1,
@@ -15,23 +15,40 @@ export abstract class Snakes {
 		[Direction.Right]: 2
 	};
 
-	static get = (): SnakeState[] => state.get<SnakesStore>().snakes;
+	constructor(private state: State) {}
 
-	static getById = (id: Player): SnakeState => Hlp.getById(id, this.get());
+	static get = (state: State): SnakeState[] => state.get<SnakesStore>().snakes;
 
-	static init = (snakesInitial: DirectionWithId[]): void => {
-		const { width, height } = Hlp.getSize();
+	static getById = (state: State, id: Player): SnakeState => Hlp.getById(id, this.get(state));
+
+	static toArray = (state: State, id: Player, start = this.getById(state, id).head): Point[] => {
+		const points = [] as Point[];
+		let point: LinkedPoint | undefined = start;
+
+		while (point) {
+			points.push({ x: point.x, y: point.y }) && (point = point.prev);
+		}
+
+		return points;
+	};
+
+	get = (): SnakeState[] => Snakes.get(this.state);
+
+	getById = (id: Player): SnakeState => Hlp.getById(id, Snakes.get(this.state));
+
+	init = (snakesInitial: DirectionWithId[]): void => {
+		const { width, height } = Hlp.getSize(this.state);
 
 		for (let i = 0; i < snakesInitial.length; i++) {
 			const { id, direction } = snakesInitial[i];
 			const head = this.getStartPoint(direction, width, height);
 			const tail = this.initBody(head, SNAKE_LENGTH, direction);
 
-			state.dispatch(SnakesActions.setSnake({ id, head, tail, direction, growthBuffer: 0 }));
+			this.state.dispatch(SnakesActions.setSnake({ id, head, tail, direction, growthBuffer: 0 }));
 		}
 	};
 
-	static move = (id: Player, checkGrowth: (id: Player, head: LinkedPoint) => number): void => {
+	move = (id: Player, checkGrowth: (id: Player, head: LinkedPoint) => number): void => {
 		const snake = this.getById(id);
 		const actions = [] as Action[];
 
@@ -56,10 +73,10 @@ export abstract class Snakes {
 			tail.prev = undefined;
 		}
 
-		state.dispatch(SnakesActions.setSnake({ id, head, tail, direction, growthBuffer }), ...actions);
+		this.state.dispatch(SnakesActions.setSnake({ id, head, tail, direction, growthBuffer }), ...actions);
 	};
 
-	static checkCollisions = (object: LinkedPoint): PointWithId | undefined => {
+	checkCollisions = (object: LinkedPoint): PointWithId | undefined => {
 		const snakes = this.get();
 
 		for (let i = 0; i < snakes.length; i++) {
@@ -80,7 +97,7 @@ export abstract class Snakes {
 		}
 	};
 
-	static remove = (ids: Player[]): void => {
+	remove = (ids: Player[]): void => {
 		const actions = [] as Action[];
 
 		for (let i = 0; i < ids.length; i++) {
@@ -91,10 +108,10 @@ export abstract class Snakes {
 			actions.push(SnakesActions.removeSnake(id), ...cutActions);
 		}
 
-		state.dispatch(...actions);
+		this.state.dispatch(...actions);
 	};
 
-	static hit = (
+	hit = (
 		snakeShotResult: PointWithId<LinkedPoint>
 	): ResultWitActions<{
 		points: LinkedPoint[];
@@ -123,7 +140,7 @@ export abstract class Snakes {
 		};
 	};
 
-	static len = (id: Player, start = this.getById(id).head): number => {
+	len = (id: Player, start = this.getById(id).head): number => {
 		let point: LinkedPoint | undefined = start;
 		let len = 0;
 
@@ -134,18 +151,9 @@ export abstract class Snakes {
 		return len;
 	};
 
-	static toArray = (id: Player, start = this.getById(id).head): Point[] => {
-		const points = [] as Point[];
-		let point: LinkedPoint | undefined = start;
+	toArray = (id: Player, start = this.getById(id).head): Point[] => Snakes.toArray(this.state, id, start);
 
-		while (point) {
-			points.push({ x: point.x, y: point.y }) && (point = point.prev);
-		}
-
-		return points;
-	};
-
-	static cut = (...cutIt: PointWithId<LinkedPoint>[]): ResultWitActions<LinkedPoint[]> => {
+	cut = (...cutIt: PointWithId<LinkedPoint>[]): ResultWitActions<LinkedPoint[]> => {
 		const bin = [] as LinkedPoint[];
 		const actions = [] as Action[];
 
@@ -174,7 +182,7 @@ export abstract class Snakes {
 		};
 	};
 
-	private static initBody = (head: LinkedPoint, length: number, direction: Direction): LinkedPoint => {
+	private initBody = (head: LinkedPoint, length: number, direction: Direction): LinkedPoint => {
 		const D = Direction;
 		const xStep = direction === D.Left ? 1 : direction === D.Right ? -1 : 0;
 		const yStep = direction === D.Up ? 1 : direction === D.Down ? -1 : 0;
@@ -196,18 +204,18 @@ export abstract class Snakes {
 		return tail;
 	};
 
-	private static applyDirection = (data: SnakeState): Direction => {
+	private applyDirection = (data: SnakeState): Direction => {
 		const { id, direction, newDirection } = data;
 
-		if (!(newDirection && this.directionWeights[direction] + this.directionWeights[newDirection])) {
+		if (!(newDirection && Snakes.directionWeights[direction] + Snakes.directionWeights[newDirection])) {
 			return direction;
 		}
 
-		state.dispatch(SnakesActions.newDirection(undefined, id));
+		this.state.dispatch(SnakesActions.newDirection(undefined, id));
 		return newDirection;
 	};
 
-	private static getStartPoint = (direction: Direction, width: number, height: number): LinkedPoint => {
+	private getStartPoint = (direction: Direction, width: number, height: number): LinkedPoint => {
 		let head: LinkedPoint;
 
 		switch (direction) {

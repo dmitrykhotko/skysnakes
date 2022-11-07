@@ -1,8 +1,8 @@
 import { Direction, NotifType, Player } from '../../common/enums';
-import { LinkedPoint } from '../../common/types';
+import { LinkedPoint, Size } from '../../common/types';
 import { Snakes } from '../arena/characters/snakes';
-import { state } from '../redux';
 import { StatActions } from '../redux/actions';
+import { State } from '../redux/state';
 import {
 	FACE_COIN_AWARD_LIFETIME,
 	NEGATIVE_OFFSET_X,
@@ -15,28 +15,30 @@ import { DamageType } from '../utils/enums';
 import { Hlp } from '../utils/hlp';
 import { DEATH_FUN_PRINT, KILL_FUN_PRINT } from '../utils/labels';
 
-export abstract class Notifier {
-	static incScore = (award: number, id: Player, damageType?: DamageType): void => {
-		const { head, direction } = Snakes.getById(id);
+export class Notifier {
+	constructor(private state: State) {}
+
+	incScore = (award: number, id: Player, damageType?: DamageType): void => {
+		const { head, direction } = Snakes.getById(this.state, id);
 		const funPrint = this.isDead(damageType) ? `  ${KILL_FUN_PRINT}` : '';
 
 		this.changeScore(head, direction, `+${award}${funPrint}`, NotifType.IncScore);
 	};
 
-	static decScore = (award: number, id: Player, damageType?: DamageType): void => {
-		const { head, tail, direction } = Snakes.getById(id);
+	decScore = (award: number, id: Player, damageType?: DamageType): void => {
+		const { head, tail, direction } = Snakes.getById(this.state, id);
 		const showOnTail = damageType !== DamageType.HeadShot;
 		const funPrint = this.isDead(damageType) ? `  ${DEATH_FUN_PRINT}` : '';
 
 		this.changeScore(showOnTail ? tail : head, direction, `-${award}${funPrint}`, NotifType.DecScore);
 	};
 
-	private static isDead = (damageType?: DamageType): boolean =>
+	private isDead = (damageType?: DamageType): boolean =>
 		damageType === DamageType.Death || damageType === DamageType.HeadShot;
 
-	private static changeScore = (point: LinkedPoint, direction: Direction, value: string, type: NotifType): void => {
+	private changeScore = (point: LinkedPoint, direction: Direction, value: string, type: NotifType): void => {
 		const { x, y } = point;
-		const { width, height } = Hlp.getSize();
+		const { width, height } = Hlp.getSize(this.state);
 		const id = Hlp.generateId();
 
 		let newX = x;
@@ -52,7 +54,7 @@ export abstract class Notifier {
 			newY += y + NEGATIVE_OFFSET_Y < -NEGATIVE_OFFSET_Y ? POSITIVE_OFFSET_Y : NEGATIVE_OFFSET_Y;
 		}
 
-		state.dispatch(
+		this.state.dispatch(
 			StatActions.addNotification({
 				id,
 				type,
@@ -62,7 +64,7 @@ export abstract class Notifier {
 		);
 
 		DelayedTasks.delay(() => {
-			state.dispatch(StatActions.removeNotification(id));
+			this.state.dispatch(StatActions.removeNotification(id));
 		}, FACE_COIN_AWARD_LIFETIME);
 	};
 }

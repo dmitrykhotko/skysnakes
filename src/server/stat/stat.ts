@@ -1,8 +1,9 @@
 import { GameStatus, Player } from '../../common/enums';
 import { Coin } from '../../common/types';
-import { state, StatStore } from '../redux';
+import { Notifier } from '../notifier/notifier';
+import { StatStore } from '../redux';
 import { Action, ArenaActions, StatActions } from '../redux/actions';
-// import { ActionType } from '../redux/actions/actionType';
+import { State } from '../redux/state';
 import {
 	DAMAGE_FACTOR,
 	DEATH_ENEMY_COIN_AWARD,
@@ -12,17 +13,22 @@ import {
 } from '../utils/constants';
 import { DamageType } from '../utils/enums';
 import { Hlp } from '../utils/hlp';
-import { Notifier } from '../notifier/notifier';
 
-export abstract class Stat {
-	static setDamage = (victim: Player, damage: number, damageType?: DamageType): Action[] => {
+export class Stat {
+	private notifier: Notifier;
+
+	constructor(private state: State) {
+		this.notifier = new Notifier(this.state);
+	}
+
+	setDamage = (victim: Player, damage: number, damageType?: DamageType): Action[] => {
 		const resultDamage = Math.ceil(damage * DAMAGE_FACTOR);
 
-		Notifier.decScore(resultDamage, victim, damageType);
+		this.notifier.decScore(resultDamage, victim, damageType);
 		return [StatActions.changeScore(-resultDamage, victim)];
 	};
 
-	static setAward = (killer: Player, damageType: DamageType): void => {
+	setAward = (killer: Player, damageType: DamageType): void => {
 		let award = 0;
 
 		switch (damageType) {
@@ -36,11 +42,11 @@ export abstract class Stat {
 				return;
 		}
 
-		Notifier.incScore(award, killer, damageType);
-		state.dispatch(StatActions.changeScore(award, killer));
+		this.notifier.incScore(award, killer, damageType);
+		this.state.dispatch(StatActions.changeScore(award, killer));
 	};
 
-	static faceCoins = (id: Player, coins: Coin[]): void => {
+	faceCoins = (id: Player, coins: Coin[]): void => {
 		if (!coins.length) {
 			return;
 		}
@@ -58,12 +64,12 @@ export abstract class Stat {
 			award += DEATH_ENEMY_COIN_AWARD;
 		}
 
-		Notifier.incScore(award, id);
-		state.dispatch(StatActions.changeScore(award, id));
+		this.notifier.incScore(award, id);
+		this.state.dispatch(StatActions.changeScore(award, id));
 	};
 
-	static judge = (): void => {
-		const { playersStat } = state.get<StatStore>().stat;
+	judge = (): void => {
+		const { playersStat } = this.state.get<StatStore>().stat;
 
 		if (!playersStat.some(({ lives }) => lives === 0)) {
 			return;
@@ -75,6 +81,7 @@ export abstract class Stat {
 			'id'
 		);
 
-		winners.length && state.dispatch(ArenaActions.setGameStatus(GameStatus.Stop), StatActions.setWinners(winners));
+		winners.length &&
+			this.state.dispatch(ArenaActions.setGameStatus(GameStatus.Stop), StatActions.setWinners(winners));
 	};
 }

@@ -3,10 +3,10 @@ import { FireInput, GameStatus, MoveInput, Player, ServiceInput } from '../../co
 import { MessageType } from '../../common/messageType';
 import { GameState, Message, PlayerInput, Size, SnakeArrayData } from '../../common/types';
 import { Arena } from '../arena/arena';
-import { Bullets } from '../arena/characters/bullets';
 import { Snakes } from '../arena/characters/snakes';
-import { ArenaStore, BinStore, BulletsStore, SnakesStore, state, StatStore } from '../redux';
-import { ArenaActions, BinActions, CommonActions, SnakesActions } from '../redux/actions';
+import { ArenaStore, BinStore, BulletsStore, SnakesStore, StatStore } from '../redux';
+import { ArenaActions, BinActions, BulletsActions, CommonActions, SnakesActions } from '../redux/actions';
+import { createState, State } from '../redux/state';
 import { Timer } from '../timer/timer';
 import { PLAYER_MODE } from '../utils/constants';
 import { DelayedTasks } from '../utils/delayedTasks';
@@ -15,12 +15,14 @@ import { SnakeData, SocketWithId } from '../utils/types';
 import { inputToDirection, modeToInitialData } from './utils';
 
 export class Controller {
+	private state: State;
 	private timer!: Timer;
-	private arena = new Arena();
+	private arena: Arena;
 	private size?: Size;
 
 	constructor(private players: SocketWithId[]) {
-		state.resetState();
+		this.state = createState();
+		this.arena = new Arena(this.state);
 
 		this.initConnection();
 		this.broadcast({
@@ -34,11 +36,11 @@ export class Controller {
 	};
 
 	private getData = (): GameState => {
-		const { arena, snakes, bullets, bin, stat } = state.get<
+		const { arena, snakes, bullets, bin, stat } = this.state.get<
 			ArenaStore & SnakesStore & BulletsStore & BinStore & StatStore
 		>();
 
-		state.dispatch(ArenaActions.flushCoinsBuffer(), BinActions.emptyBin());
+		this.state.dispatch(ArenaActions.flushCoinsBuffer(), BinActions.emptyBin());
 
 		return {
 			...arena,
@@ -64,7 +66,7 @@ export class Controller {
 		const initialData = modeToInitialData[PLAYER_MODE];
 
 		DelayedTasks.reset();
-		state.dispatch(CommonActions.resetGame(initialData), ArenaActions.setGameStatus(GameStatus.InProgress));
+		this.state.dispatch(CommonActions.resetGame(initialData), ArenaActions.setGameStatus(GameStatus.InProgress));
 
 		this.arena.start(initialData);
 		this.timer.start();
@@ -126,7 +128,7 @@ export class Controller {
 		const width = Math.min(this.size.width, size.width);
 		const height = Math.min(this.size.height, size.height);
 
-		state.dispatch(ArenaActions.setSize({ width, height }));
+		this.state.dispatch(ArenaActions.setSize({ width, height }));
 
 		return true;
 	};
@@ -139,7 +141,7 @@ export class Controller {
 			arr.push({
 				id,
 				direction,
-				body: Snakes.toArray(id)
+				body: Snakes.toArray(this.state, id)
 			});
 		}
 
@@ -147,7 +149,7 @@ export class Controller {
 	};
 
 	private handleInputMsg = (input: PlayerInput, id: Player): void => {
-		const { status } = state.get<ArenaStore>().arena;
+		const { status } = this.state.get<ArenaStore>().arena;
 
 		ServiceInput[input] && this.handleServiceInput(input as ServiceInput);
 
@@ -160,14 +162,14 @@ export class Controller {
 	};
 
 	private handleServiceInput = (input: ServiceInput): void => {
-		const { status } = state.get<ArenaStore>().arena;
+		const { status } = this.state.get<ArenaStore>().arena;
 
 		switch (status) {
 			case GameStatus.InProgress:
 				input === ServiceInput.Enter ? this.start() : this.pause();
 				break;
 			case GameStatus.Pause:
-				state.dispatch(ArenaActions.setGameStatus(GameStatus.InProgress));
+				this.state.dispatch(ArenaActions.setGameStatus(GameStatus.InProgress));
 				this.timer.start();
 
 				break;
@@ -181,24 +183,32 @@ export class Controller {
 
 	private handleMoveInput = (input: MoveInput, id: Player): void => {
 		const direction = inputToDirection[input];
-		const snake = Snakes.getById(id);
+		const snake = Snakes.getById(this.state, id);
 
-		snake && state.dispatch(SnakesActions.newDirection(direction, id));
+		snake && this.state.dispatch(SnakesActions.newDirection(direction, id));
 	};
 
 	private handleFireInput = (input: FireInput, id: Player): void => {
-		const snake = Snakes.getById(id);
+		const snake = Snakes.getById(this.state, id);
 
 		if (!snake) {
 			return;
 		}
 
 		const { head, direction } = snake;
-		Bullets.create(id, Hlp.nextPoint(head, direction), direction);
+
+		this.state.dispatch(
+			BulletsActions.setBullet({
+				id: Hlp.generateId(),
+				player: id,
+				point: Hlp.nextPoint(head, direction),
+				direction
+			})
+		);
 	};
 
 	private pause = (): void => {
-		state.dispatch(ArenaActions.setGameStatus(GameStatus.Pause));
+		this.state.dispatch(ArenaActions.setGameStatus(GameStatus.Pause));
 
 		this.timer.stop();
 		this.tick();

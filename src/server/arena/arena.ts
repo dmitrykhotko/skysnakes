@@ -1,7 +1,8 @@
 import { GameStatus, Player } from '../../common/enums';
 import { Id, LinkedPoint, Size } from '../../common/types';
-import { ArenaState, ArenaStore, BulletsStore, state } from '../redux';
+import { ArenaState, ArenaStore, BulletsStore } from '../redux';
 import { Action, SnakesActions, StatActions } from '../redux/actions';
+import { State } from '../redux/state';
 import { Stat } from '../stat/stat';
 import { BULLET_SPEED, RESPAWN_SNAKE_DELAY, SNAKE_SPEED } from '../utils/constants';
 import { DelayedTasks } from '../utils/delayedTasks';
@@ -21,18 +22,28 @@ export class Arena {
 	private bulletStep: number;
 	private snakesInitial!: DirectionWithId[];
 
-	constructor() {
+	private snakes: Snakes;
+	private coins: Coins;
+	private bullets: Bullets;
+	private stat: Stat;
+
+	constructor(private state: State) {
 		this.stepsNum = Hlp.lcm(SNAKE_SPEED, BULLET_SPEED);
 		this.snakeStep = this.stepsNum / SNAKE_SPEED;
 		this.bulletStep = this.stepsNum / BULLET_SPEED;
+
+		this.snakes = new Snakes(this.state);
+		this.coins = new Coins(this.state);
+		this.bullets = new Bullets(this.state);
+		this.stat = new Stat(this.state);
 	}
 
 	start = (snakesInitial: DirectionWithId[]): void => {
 		this.steps = 0;
 		this.snakesInitial = snakesInitial;
 
-		Snakes.init(this.snakesInitial);
-		Coins.init();
+		this.snakes.init(this.snakesInitial);
+		this.coins.init();
 	};
 
 	tick = (): void => {
@@ -46,7 +57,7 @@ export class Arena {
 
 		this.steps === this.stepsNum && (this.steps = 0);
 
-		Coins.checkNumber();
+		this.coins.checkNumber();
 	};
 
 	private callIfInProgress = (callMe: someFunc, ...params: unknown[]): unknown => {
@@ -55,48 +66,47 @@ export class Arena {
 	};
 
 	private moveBullets = (): void => {
-		Bullets.move();
+		this.bullets.move();
 
-		const { width, height } = Hlp.getSize();
+		const { width, height } = Hlp.getSize(this.state);
 		const { result: victim, actions: hitsActions } = this.checkHits();
 		const actions = [...hitsActions];
-		const bullets = state.get<BulletsStore>().bullets;
+		const bullets = this.state.get<BulletsStore>().bullets;
 
 		for (let i = 0; i < bullets.length; i++) {
 			const bullet = bullets[i];
 			const { point } = bullet;
 			const { x, y } = point;
-			const faceCoin = !!Coins.checkCollisions(point).length;
+			const faceCoin = !!this.coins.checkCollisions(point).length;
 			const facedWall = !(x === width || y === height || !~x || !~y);
 
-			(faceCoin || !facedWall) && actions.push(...Bullets.remove(bullet));
+			(faceCoin || !facedWall) && actions.push(...this.bullets.remove(bullet));
 		}
 
-		state.dispatch(...actions);
-		Stat.judge();
+		this.state.dispatch(...actions);
+		this.stat.judge();
 
 		victim && this.respawn(victim);
 	};
 
 	private checkSnakeGrowth = (id: Player, head: LinkedPoint): number => {
-		const facedCoins = Coins.checkCollisions(head);
+		const facedCoins = this.coins.checkCollisions(head);
 
-		facedCoins.length && Stat.faceCoins(id, facedCoins);
+		facedCoins.length && this.stat.faceCoins(id, facedCoins);
 		return facedCoins.length;
 	};
 
 	private moveSnakes = (): void => {
-		const snakes = Snakes.get();
-		const size = Hlp.getSize();
+		const snakes = this.snakes.get();
 		const actions = [] as Action[];
 		const victims = [];
 
 		for (let i = 0; i < snakes.length; i++) {
 			const { id } = snakes[i];
 
-			Snakes.move(id, this.checkSnakeGrowth);
+			this.snakes.move(id, this.checkSnakeGrowth);
 
-			const { head } = Snakes.getById(id);
+			const { head } = this.snakes.getById(id);
 			const { result: victimId, actions: ramActions } = this.checkRam(id, head);
 
 			if (ramActions.length) {
@@ -111,15 +121,15 @@ export class Arena {
 				continue;
 			}
 
-			actions.push(...this.checkWalls(head, id, size));
+			actions.push(...this.checkWalls(head, id, Hlp.getSize(this.state)));
 		}
 
-		state.dispatch(...actions);
+		this.state.dispatch(...actions);
 
 		const { result: victim, actions: hitsActions } = this.checkHits();
 
-		state.dispatch(...hitsActions);
-		Stat.judge();
+		this.state.dispatch(...hitsActions);
+		this.stat.judge();
 
 		victim && victims.push(victim);
 		victims.length && this.respawn(...victims);
@@ -160,7 +170,7 @@ export class Arena {
 
 	private checkRam = (killer: Player, head: LinkedPoint): ResultWitActions<Id> => {
 		const actions = [] as Action[];
-		const facedSnake = Snakes.checkCollisions(head);
+		const facedSnake = this.snakes.checkCollisions(head);
 		let result = -1;
 
 		if (!facedSnake) {
@@ -178,15 +188,15 @@ export class Arena {
 		let killerPoints = [] as LinkedPoint[];
 
 		if (victim !== killer) {
-			const { result: cutPoints, actions: cutActions } = Snakes.cut({
+			const { result: cutPoints, actions: cutActions } = this.snakes.cut({
 				id: victim,
 				point: facedPoint
 			});
-			const isVictimDead = Hlp.comparePoints(facedPoint, Snakes.getById(victim).head);
+			const isVictimDead = Hlp.comparePoints(facedPoint, this.snakes.getById(victim).head);
 
 			let victimDamageType = DamageType.Standard;
 
-			killerPoints = Snakes.toArray(killer);
+			killerPoints = this.snakes.toArray(killer);
 			killerDamage = killerPoints.length;
 
 			victimPoints = cutPoints;
@@ -198,19 +208,19 @@ export class Arena {
 			}
 
 			actions.push(
-				...Stat.setDamage(victim, victimDamage, victimDamageType),
-				...Stat.setDamage(killer, killerDamage, DamageType.Death),
+				...this.stat.setDamage(victim, victimDamage, victimDamageType),
+				...this.stat.setDamage(killer, killerDamage, DamageType.Death),
 				...cutActions
 			);
 		} else {
-			killerPoints = Snakes.toArray(killer);
+			killerPoints = this.snakes.toArray(killer);
 			killerDamage = killerPoints.length;
 
-			actions.push(...Stat.setDamage(killer, killerDamage, DamageType.Death));
+			actions.push(...this.stat.setDamage(killer, killerDamage, DamageType.Death));
 		}
 
-		Coins.setDeathCoins(killerPoints, killer);
-		Coins.setDeathCoins(victimPoints, victim);
+		this.coins.setDeathCoins(killerPoints, killer);
+		this.coins.setDeathCoins(victimPoints, victim);
 
 		return {
 			result,
@@ -219,12 +229,12 @@ export class Arena {
 	};
 
 	private checkHits = (): ResultWitActions<Player | undefined> => {
-		const bullets = state.get<BulletsStore>().bullets;
+		const bullets = this.state.get<BulletsStore>().bullets;
 
 		for (let i = 0; i < bullets.length; i++) {
 			const bullet = bullets[i];
 			const { player: killer, point: bulletPoint } = bullet;
-			const snakeShotResult = Snakes.checkCollisions(bulletPoint);
+			const snakeShotResult = this.snakes.checkCollisions(bulletPoint);
 
 			if (!snakeShotResult) {
 				continue;
@@ -234,15 +244,15 @@ export class Arena {
 			const {
 				result: { points, isDead, isHeadShot },
 				actions: hitActions
-			} = Snakes.hit(snakeShotResult);
+			} = this.snakes.hit(snakeShotResult);
 			const damageType = isHeadShot ? DamageType.HeadShot : isDead ? DamageType.Death : DamageType.Standard;
 
-			Stat.setAward(killer, damageType);
-			Coins.setDeathCoins(points, victim);
-			state.dispatch(
-				...Bullets.remove(bullet),
+			this.stat.setAward(killer, damageType);
+			this.coins.setDeathCoins(points, victim);
+			this.state.dispatch(
+				...this.bullets.remove(bullet),
 				...hitActions,
-				...Stat.setDamage(victim, points.length, damageType)
+				...this.stat.setDamage(victim, points.length, damageType)
 			);
 
 			if (isDead) {
@@ -254,10 +264,10 @@ export class Arena {
 		return { result: undefined, actions: [] };
 	};
 
-	private getState = (): ArenaState => state.get<ArenaStore>().arena;
+	private getState = (): ArenaState => this.state.get<ArenaStore>().arena;
 
 	private respawn = (...ids: Player[]): void => {
-		Snakes.remove(ids);
+		this.snakes.remove(ids);
 
 		this.callIfInProgress(
 			DelayedTasks.delay as someFunc,
@@ -274,7 +284,7 @@ export class Arena {
 					}
 				}
 
-				Snakes.init(snakesInitial);
+				this.snakes.init(snakesInitial);
 			},
 			RESPAWN_SNAKE_DELAY
 		);

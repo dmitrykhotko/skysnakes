@@ -1,7 +1,8 @@
 import { CoinType, Player } from '../../../common/enums';
 import { Coin, Id, LinkedPoint, Size } from '../../../common/types';
-import { ArenaStore, state } from '../../redux';
+import { ArenaStore } from '../../redux';
 import { ArenaActions, BinActions } from '../../redux/actions';
+import { State } from '../../redux/state';
 import {
 	COINS_NUMBER,
 	COINS_SPREAD,
@@ -13,7 +14,7 @@ import {
 import { DelayedTasks, Task } from '../../utils/delayedTasks';
 import { Hlp } from '../../utils/hlp';
 
-export abstract class Coins {
+export class Coins {
 	private static typeToLifeTime = {
 		[CoinType.Standard]: STANDARD_COIN_LIFETIME,
 		[CoinType.DeathPlayer1]: DEATH_COIN_LIFETIME,
@@ -25,9 +26,11 @@ export abstract class Coins {
 		[Player.P2]: CoinType.DeathPlayer2
 	};
 
-	private static activeCoinsNum = 0;
+	private activeCoinsNum = 0;
 
-	static init = (): void => {
+	constructor(private state: State) {}
+
+	init = (): void => {
 		this.activeCoinsNum = 0;
 
 		for (let i = 0; i < COINS_NUMBER; i++) {
@@ -35,12 +38,12 @@ export abstract class Coins {
 		}
 	};
 
-	static checkNumber = (): void => {
+	checkNumber = (): void => {
 		this.activeCoinsNum < COINS_NUMBER && this.delayedSet();
 	};
 
-	static checkCollisions = (object: LinkedPoint): Coin[] => {
-		const { coins } = state.get<ArenaStore>().arena;
+	checkCollisions = (object: LinkedPoint): Coin[] => {
+		const { coins } = this.state.get<ArenaStore>().arena;
 		const facedCoins = [] as Coin[];
 
 		for (let i = 0; i < coins.length; i++) {
@@ -59,45 +62,45 @@ export abstract class Coins {
 		return facedCoins;
 	};
 
-	static setDeathCoins = (points: LinkedPoint[], player: Player): void => {
-		const size = Hlp.getSize();
+	setDeathCoins = (points: LinkedPoint[], player: Player): void => {
+		const size = Hlp.getSize(this.state);
 		const deathPoints = this.spreadPoints(points, size);
 
 		for (let i = 0; i < deathPoints.length; i++) {
-			this.set(Hlp.generateId(), size, deathPoints[i], this.playerToCoinType[player], player);
+			this.set(Hlp.generateId(), size, deathPoints[i], Coins.playerToCoinType[player], player);
 		}
 	};
 
-	private static delayedSet = (delay = RESPAWN_COIN_MAX_DELAY): void => {
+	private delayedSet = (delay = RESPAWN_COIN_MAX_DELAY): void => {
 		const id = Hlp.generateId();
 
 		this.activeCoinsNum++;
-		DelayedTasks.delay(this.set as Task, Hlp.randomInt(delay), id, Hlp.getSize());
+		DelayedTasks.delay(this.set as Task, Hlp.randomInt(delay), id, Hlp.getSize(this.state));
 	};
 
-	private static set = (
+	private set = (
 		id: Id,
 		{ width, height }: Size,
 		point = { x: Hlp.randomInt(width), y: Hlp.randomInt(height) },
 		type = CoinType.Standard,
 		player?: Player
 	): void => {
-		state.dispatch(ArenaActions.setCoin({ id, point, type, player }));
-		DelayedTasks.delay(this.remove as Task, Hlp.randomInt(this.typeToLifeTime[type]), id, type);
+		this.state.dispatch(ArenaActions.setCoin({ id, point, type, player }));
+		DelayedTasks.delay(this.remove as Task, Hlp.randomInt(Coins.typeToLifeTime[type]), id, type);
 	};
 
-	private static remove = (id: Id, type: CoinType): void => {
-		const coin = Hlp.getById(id, state.get<ArenaStore>().arena.coins);
+	private remove = (id: Id, type: CoinType): void => {
+		const coin = Hlp.getById(id, this.state.get<ArenaStore>().arena.coins);
 
 		if (!coin) {
 			return;
 		}
 
 		type === CoinType.Standard && this.activeCoinsNum--;
-		state.dispatch(ArenaActions.removeCoin(id), BinActions.moveToBin([coin.point]));
+		this.state.dispatch(ArenaActions.removeCoin(id), BinActions.moveToBin([coin.point]));
 	};
 
-	private static spreadPoints = (points: LinkedPoint[], { width, height }: Size): LinkedPoint[] => {
+	private spreadPoints = (points: LinkedPoint[], { width, height }: Size): LinkedPoint[] => {
 		const result = [] as LinkedPoint[];
 
 		for (let i = 0; i < points.length; i++) {

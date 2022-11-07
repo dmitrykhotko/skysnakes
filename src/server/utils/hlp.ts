@@ -1,6 +1,7 @@
 import { Direction } from '../../common/enums';
 import { Id, LinkedPoint, ObjectWithId, Point, Size } from '../../common/types';
-import { ArenaStore, state } from '../redux';
+import { ArenaStore } from '../redux';
+import { State } from '../redux/state';
 
 export abstract class Hlp {
 	private static id = 0;
@@ -85,7 +86,7 @@ export abstract class Hlp {
 		return result;
 	};
 
-	static getSize = (): Size => state.get<ArenaStore>().arena.size;
+	static getSize = (state: State): Size => state.get<ArenaStore>().arena.size;
 
 	static lPointsToPoints = (lPoints: LinkedPoint[]): Point[] => {
 		const points = [] as Point[];

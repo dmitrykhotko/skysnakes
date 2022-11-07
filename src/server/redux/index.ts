@@ -5,4 +5,4 @@ export { SnakesReducer, SnakesStore, SnakeState } from './reducers/instances/sna
 export { StatReducer, StatStore } from './reducers/instances/statReducer';
 export { Reducer } from './reducers/reducer';
 export { ReducerCollection } from './reducers/reducerCollection';
-export { state, Store } from './state';
+export { Store } from './state';
