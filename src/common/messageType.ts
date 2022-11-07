@@ -8,5 +8,6 @@ export enum MessageType {
 	// messages from server
 	GET_SIZE = 'SERVER/GET_SIZE',
 	START = 'SERVER/START',
-	TICK = 'SERVER/TICK'
+	TICK = 'SERVER/TICK',
+	PLAYER_DISCONNECTED = 'SERVER/PLAYER_DISCONNECTED'
 }

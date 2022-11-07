@@ -26,3 +26,8 @@ export enum Layer {
 	Stat = 2,
 	Service = 3
 }
+
+export enum ModalType {
+	WelcomeScreen = 1,
+	GameOver = 2
+}

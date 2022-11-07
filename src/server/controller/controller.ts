@@ -25,52 +25,8 @@ export class Controller {
 		this.arena = new Arena(this.state);
 
 		this.initConnection();
-		this.broadcast({
-			type: MessageType.GET_SIZE
-		});
+		this.broadcast(MessageType.GET_SIZE);
 	}
-
-	private calculate = (): void => {
-		DelayedTasks.run();
-		this.arena.tick();
-	};
-
-	private getData = (): GameState => {
-		const { arena, snakes, bullets, bin, stat } = this.state.get<
-			ArenaStore & SnakesStore & BulletsStore & BinStore & StatStore
-		>();
-
-		this.state.dispatch(ArenaActions.flushCoinsBuffer(), BinActions.emptyBin());
-
-		return {
-			...arena,
-			stat,
-			snakes: this.convertSnakes(snakes),
-			bullets,
-			bin,
-			coins: arena.coinsBuffer,
-			additionalInfo: { coinsNum: arena.coins.length }
-		} as GameState;
-	};
-
-	private broadcast = (msg: Message): void => {
-		for (let i = 0; i < this.players.length; i++) {
-			const { ws } = this.players[i];
-
-			ws.readyState === WebSocket.OPEN && ws.send(JSON.stringify(msg));
-		}
-	};
-
-	private start = (): void => {
-		this.broadcast({ type: MessageType.START });
-		const initialData = modeToInitialData[PLAYER_MODE];
-
-		DelayedTasks.reset();
-		this.state.dispatch(CommonActions.resetGame(initialData), ArenaActions.setGameStatus(GameStatus.InProgress));
-
-		this.arena.start(initialData);
-		this.timer.start();
-	};
 
 	private initConnection = (): void => {
 		this.timer = new Timer(this.tick);
@@ -105,16 +61,68 @@ export class Controller {
 			});
 
 			ws.on('close', () => {
-				this.timer.stop();
+				this.stop();
+				this.broadcast(MessageType.PLAYER_DISCONNECTED);
 			});
 		});
 	};
 
+	private calculate = (): void => {
+		DelayedTasks.run();
+		this.arena.tick();
+	};
+
+	private getData = (): GameState => {
+		const { arena, snakes, bullets, bin, stat } = this.state.get<
+			ArenaStore & SnakesStore & BulletsStore & BinStore & StatStore
+		>();
+
+		this.state.dispatch(ArenaActions.flushCoinsBuffer(), BinActions.emptyBin());
+
+		return {
+			...arena,
+			stat,
+			snakes: this.convertSnakes(snakes),
+			bullets,
+			bin,
+			coins: arena.coinsBuffer,
+			additionalInfo: { coinsNum: arena.coins.length }
+		} as GameState;
+	};
+
+	private broadcast = (type: MessageType, data?: unknown): void => {
+		for (let i = 0; i < this.players.length; i++) {
+			const { ws } = this.players[i];
+
+			ws.readyState === WebSocket.OPEN && ws.send(JSON.stringify({ type, data }));
+		}
+	};
+
+	private start = (): void => {
+		this.broadcast(MessageType.START);
+		const initialData = modeToInitialData[PLAYER_MODE];
+
+		DelayedTasks.reset();
+		this.state.dispatch(CommonActions.resetGame(initialData), ArenaActions.setGameStatus(GameStatus.InProgress));
+
+		this.arena.start(initialData);
+		this.timer.start();
+	};
+
+	private stop = (): void => {
+		this.state.dispatch(ArenaActions.setGameStatus(GameStatus.Stop));
+		this.timer.stop();
+	};
+
+	private pause = (): void => {
+		this.state.dispatch(ArenaActions.setGameStatus(GameStatus.Pause));
+
+		this.timer.stop();
+		this.tick();
+	};
+
 	private tick = (): void => {
-		this.broadcast({
-			type: MessageType.TICK,
-			data: this.getData()
-		});
+		this.broadcast(MessageType.TICK, this.getData());
 
 		this.calculate();
 	};
@@ -151,9 +159,13 @@ export class Controller {
 	private handleInputMsg = (input: PlayerInput, id: Player): void => {
 		const { status } = this.state.get<ArenaStore>().arena;
 
+		if (status === GameStatus.Stop) {
+			return;
+		}
+
 		ServiceInput[input] && this.handleServiceInput(input as ServiceInput);
 
-		if (status !== GameStatus.InProgress) {
+		if (status === GameStatus.Pause) {
 			return;
 		}
 
@@ -205,12 +217,5 @@ export class Controller {
 				direction
 			})
 		);
-	};
-
-	private pause = (): void => {
-		this.state.dispatch(ArenaActions.setGameStatus(GameStatus.Pause));
-
-		this.timer.stop();
-		this.tick();
 	};
 }

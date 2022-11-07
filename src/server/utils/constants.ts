@@ -32,6 +32,6 @@ export const NEGATIVE_OFFSET_X = -4;
 export const POSITIVE_OFFSET_Y = 4;
 export const NEGATIVE_OFFSET_Y = -2;
 
-export const LIVES = 5;
+export const LIVES = 1;
 export const COINS_NUMBER = 50;
 export const PLAYER_MODE = PlayerMode.Multiplayer;

@@ -4,7 +4,8 @@ import { GameState, Message, Observer, PlayerInput, Size } from '../../../common
 import { ControlsManager } from '../controlsManager/controlsManager';
 import { Modal } from '../modal/modal';
 import { CanvasRenderer, CanvasRendererProps } from '../renderers/instances/canvasRenderer';
-import { WELCOME_MESSAGE } from '../utils/labels';
+import { ModalType } from '../utils/enums';
+import { CONNECTION_LOST, GAME_PAUSED_MSG, PLAYER_DISCONNECTED } from '../utils/labels';
 
 export class Controller {
 	private prevState?: GameState;
@@ -18,13 +19,13 @@ export class Controller {
 
 		this.renderer = new CanvasRenderer(rProps, onInputObserver, serviceInfoFlag);
 		this.controls = new ControlsManager(this.renderer.focus);
-		this.modal = new Modal(WELCOME_MESSAGE, ((input: PlayerInput): void => {
+		this.modal = new Modal(((input: PlayerInput): void => {
 			this.onInput(input);
 			this.renderer.focus();
 		}) as Observer);
 
 		this.initConnection(size);
-		this.modal.show();
+		this.modal.show({ type: ModalType.WelcomeScreen, isStatic: true });
 	}
 
 	private sendMsg = (msg: Message): void => this.ws.send(JSON.stringify(msg));
@@ -55,6 +56,9 @@ export class Controller {
 					this.handleTickMsg(data as GameState);
 
 					break;
+				case MessageType.PLAYER_DISCONNECTED:
+					this.handleGameOverMsg(PLAYER_DISCONNECTED);
+					break;
 				default:
 					break;
 			}
@@ -62,6 +66,7 @@ export class Controller {
 
 		this.ws.onclose = (): void => {
 			console.log('Connection closed.');
+			this.handleGameOverMsg(CONNECTION_LOST);
 		};
 	};
 
@@ -77,13 +82,18 @@ export class Controller {
 		this.prevState = state;
 	};
 
+	private handleGameOverMsg = (message = '', isStatic = true): void => {
+		this.modal.hide();
+		this.modal.show({ type: ModalType.GameOver, bottomContent: message, isStatic });
+	};
+
 	private checkStatusChanged = (status: GameStatus): void => {
 		const prevStatus = this.prevState?.status ?? GameStatus.Pause;
 
 		switch (status) {
 			case GameStatus.Pause:
 				if (prevStatus === GameStatus.InProgress) {
-					this.modal.show();
+					this.modal.show({ type: ModalType.WelcomeScreen, topContent: GAME_PAUSED_MSG });
 				}
 
 				break;
