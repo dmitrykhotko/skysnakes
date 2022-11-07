@@ -10,7 +10,6 @@ declare module 'ws' {
 	}
 }
 
-const cPool = new WeakSet<Controller>();
 const wss = new WebSocket.WebSocketServer({ port: 8080 }, () => {
 	console.log('WS server started at ws://localhost:8080');
 });
@@ -40,7 +39,7 @@ wss.on('connection', ws => {
 
 	// ws.send(`{"id": '${ws.id}'}`);
 
-	cPool.add(new Controller(wRoom.toArray()));
+	new Controller(wRoom.toArray());
 	wRoom = new WaitingRoom();
 
 	// ws.isAlive = true;

@@ -8,12 +8,15 @@ import { SnakesReducer } from './reducers/instances/snakesReducer';
 import { StatReducer } from './reducers/instances/statReducer';
 import { Reducer } from './reducers/reducer';
 import { ReducerCollection } from './reducers/reducerCollection';
+// import { ActionType } from './actions/actionType';
 
 export type Store = Record<string, unknown>;
 
 export interface State {
 	dispatch: (...actions: Action[]) => void;
 	get: <T extends Store>() => T;
+	// subscribe: (observer: Observer, type: ActionType) => void;
+	// unsubscribe: (observer: Observer, type: ActionType) => void;
 }
 
 class ReduxState implements State {
@@ -21,7 +24,7 @@ class ReduxState implements State {
 
 	private store!: Store;
 	private traceShift = '';
-	// private observers = {} as Record<string, Observer[]>;
+	// private observers = {} as Record<ActionType, Observer[]>;
 
 	constructor(private reducer: Reducer<Store>) {
 		this.dispatch = TRACE_STATE ? this.dispatchTrace : this.dispatchInternal;
@@ -30,20 +33,20 @@ class ReduxState implements State {
 
 	get = <T extends Store>(): T => this.store as T;
 
-	// subscribe = (observer: Observer, type: string): void => {
+	// subscribe = (observer: Observer, type: ActionType): void => {
 	// 	!this.observers[type] && (this.observers[type] = []);
 	// 	this.observers[type].push(observer);
 	// };
 
-	// unsubscribe = (observer: Observer, type: string): void => {
+	// unsubscribe = (observer: Observer, type: ActionType): void => {
 	// 	const observers = this.observers[type];
 	// 	const index = observers.indexOf(observer);
 	// 	!!~index && observers.splice(index, 1);
 	// };
 
-	// unsubscribeByType = (type = ''): State => {
-	// 	if (type === '') {
-	// 		this.observers = {} as Record<string, Observer[]>;
+	// unsubscribeByType = (type?: ActionType): State => {
+	// 	if (type) {
+	// 		this.observers = {} as Record<ActionType, Observer[]>;
 	// 	} else {
 	// 		this.observers[type] = [];
 	// 	}
@@ -51,7 +54,7 @@ class ReduxState implements State {
 	// 	return this;
 	// };
 
-	// notify = (type: string, newStore: Store, oldStore: Store): void => {
+	// private notify = (type: ActionType, newStore: Store, oldStore: Store): void => {
 	// 	const observers = this.observers[type] || [];
 
 	// 	for (let i = 0; i < observers.length; i++) {

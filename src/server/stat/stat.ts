@@ -82,6 +82,6 @@ export class Stat {
 		);
 
 		winners.length &&
-			this.state.dispatch(ArenaActions.setGameStatus(GameStatus.Stop), StatActions.setWinners(winners));
+			this.state.dispatch(ArenaActions.setGameStatus(GameStatus.Finish), StatActions.setWinners(winners));
 	};
 }

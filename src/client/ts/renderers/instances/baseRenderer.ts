@@ -17,7 +17,7 @@ import { Renderer } from '../renderer';
 
 export abstract class BaseRenderer extends Renderer {
 	private static defaultPrevState = {
-		status: GameStatus.Stop,
+		status: GameStatus.Finish,
 		coins: [],
 		snakes: [],
 		bullets: [],

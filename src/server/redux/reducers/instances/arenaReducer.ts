@@ -21,7 +21,7 @@ export type ArenaStore = {
 export abstract class ArenaReducer extends Reducer<ArenaStore> {
 	private static initialState = {
 		arena: {
-			status: GameStatus.Stop,
+			status: GameStatus.Finish,
 			coins: [],
 			coinsBuffer: [],
 			size: { width: 0, height: 0 }

@@ -16,21 +16,20 @@ import { inputToDirection, modeToInitialData } from './utils';
 
 export class Controller {
 	private state: State;
-	private timer!: Timer;
+	private timer: Timer;
 	private arena: Arena;
 	private size?: Size;
 
 	constructor(private players: SocketWithId[]) {
 		this.state = createState();
 		this.arena = new Arena(this.state);
+		this.timer = new Timer(this.tick);
 
 		this.initConnection();
 		this.broadcast(MessageType.GET_SIZE);
 	}
 
 	private initConnection = (): void => {
-		this.timer = new Timer(this.tick);
-
 		this.players.forEach(({ ws }) => {
 			ws.on('message', (message: string) => {
 				const { type, data } = JSON.parse(message) as Message<unknown>;
@@ -61,7 +60,7 @@ export class Controller {
 			});
 
 			ws.on('close', () => {
-				this.stop();
+				this.over();
 				this.broadcast(MessageType.PLAYER_DISCONNECTED);
 			});
 		});
@@ -99,30 +98,35 @@ export class Controller {
 	};
 
 	private start = (): void => {
-		this.broadcast(MessageType.START);
 		const initialData = modeToInitialData[PLAYER_MODE];
 
 		DelayedTasks.reset();
-		this.state.dispatch(CommonActions.resetGame(initialData), ArenaActions.setGameStatus(GameStatus.InProgress));
 
+		this.broadcast(MessageType.START);
+		this.state.dispatch(CommonActions.resetGame(initialData), ArenaActions.setGameStatus(GameStatus.InProgress));
 		this.arena.start(initialData);
 		this.timer.start();
 	};
 
-	private stop = (): void => {
-		this.state.dispatch(ArenaActions.setGameStatus(GameStatus.Stop));
+	private over = (): void => {
+		this.state.dispatch(ArenaActions.setGameStatus(GameStatus.Over));
 		this.timer.stop();
 	};
 
 	private pause = (): void => {
 		this.state.dispatch(ArenaActions.setGameStatus(GameStatus.Pause));
-
 		this.timer.stop();
 		this.tick();
 	};
 
 	private tick = (): void => {
 		this.broadcast(MessageType.TICK, this.getData());
+
+		const { status } = this.state.get<ArenaStore>().arena;
+
+		if (status === GameStatus.Finish) {
+			return this.timer.stop();
+		}
 
 		this.calculate();
 	};
@@ -159,7 +163,7 @@ export class Controller {
 	private handleInputMsg = (input: PlayerInput, id: Player): void => {
 		const { status } = this.state.get<ArenaStore>().arena;
 
-		if (status === GameStatus.Stop) {
+		if (status === GameStatus.Over) {
 			return;
 		}
 
@@ -185,7 +189,7 @@ export class Controller {
 				this.timer.start();
 
 				break;
-			case GameStatus.Stop:
+			case GameStatus.Finish:
 				this.start();
 				break;
 			default:

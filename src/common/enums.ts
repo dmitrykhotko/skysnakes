@@ -3,7 +3,8 @@
 export enum GameStatus {
 	InProgress = 1,
 	Pause = 2,
-	Stop = 3
+	Finish = 3,
+	Over = 4
 }
 
 export enum Direction {

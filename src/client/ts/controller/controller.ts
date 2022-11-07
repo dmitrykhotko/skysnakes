@@ -10,7 +10,6 @@ import { CONNECTION_LOST, GAME_PAUSED_MSG, PLAYER_DISCONNECTED } from '../utils/
 export class Controller {
 	private prevState?: GameState;
 	private renderer: CanvasRenderer;
-	private controls: ControlsManager;
 	private modal: Modal;
 	private ws!: WebSocket;
 
@@ -18,11 +17,12 @@ export class Controller {
 		const onInputObserver = this.onInput as Observer;
 
 		this.renderer = new CanvasRenderer(rProps, onInputObserver, serviceInfoFlag);
-		this.controls = new ControlsManager(this.renderer.focus);
 		this.modal = new Modal(((input: PlayerInput): void => {
 			this.onInput(input);
 			this.renderer.focus();
 		}) as Observer);
+
+		new ControlsManager(this.renderer.focus);
 
 		this.initConnection(size);
 		this.modal.show({ type: ModalType.WelcomeScreen, isStatic: true });
@@ -76,8 +76,8 @@ export class Controller {
 	};
 
 	private handleTickMsg = (state: GameState): void => {
-		this.renderer.render(state);
 		this.checkStatusChanged(state.status);
+		this.renderer.render(state);
 
 		this.prevState = state;
 	};
@@ -100,6 +100,10 @@ export class Controller {
 			case GameStatus.InProgress:
 				if (prevStatus === GameStatus.Pause) {
 					this.modal.hide();
+				}
+
+				if (prevStatus === GameStatus.Finish) {
+					this.renderer.reset();
 				}
 
 				break;
