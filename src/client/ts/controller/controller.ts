@@ -31,10 +31,13 @@ export class Controller {
 	private sendMsg = (msg: Message): void => this.ws.send(JSON.stringify(msg));
 
 	private initConnection = (size: Size): void => {
-		this.ws = new WebSocket('ws://localhost:8080');
+		const { hostname } = location;
+		const wsUrl = `ws://${hostname}:8080`;
+
+		this.ws = new WebSocket(wsUrl);
 
 		this.ws.onopen = (): void => {
-			console.log('Connection established.');
+			console.log(`Connection to ${wsUrl} established.`);
 		};
 
 		this.ws.onmessage = (event: MessageEvent): void => {
@@ -65,7 +68,7 @@ export class Controller {
 		};
 
 		this.ws.onclose = (): void => {
-			console.log('Connection closed.');
+			console.log(`Connection to ${wsUrl} closed.`);
 			this.handleGameOverMsg(CONNECTION_LOST);
 		};
 	};

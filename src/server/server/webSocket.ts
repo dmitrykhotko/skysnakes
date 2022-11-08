@@ -11,7 +11,7 @@ declare module 'ws' {
 }
 
 const wss = new WebSocket.WebSocketServer({ port: 8080 }, () => {
-	console.log('WS server started at ws://localhost:8080');
+	console.log(`WS server started at :8080`);
 });
 
 //Object that stores player data
