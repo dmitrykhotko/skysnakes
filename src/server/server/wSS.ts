@@ -42,6 +42,9 @@ export class WSS {
 					case MessageType.JOIN_ROOM:
 						this.handleJoinRoomMsg(wS, data as UUId);
 						break;
+					case MessageType.QUIT_ROOM:
+						this.handleQuitRoomMsg(wS);
+						break;
 					default:
 						break;
 				}
@@ -58,7 +61,7 @@ export class WSS {
 	};
 
 	private handleCreateRoomMsg = (wS: WebSocket, name: string): void => {
-		this.exitRoom(wS);
+		this.quitRoom(wS);
 
 		const id = Hlp.uuid();
 		const wRoom = new WaitingRoom(id, name, wS);
@@ -90,7 +93,7 @@ export class WSS {
 			return WSHlp.send(wS, MessageType.JOIN_ROOM_FAIL, uuid);
 		}
 
-		this.exitRoom(wS);
+		this.quitRoom(wS);
 
 		wRoom.addPlayer(wS);
 		WSHlp.send(wS, MessageType.JOIN_ROOM_SUCCESS, wRoom.room);
@@ -104,12 +107,16 @@ export class WSS {
 		}
 	};
 
-	private handleWSCloseEvent = (wS: WebSocket): void => {
-		this.trace(`Removing client ${wS.uuid}, connection closed.`);
-		this.exitRoom(wS);
+	private handleQuitRoomMsg = (wS: WebSocket): void => {
+		this.quitRoom(wS);
 	};
 
-	private exitRoom = (wS: WebSocket): void => {
+	private handleWSCloseEvent = (wS: WebSocket): void => {
+		this.trace(`Removing client ${wS.uuid}, connection closed.`);
+		this.quitRoom(wS);
+	};
+
+	private quitRoom = (wS: WebSocket): void => {
 		const { roomUUId } = wS;
 
 		if (!roomUUId) {

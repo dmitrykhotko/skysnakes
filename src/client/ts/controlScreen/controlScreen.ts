@@ -89,7 +89,7 @@ export class ControlScreen {
 	};
 
 	private onJoinRoomBtnClick = (): void => {
-		WSHlp.send(this.wS, MessageType.EXIT_ROOM);
+		WSHlp.send(this.wS, MessageType.QUIT_ROOM);
 
 		this.lastBtn = undefined;
 		this.getAvailableRooms();
@@ -118,7 +118,7 @@ export class ControlScreen {
 	};
 
 	private showCreateRoomScreen = (): void => {
-		WSHlp.send(this.wS, MessageType.EXIT_ROOM);
+		WSHlp.send(this.wS, MessageType.QUIT_ROOM);
 
 		this.hide(this.availableRoomsContainerEl);
 		this.setContent(CREATE_ROOM_SCREEN);
@@ -146,8 +146,11 @@ export class ControlScreen {
 
 	private showAvailableRoomsListScreen = (uuids: AvailableRoom[]): void => {
 		if (!uuids.length) {
+			this.hide(this.availableRoomsContainerEl);
 			this.setContent(NO_ROOMS_AVAILABLE_SCREEN);
+
 			this.availableRoomsListEl.innerHTML = '';
+
 			return;
 		}
 
