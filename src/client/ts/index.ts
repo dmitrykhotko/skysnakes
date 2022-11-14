@@ -1,3 +1,4 @@
+import { UUId } from '../../common/types';
 import { Controller } from './controller/controller';
 import { CELL_SIZE } from './utils/constants';
 
@@ -11,7 +12,8 @@ const run = (): void => {
 	}
 
 	const urlParams = new URLSearchParams(window.location.search);
-	const serviceInfoFlag = urlParams.get('serviceInfo') === 'true';
+	const showServiceInfo = urlParams.get('serviceInfo') === 'true';
+	const roomUUId = urlParams.get('room') as UUId;
 	const cellSize = CELL_SIZE;
 	const dpr = window.devicePixelRatio;
 
@@ -26,7 +28,11 @@ const run = (): void => {
 	width /= cellSize;
 	height /= cellSize;
 
-	new Controller({ presenterEl, statEl, serviceEl, size: { width, height } }, { width, height }, serviceInfoFlag);
+	new Controller(
+		{ roomUUId, showServiceInfo },
+		{ presenterEl, statEl, serviceEl, size: { width, height } },
+		{ width, height }
+	);
 };
 
 run();

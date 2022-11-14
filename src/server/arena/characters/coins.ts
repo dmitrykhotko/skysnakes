@@ -67,12 +67,12 @@ export class Coins {
 		const deathPoints = this.spreadPoints(points, size);
 
 		for (let i = 0; i < deathPoints.length; i++) {
-			this.set(Hlp.generateId(), size, deathPoints[i], Coins.playerToCoinType[player], player);
+			this.set(Hlp.id(), size, deathPoints[i], Coins.playerToCoinType[player], player);
 		}
 	};
 
 	private delayedSet = (delay = RESPAWN_COIN_MAX_DELAY): void => {
-		const id = Hlp.generateId();
+		const id = Hlp.id();
 
 		this.activeCoinsNum++;
 		DelayedTasks.delay(this.set as Task, Hlp.randomInt(delay), id, Hlp.getSize(this.state));

@@ -14,7 +14,7 @@ export abstract class DelayedTasks {
 	private static step = 0;
 
 	static delay = (task: Task, delay: number, ...params: unknown[]): Id => {
-		const id = Hlp.generateId();
+		const id = Hlp.id();
 		const step = this.step + delay;
 
 		if (!this.tasks[step]) {

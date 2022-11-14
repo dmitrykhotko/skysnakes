@@ -1,54 +1,55 @@
 import { GameStatus } from '../../../common/enums';
 import { MessageType } from '../../../common/messageType';
-import { GameState, Message, Observer, PlayerInput, Size } from '../../../common/types';
-import { ControlsManager } from '../controlsManager/controlsManager';
+import { GameState, Message, Observer, PlayerInput, Size, UUId } from '../../../common/types';
+import { WSHlp } from '../../../common/wSHlp';
+import { ControlPanel } from '../controlPanel/controlPanel';
+import { ControlScreen } from '../controlScreen/controlScreen';
 import { Modal } from '../modal/modal';
-import { CanvasRenderer, CanvasRendererProps } from '../renderers/instances/canvasRenderer';
+import { CanvasRenderer } from '../renderers/instances/canvasRenderer';
 import { ModalType } from '../utils/enums';
-import { CONNECTION_LOST, GAME_PAUSED_MSG, PLAYER_DISCONNECTED } from '../utils/labels';
+import { CONNECTION_LOST } from '../utils/labels';
+import { PLAYER_DISCONNECTED_SCREEN } from '../utils/screens';
+import { CanvasRendererProps, GameProps } from '../utils/types';
 
 export class Controller {
+	private wS!: WebSocket;
+	private controlScreen!: ControlScreen;
 	private prevState?: GameState;
 	private renderer: CanvasRenderer;
 	private modal: Modal;
-	private ws!: WebSocket;
 
-	constructor(rProps: CanvasRendererProps, size: Size, serviceInfoFlag = false) {
+	constructor({ roomUUId, showServiceInfo = false }: GameProps, rProps: CanvasRendererProps, size: Size) {
 		const onInputObserver = this.onInput as Observer;
 
-		this.renderer = new CanvasRenderer(rProps, onInputObserver, serviceInfoFlag);
+		this.renderer = new CanvasRenderer(rProps, onInputObserver, showServiceInfo);
 		this.modal = new Modal(((input: PlayerInput): void => {
 			this.onInput(input);
 			this.renderer.focus();
 		}) as Observer);
 
-		new ControlsManager(this.renderer.focus);
-
-		this.initConnection(size);
-		this.modal.show({ type: ModalType.WelcomeScreen, isStatic: true });
+		new ControlPanel(this.renderer.focus);
+		this.initConnection(size, roomUUId);
 	}
 
-	private sendMsg = (msg: Message): void => this.ws.send(JSON.stringify(msg));
-
-	private initConnection = (size: Size): void => {
+	private initConnection = (size: Size, roomUUId?: UUId): void => {
 		const { hostname } = location;
-		const wsUrl = `ws://${hostname}:8080`;
+		const wSUrl = `ws://${hostname}:8080`;
 
-		this.ws = new WebSocket(wsUrl);
+		this.wS = new WebSocket(wSUrl);
 
-		this.ws.onopen = (): void => {
-			console.log(`Connection to ${wsUrl} established.`);
-		};
+		this.wS.addEventListener('open', (): void => {
+			console.log(`Connection to ${wSUrl} established.`);
 
-		this.ws.onmessage = (event: MessageEvent): void => {
+			this.controlScreen = new ControlScreen(this.wS, roomUUId);
+			this.controlScreen.showModal();
+		});
+
+		this.wS.addEventListener('message', (event: MessageEvent): void => {
 			const { type, data } = JSON.parse(event.data) as Message<unknown>;
 
 			switch (type) {
 				case MessageType.GET_SIZE:
-					this.sendMsg({
-						type: MessageType.SET_SIZE,
-						data: size
-					});
+					WSHlp.send(this.wS, MessageType.SET_SIZE, size);
 
 					break;
 				case MessageType.START:
@@ -60,20 +61,27 @@ export class Controller {
 
 					break;
 				case MessageType.PLAYER_DISCONNECTED:
-					this.handleGameOverMsg(PLAYER_DISCONNECTED);
+					this.handleGameOverMsg(PLAYER_DISCONNECTED_SCREEN);
+
+					setTimeout(() => {
+						this.modal.hide();
+						this.controlScreen.showModal();
+					}, 3000);
 					break;
 				default:
 					break;
 			}
-		};
+		});
 
-		this.ws.onclose = (): void => {
-			console.log(`Connection to ${wsUrl} closed.`);
+		this.wS.onclose = (): void => {
+			console.log(`Connection to ${wSUrl} closed.`);
 			this.handleGameOverMsg(CONNECTION_LOST);
 		};
 	};
 
 	private handleStartMsg = (): void => {
+		this.modal.hide();
+		this.controlScreen.hideModal();
 		this.renderer.reset();
 		this.renderer.focus();
 	};
@@ -86,6 +94,7 @@ export class Controller {
 	};
 
 	private handleGameOverMsg = (message = '', isStatic = true): void => {
+		this.controlScreen.hideModal();
 		this.modal.hide();
 		this.modal.show({ type: ModalType.GameOver, bottomContent: message, isStatic });
 	};
@@ -96,7 +105,7 @@ export class Controller {
 		switch (status) {
 			case GameStatus.Pause:
 				if (prevStatus === GameStatus.InProgress) {
-					this.modal.show({ type: ModalType.WelcomeScreen, topContent: GAME_PAUSED_MSG });
+					this.modal.show({ type: ModalType.GamePaused });
 				}
 
 				break;
@@ -116,10 +125,6 @@ export class Controller {
 	};
 
 	private onInput = (input: PlayerInput): void => {
-		this.ws.readyState === WebSocket.OPEN &&
-			this.sendMsg({
-				type: MessageType.USER_INPUT,
-				data: input
-			});
+		this.wS.readyState === WebSocket.OPEN && WSHlp.send(this.wS, MessageType.USER_INPUT, input);
 	};
 }

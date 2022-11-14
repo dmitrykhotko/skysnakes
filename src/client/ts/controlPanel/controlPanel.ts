@@ -2,7 +2,7 @@ import { Observer } from '../../../common/types';
 import { Audio } from '../audio';
 import { SOUND_OFF, SOUND_ON } from '../utils/labels';
 
-export class ControlsManager {
+export class ControlPanel {
 	private audio = new Audio();
 	private soundOnOffButton: HTMLButtonElement;
 

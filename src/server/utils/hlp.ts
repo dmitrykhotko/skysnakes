@@ -1,10 +1,11 @@
+import { v4 } from 'node-uuid';
 import { Direction } from '../../common/enums';
-import { Id, LinkedPoint, ObjectWithId, Point, Size } from '../../common/types';
+import { Id, LinkedPoint, ObjectWithId, Point, Size, UUId } from '../../common/types';
 import { ArenaStore } from '../redux';
 import { State } from '../redux/state';
 
 export abstract class Hlp {
-	private static id = 0;
+	private static lastId = 0;
 
 	private static nextPointCreators = {
 		[Direction.Up]: (point: LinkedPoint, delta = 1): LinkedPoint => ({ x: point.x, y: point.y - delta }),
@@ -20,7 +21,9 @@ export abstract class Hlp {
 	static comparePoints = ({ x: x1, y: y1 }: LinkedPoint, { x: x2, y: y2 }: LinkedPoint): boolean =>
 		x1 === x2 && y1 === y2;
 
-	static generateId = (): Id => ++this.id;
+	static id = (): Id => ++this.lastId;
+
+	static uuid = (): UUId => v4();
 
 	static lcm = (...x: number[]): number => {
 		let j = Math.max(...x);

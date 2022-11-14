@@ -28,6 +28,6 @@ export enum Layer {
 }
 
 export enum ModalType {
-	WelcomeScreen = 1,
+	GamePaused = 1,
 	GameOver = 2
 }

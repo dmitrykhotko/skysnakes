@@ -1,0 +1,8 @@
+.inpt {
+	font-family: Consolas, monaco, monospace;
+	border: rem(2px) solid #FFFF00;
+
+	&:focus{
+		outline: none;
+	}
+}

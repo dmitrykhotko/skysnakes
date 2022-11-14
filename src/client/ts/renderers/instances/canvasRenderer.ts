@@ -1,16 +1,8 @@
 import { LinkedPoint, Observer, Size } from '../../../../common/types';
 import { CELL_SIZE, CIRCLE_RADIUS_CELLS, LINE_HEIGHT } from '../../utils/constants';
 import { DrawingObject, KeyCode, Layer } from '../../utils/enums';
+import { CanvasRendererProps } from '../../utils/types';
 import { BaseRenderer } from './baseRenderer';
-
-export type CanvasRendererProps = {
-	presenterEl: HTMLCanvasElement;
-	statEl: HTMLCanvasElement;
-	serviceEl: HTMLCanvasElement;
-	size: Size;
-	cellSize?: number;
-	lineHeight?: number;
-};
 
 export class CanvasRenderer extends BaseRenderer {
 	private static colors = {

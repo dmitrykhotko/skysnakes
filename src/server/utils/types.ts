@@ -18,6 +18,6 @@ export interface ResultWitActions<T = boolean> {
 	actions: Action[];
 }
 
-export interface SocketWithId extends ObjectWithId {
-	ws: WebSocket;
+export interface WSWithId extends ObjectWithId {
+	wS: WebSocket;
 }

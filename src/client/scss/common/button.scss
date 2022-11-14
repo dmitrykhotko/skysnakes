@@ -1,7 +1,10 @@
 .btn {
+	font-family: Consolas, monaco, monospace;
+	font-size: rem(13px);
+	color: #FFFF00;
+	font-weight: 700;
 	background: transparent;
 	border: none;
-	color: #FFFF00;
 
 	&:focus{
 		outline: none;

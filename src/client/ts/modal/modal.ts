@@ -1,13 +1,13 @@
 import { ServiceInput } from '../../../common/enums';
 import { Observer } from '../../../common/types';
 import { KeyCode, ModalType } from '../utils/enums';
-import { GAME_OVER_MSG, WELCOME_SCREEN_MSG } from '../utils/labels';
+import { GAME_OVER_SCREEN, GAME_PAUSED_SCREEN } from '../utils/screens';
 import { ShowModalArgs } from '../utils/types';
 
 export class Modal {
 	private static messages = {
-		[ModalType.WelcomeScreen]: WELCOME_SCREEN_MSG,
-		[ModalType.GameOver]: GAME_OVER_MSG
+		[ModalType.GamePaused]: GAME_PAUSED_SCREEN,
+		[ModalType.GameOver]: GAME_OVER_SCREEN
 	};
 
 	private el: HTMLElement;

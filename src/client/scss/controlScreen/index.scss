@@ -1,0 +1,57 @@
+.Snakes .Snakes__ControlScreen {
+	h3 {
+		padding-bottom: rem(20px);
+	}
+
+	&Content {
+		min-width: rem(650px);
+		min-height: rem(250px);
+		display: flex;
+		flex-direction: column;
+		justify-content: end;
+		align-items: center;
+
+		p {
+			margin: rem(5px) 0;
+		}
+	}
+
+	.Snakes {
+		&__AvailableRoomsList {
+			height: rem(110px);
+			padding: rem(10px) 0 rem(20px);
+			border: rem(1px) solid;
+			list-style: none;
+			overflow-x: hidden;
+			overflow-y: scroll;
+		}
+
+		&__AvailableRoom {
+			max-width: fit-content;
+			margin: 0 auto;
+			padding: rem(2px) 0;
+			border-bottom: rem(2px) solid;
+		}
+
+		&__AvailableRoomLink {
+			cursor: pointer;
+		}
+
+		&__ControlScreenControls {
+			margin-top: rem(50px);
+			padding-top: rem(30px);
+			border-top: rem(2px) solid #FFFF00;
+		}
+
+		&__RoomActionControl {
+			min-width: rem(160px);
+			padding: 0 rem(25px);
+			height: rem(25px);
+			border: rem(2px) solid;
+		}
+
+		&__RoomName {
+			margin-top: rem(20px);
+		}
+	}
+}

@@ -14,8 +14,29 @@
 
 <body>
   <section class="Snakes">
-    <div class="Snakes__Controls">
+    <div class="Snakes__ControlPanel">
       <button class="btn Snakes__PlayMusic js-Snakes__PlayMusic"></button>
+    </div>
+
+    <div class="Snakes__ControlScreen Snakes__Modal js-StartGame">
+      <div class="Snakes__ModalDimmer"></div>
+
+      <div class="Snakes__ModalContentContainer Snakes__ModalContent">
+        <div class="Snakes__ControlScreenContent js-Snakes__ControlScreenContent">
+        </div>
+
+        <div class="Snakes__ControlScreenControls">
+          <div class="Snakes__AvailableRoomsContainer js-Snakes__AvailableRoomsContainer -hidden">
+            <p>Available rooms:</p>
+  
+            <ul class="Snakes__AvailableRoomsList js-Snakes__AvailableRoomsList">
+            </ul>
+          </div>
+
+          <button class="btn Snakes__RoomActionControl js-Snakes__CreateRoom">CREATE ROOM</button>
+          <button class="btn Snakes__RoomActionControl js-Snakes__JoinRoom">JOIN ROOM</button>
+        </div>
+      </div>
     </div>
 
     <div class="Snakes__Modal js-Snakes__Modal -hidden">

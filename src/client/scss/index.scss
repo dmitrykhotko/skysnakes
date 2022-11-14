@@ -1,8 +1,16 @@
 @import './common';
 @import './presenter';
-@import './controls';
+@import './controlPanel';
 @import './modal';
+@import './controlScreen';
 
 body {
 	margin: 0;
+	font-family: Consolas, monaco, monospace;
+}
+
+.Snakes {
+	*.-hidden {
+		display: none;
+	}	
 }

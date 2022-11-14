@@ -1,5 +1,6 @@
-import WebSocket from 'ws';
-import { FireInput, GameStatus, MoveInput, Player, ServiceInput } from '../../common/enums';
+import { WebSocket } from 'ws';
+import { Direction, FireInput, GameStatus, MoveInput, Player, ServiceInput } from '../../common/enums';
+import { WSHlp } from '../../common/wSHlp';
 import { MessageType } from '../../common/messageType';
 import { GameState, Message, PlayerInput, Size, SnakeArrayData } from '../../common/types';
 import { Arena } from '../arena/arena';
@@ -8,30 +9,38 @@ import { ArenaStore, BinStore, BulletsStore, SnakesStore, StatStore } from '../r
 import { ArenaActions, BinActions, BulletsActions, CommonActions, SnakesActions } from '../redux/actions';
 import { createState, State } from '../redux/state';
 import { Timer } from '../timer/timer';
-import { PLAYER_MODE } from '../utils/constants';
 import { DelayedTasks } from '../utils/delayedTasks';
 import { Hlp } from '../utils/hlp';
-import { SnakeData, SocketWithId } from '../utils/types';
-import { inputToDirection, modeToInitialData } from './utils';
+import { SnakeData, WSWithId } from '../utils/types';
+import { GAME_START_DELAY } from '../utils/constants';
 
 export class Controller {
+	static inputToDirection = {
+		[MoveInput.RUp]: Direction.Up,
+		[MoveInput.RDown]: Direction.Down,
+		[MoveInput.RLeft]: Direction.Left,
+		[MoveInput.RRight]: Direction.Right
+	};
+
+	private wSs: WebSocket[];
 	private state: State;
 	private timer: Timer;
 	private arena: Arena;
 	private size?: Size;
 
-	constructor(private players: SocketWithId[]) {
+	constructor(private players: WSWithId[]) {
 		this.state = createState();
 		this.arena = new Arena(this.state);
 		this.timer = new Timer(this.tick);
+		this.wSs = this.players.map(({ wS }) => wS);
 
 		this.initConnection();
-		this.broadcast(MessageType.GET_SIZE);
+		WSHlp.broadcast(this.wSs, MessageType.GET_SIZE);
 	}
 
 	private initConnection = (): void => {
-		this.players.forEach(({ ws }) => {
-			ws.on('message', (message: string) => {
+		this.players.forEach(({ wS }) => {
+			wS.on('message', (message: string) => {
 				const { type, data } = JSON.parse(message) as Message<unknown>;
 
 				switch (type) {
@@ -42,11 +51,13 @@ export class Controller {
 							break;
 						}
 
-						this.start();
+						setTimeout(() => {
+							this.start();
+						}, GAME_START_DELAY);
 
 						break;
 					case MessageType.USER_INPUT:
-						const index = this.players.findIndex(player => player.ws === ws);
+						const index = this.players.findIndex(player => player.wS === wS);
 
 						if (!~index) {
 							break;
@@ -59,9 +70,9 @@ export class Controller {
 				}
 			});
 
-			ws.on('close', () => {
+			wS.on('close', () => {
 				this.over();
-				this.broadcast(MessageType.PLAYER_DISCONNECTED);
+				WSHlp.broadcast(this.wSs, MessageType.PLAYER_DISCONNECTED);
 			});
 		});
 	};
@@ -89,23 +100,19 @@ export class Controller {
 		} as GameState;
 	};
 
-	private broadcast = (type: MessageType, data?: unknown): void => {
-		for (let i = 0; i < this.players.length; i++) {
-			const { ws } = this.players[i];
-
-			ws.readyState === WebSocket.OPEN && ws.send(JSON.stringify({ type, data }));
-		}
-	};
-
 	private start = (): void => {
-		const initialData = modeToInitialData[PLAYER_MODE];
+		const initialData = [
+			{ direction: Direction.Right, id: Player.P1 },
+			{ direction: Direction.Left, id: Player.P2 }
+		];
 
 		DelayedTasks.reset();
 
-		this.broadcast(MessageType.START);
 		this.state.dispatch(CommonActions.resetGame(initialData), ArenaActions.setGameStatus(GameStatus.InProgress));
 		this.arena.start(initialData);
 		this.timer.start();
+
+		WSHlp.broadcast(this.wSs, MessageType.START);
 	};
 
 	private over = (): void => {
@@ -120,7 +127,7 @@ export class Controller {
 	};
 
 	private tick = (): void => {
-		this.broadcast(MessageType.TICK, this.getData());
+		WSHlp.broadcast(this.wSs, MessageType.TICK, this.getData());
 
 		const { status } = this.state.get<ArenaStore>().arena;
 
@@ -198,7 +205,7 @@ export class Controller {
 	};
 
 	private handleMoveInput = (input: MoveInput, id: Player): void => {
-		const direction = inputToDirection[input];
+		const direction = Controller.inputToDirection[input];
 		const snake = Snakes.getById(this.state, id);
 
 		snake && this.state.dispatch(SnakesActions.newDirection(direction, id));
@@ -215,7 +222,7 @@ export class Controller {
 
 		this.state.dispatch(
 			BulletsActions.setBullet({
-				id: Hlp.generateId(),
+				id: Hlp.id(),
 				player: id,
 				point: Hlp.nextPoint(head, direction),
 				direction

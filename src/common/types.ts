@@ -1,6 +1,7 @@
 import { CoinType, Direction, FireInput, GameStatus, MoveInput, NotifType, Player, ServiceInput } from './enums';
 
 export type Id = number;
+export type UUId = string;
 
 export type PlayerInput = FireInput | MoveInput | ServiceInput;
 
@@ -73,3 +74,13 @@ export interface Message<T = unknown> {
 	type: string;
 	data?: T;
 }
+
+export type AvailableRoom = {
+	uuid: UUId;
+	name: string;
+};
+
+export type Room = {
+	uuid: UUId;
+	name: string;
+};

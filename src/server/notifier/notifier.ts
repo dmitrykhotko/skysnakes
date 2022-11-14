@@ -39,7 +39,7 @@ export class Notifier {
 	private changeScore = (point: LinkedPoint, direction: Direction, value: string, type: NotifType): void => {
 		const { x, y } = point;
 		const { width, height } = Hlp.getSize(this.state);
-		const id = Hlp.generateId();
+		const id = Hlp.id();
 
 		let newX = x;
 		let newY = y;
