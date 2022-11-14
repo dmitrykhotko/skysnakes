@@ -1,5 +1,4 @@
 import { Size, UUId } from '../../../common/types';
-import { ModalType } from './enums';
 
 export type CanvasRendererProps = {
 	presenterEl: HTMLCanvasElement;
@@ -8,14 +7,6 @@ export type CanvasRendererProps = {
 	size: Size;
 	cellSize?: number;
 	lineHeight?: number;
-};
-
-export type ShowModalArgs = {
-	type: ModalType;
-	topContent?: string;
-	mainContent?: string;
-	bottomContent?: string;
-	isStatic?: boolean;
 };
 
 export type GameProps = {

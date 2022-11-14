@@ -1,6 +1,24 @@
 .Snakes .Snakes__ControlScreen {
+	position: absolute;
+	width: 100vw;
+	height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 3;
+
 	h3 {
 		padding-bottom: rem(20px);
+	}
+
+	&ContentContainer {
+		position: relative;
+		width: auto;
+		height: auto;
+		padding: rem(20px) rem(50px);
+		font-size: rem(20px);
+		color: #DAF7A6;
+		text-align: center;
 	}
 
 	&Content {
@@ -16,7 +34,22 @@
 		}
 	}
 
+	&Dimmer {
+		position: absolute;
+		width: 100vw;
+		height: 100vh;
+		background-color: #0A045D;
+		opacity: 0.6;
+	}
+
+	&Close {
+		position: absolute;
+		top: 0;
+		right: 0;
+	}
+
 	.Snakes {
+
 		&__AvailableRoomsList {
 			height: rem(110px);
 			padding: rem(10px) 0 rem(20px);

@@ -18,14 +18,16 @@
       <button class="btn Snakes__PlayMusic js-Snakes__PlayMusic"></button>
     </div>
 
-    <div class="Snakes__ControlScreen Snakes__Modal js-StartGame">
-      <div class="Snakes__ModalDimmer"></div>
+    <div class="Snakes__ControlScreen js-ControlScreen">
+      <div class="Snakes__ControlScreenDimmer"></div>
 
-      <div class="Snakes__ModalContentContainer Snakes__ModalContent">
+      <div class="Snakes__ControlScreenContentContainer">
         <div class="Snakes__ControlScreenContent js-Snakes__ControlScreenContent">
         </div>
 
-        <div class="Snakes__ControlScreenControls">
+        <button class="btn Snakes__ControlScreenClose js-Snakes__ControlScreenClose">close</button>
+
+        <div class="Snakes__ControlScreenControls js-Snakes__ControlScreenControls">
           <div class="Snakes__AvailableRoomsContainer js-Snakes__AvailableRoomsContainer -hidden">
             <p>Available rooms:</p>
   
@@ -36,18 +38,6 @@
           <button class="btn Snakes__RoomActionControl js-Snakes__CreateRoom">CREATE ROOM</button>
           <button class="btn Snakes__RoomActionControl js-Snakes__JoinRoom">JOIN ROOM</button>
         </div>
-      </div>
-    </div>
-
-    <div class="Snakes__Modal js-Snakes__Modal -hidden">
-      <div class="Snakes__ModalDimmer js-Snakes__ModalDimmer"></div>
-
-      <div class="Snakes__ModalContentContainer">
-        <div class="Snakes__ModalContent js-Snakes__ModalContentTop"></div>
-        <div class="Snakes__ModalContent js-Snakes__ModalContentMain"></div>
-        <div class="Snakes__ModalContent js-Snakes__ModalContentBottom"></div>
-
-        <button class="btn Snakes__ModalClose js-Snakes__ModalClose">close</button>
       </div>
     </div>
 

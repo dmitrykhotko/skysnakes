@@ -4,11 +4,8 @@ import { GameState, Message, Observer, PlayerInput, Size, UUId } from '../../../
 import { WSHlp } from '../../../common/wSHlp';
 import { ControlPanel } from '../controlPanel/controlPanel';
 import { ControlScreen } from '../controlScreen/controlScreen';
-import { Modal } from '../modal/modal';
 import { CanvasRenderer } from '../renderers/instances/canvasRenderer';
-import { ModalType } from '../utils/enums';
-import { CONNECTION_LOST } from '../utils/labels';
-import { PLAYER_DISCONNECTED_SCREEN } from '../utils/screens';
+import { ScreenType } from '../utils/enums';
 import { CanvasRendererProps, GameProps } from '../utils/types';
 
 export class Controller {
@@ -16,16 +13,11 @@ export class Controller {
 	private controlScreen!: ControlScreen;
 	private prevState?: GameState;
 	private renderer: CanvasRenderer;
-	private modal: Modal;
 
 	constructor({ roomUUId, showServiceInfo = false }: GameProps, rProps: CanvasRendererProps, size: Size) {
 		const onInputObserver = this.onInput as Observer;
 
 		this.renderer = new CanvasRenderer(rProps, onInputObserver, showServiceInfo);
-		this.modal = new Modal(((input: PlayerInput): void => {
-			this.onInput(input);
-			this.renderer.focus();
-		}) as Observer);
 
 		new ControlPanel(this.renderer.focus);
 		this.initConnection(size, roomUUId);
@@ -40,8 +32,15 @@ export class Controller {
 		this.wS.addEventListener('open', (): void => {
 			console.log(`Connection to ${wSUrl} established.`);
 
-			this.controlScreen = new ControlScreen(this.wS, roomUUId);
-			this.controlScreen.showModal();
+			this.controlScreen = new ControlScreen(
+				this.wS,
+				((input?: PlayerInput): void => {
+					input && this.onInput(input);
+					this.renderer.focus();
+				}) as Observer,
+				roomUUId
+			);
+			this.controlScreen.show();
 		});
 
 		this.wS.addEventListener('message', (event: MessageEvent): void => {
@@ -61,11 +60,10 @@ export class Controller {
 
 					break;
 				case MessageType.PLAYER_DISCONNECTED:
-					this.handleGameOverMsg(PLAYER_DISCONNECTED_SCREEN);
+					this.controlScreen.show(ScreenType.PlayerDisconnected);
 
 					setTimeout(() => {
-						this.modal.hide();
-						this.controlScreen.showModal();
+						this.controlScreen.show();
 					}, 3000);
 					break;
 				default:
@@ -75,13 +73,12 @@ export class Controller {
 
 		this.wS.onclose = (): void => {
 			console.log(`Connection to ${wSUrl} closed.`);
-			this.handleGameOverMsg(CONNECTION_LOST);
+			this.controlScreen.show(ScreenType.ConnectionLost);
 		};
 	};
 
 	private handleStartMsg = (): void => {
-		this.modal.hide();
-		this.controlScreen.hideModal();
+		this.controlScreen.hide();
 		this.renderer.reset();
 		this.renderer.focus();
 	};
@@ -93,25 +90,19 @@ export class Controller {
 		this.prevState = state;
 	};
 
-	private handleGameOverMsg = (message = '', isStatic = true): void => {
-		this.controlScreen.hideModal();
-		this.modal.hide();
-		this.modal.show({ type: ModalType.GameOver, bottomContent: message, isStatic });
-	};
-
 	private checkStatusChanged = (status: GameStatus): void => {
 		const prevStatus = this.prevState?.status ?? GameStatus.Pause;
 
 		switch (status) {
 			case GameStatus.Pause:
 				if (prevStatus === GameStatus.InProgress) {
-					this.modal.show({ type: ModalType.GamePaused });
+					this.controlScreen.show(ScreenType.GamePaused);
 				}
 
 				break;
 			case GameStatus.InProgress:
 				if (prevStatus === GameStatus.Pause) {
-					this.modal.hide();
+					this.controlScreen.hide();
 				}
 
 				if (prevStatus === GameStatus.Finish) {

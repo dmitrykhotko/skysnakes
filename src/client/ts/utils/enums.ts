@@ -27,7 +27,9 @@ export enum Layer {
 	Service = 3
 }
 
-export enum ModalType {
-	GamePaused = 1,
-	GameOver = 2
+export enum ScreenType {
+	Main = 1,
+	GamePaused = 2,
+	PlayerDisconnected = 3,
+	ConnectionLost = 4
 }
