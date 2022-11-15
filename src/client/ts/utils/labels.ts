@@ -18,3 +18,6 @@ export const SOUND_OFF = 'Sound Off';
 export const JOIN_ROOM_LABEL = 'JOIN ROOM';
 export const CREATE_ROOM_LABEL = 'CREATE ROOM';
 export const CREATE_LABEL = 'CREATE';
+
+export const WRONG_ROOM_NAME_MSG = '* room name should not be empty.';
+export const WRONG_LIVES_NUM_MSG = '* lives number should be an integer above the zero.';

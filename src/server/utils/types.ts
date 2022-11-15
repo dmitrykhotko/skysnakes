@@ -1,6 +1,6 @@
 import { WebSocket } from 'ws';
 import { Direction } from '../../common/enums';
-import { LinkedPoint, ObjectWithId } from '../../common/types';
+import { LinkedPoint, ObjectWithId, Size } from '../../common/types';
 import { Action } from '../redux/actions';
 
 export interface SnakeData extends ObjectWithId {
@@ -20,4 +20,10 @@ export interface ResultWitActions<T = boolean> {
 
 export interface WSWithId extends ObjectWithId {
 	wS: WebSocket;
+}
+
+export interface InitialData {
+	players: DirectionWithId[];
+	size: Size;
+	lives: number;
 }

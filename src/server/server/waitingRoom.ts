@@ -1,15 +1,13 @@
 import { WebSocket } from 'ws';
 import { Player } from '../../common/enums';
-import { Room, UUId } from '../../common/types';
+import { Room } from '../../common/types';
 import { WSWithId } from '../utils/types';
 
 export class WaitingRoom {
-	private players = [] as WSWithId[];
+	private $players = [] as WSWithId[];
 	private freePlayers = [Player.P1, Player.P2];
-	private $room: Room;
 
-	constructor(uuid: UUId, name: string, wS: WebSocket) {
-		this.$room = { uuid, name };
+	constructor(private $room: Room, wS: WebSocket) {
 		this.addPlayer(wS);
 	}
 
@@ -23,6 +21,10 @@ export class WaitingRoom {
 
 	get isEmpty(): boolean {
 		return !this.players.length;
+	}
+
+	get players(): WSWithId[] {
+		return this.$players;
 	}
 
 	addPlayer = (wS: WebSocket): boolean => {

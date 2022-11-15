@@ -48,6 +48,12 @@
 		right: 0;
 	}
 
+	&ValidationMessage {
+		margin-top: 10px;
+		font-size: 13px;
+		color: #FF3300;
+	}
+
 	.Snakes {
 
 		&__AvailableRoomsList {
@@ -83,7 +89,7 @@
 			border: rem(2px) solid;
 		}
 
-		&__RoomName {
+		&__RoomName, &__LivesNum {
 			margin-top: rem(20px);
 		}
 	}

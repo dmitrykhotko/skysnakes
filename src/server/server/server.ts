@@ -4,8 +4,8 @@ import './express';
 import { WaitingRoom } from './waitingRoom';
 import { WSS } from './wSS';
 
-const createGameInstance = (room: WaitingRoom): void => {
-	new Controller(room.toArray());
+const createGameInstance = ({ players, room: { lives } }: WaitingRoom): void => {
+	new Controller(players, lives);
 };
 
 new WSS(createGameInstance as Observer);

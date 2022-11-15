@@ -1,18 +1,18 @@
 import { WebSocket } from 'ws';
 import { Direction, FireInput, GameStatus, MoveInput, Player, ServiceInput } from '../../common/enums';
-import { WSHlp } from '../../common/wSHlp';
 import { MessageType } from '../../common/messageType';
 import { GameState, Message, PlayerInput, Size, SnakeArrayData } from '../../common/types';
+import { WSHlp } from '../../common/wSHlp';
 import { Arena } from '../arena/arena';
 import { Snakes } from '../arena/characters/snakes';
 import { ArenaStore, BinStore, BulletsStore, SnakesStore, StatStore } from '../redux';
 import { ArenaActions, BinActions, BulletsActions, CommonActions, SnakesActions } from '../redux/actions';
 import { createState, State } from '../redux/state';
 import { Timer } from '../timer/timer';
+import { GAME_START_DELAY } from '../utils/constants';
 import { DelayedTasks } from '../utils/delayedTasks';
 import { Hlp } from '../utils/hlp';
 import { SnakeData, WSWithId } from '../utils/types';
-import { GAME_START_DELAY } from '../utils/constants';
 
 export class Controller {
 	static inputToDirection = {
@@ -28,7 +28,7 @@ export class Controller {
 	private arena: Arena;
 	private size?: Size;
 
-	constructor(private players: WSWithId[]) {
+	constructor(private players: WSWithId[], private lives: number) {
 		this.state = createState();
 		this.arena = new Arena(this.state);
 		this.timer = new Timer(this.tick);
@@ -101,15 +101,24 @@ export class Controller {
 	};
 
 	private start = (): void => {
-		const initialData = [
+		const { lives, size } = this;
+
+		if (!size) {
+			return;
+		}
+
+		const players = [
 			{ direction: Direction.Right, id: Player.P1 },
 			{ direction: Direction.Left, id: Player.P2 }
 		];
 
 		DelayedTasks.reset();
 
-		this.state.dispatch(CommonActions.resetGame(initialData), ArenaActions.setGameStatus(GameStatus.InProgress));
-		this.arena.start(initialData);
+		this.state.dispatch(
+			CommonActions.resetGame({ players, lives, size }),
+			ArenaActions.setGameStatus(GameStatus.InProgress)
+		);
+		this.arena.start(players);
 		this.timer.start();
 
 		WSHlp.broadcast(this.wSs, MessageType.START);

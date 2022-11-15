@@ -83,4 +83,5 @@ export type AvailableRoom = {
 export type Room = {
 	uuid: UUId;
 	name: string;
+	lives: number;
 };

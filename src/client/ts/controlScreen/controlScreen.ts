@@ -2,8 +2,8 @@ import { ServiceInput } from '../../../common/enums';
 import { MessageType } from '../../../common/messageType';
 import { AvailableRoom, Message, Observer, Room, UUId } from '../../../common/types';
 import { WSHlp } from '../../../common/wSHlp';
-import { ScreenType, KeyCode } from '../utils/enums';
-import { CREATE_LABEL, CREATE_ROOM_LABEL } from '../utils/labels';
+import { KeyCode, ScreenType } from '../utils/enums';
+import { CREATE_LABEL, CREATE_ROOM_LABEL, WRONG_LIVES_NUM_MSG, WRONG_ROOM_NAME_MSG } from '../utils/labels';
 import {
 	CONNECTION_LOST_SCREEN,
 	CREATE_ROOM_FAIL_SCREEN,
@@ -29,7 +29,6 @@ export class ControlScreen {
 	private createRoomBtn: HTMLButtonElement;
 	private joinRoomBtn: HTMLButtonElement;
 	private closeBtn: HTMLButtonElement;
-	private lastBtn?: HTMLButtonElement;
 
 	constructor(private wS: WebSocket, private onHide: Observer, roomUUId?: UUId) {
 		this.el = document.querySelector('.js-ControlScreen') as HTMLElement;
@@ -51,7 +50,7 @@ export class ControlScreen {
 	};
 
 	hide = (): void => {
-		document.removeEventListener('keydown', this.onKeyDown);
+		document.removeEventListener('keydown', this.onGlobalKeyDown);
 
 		this.hideEls(this.el);
 		this.onHide();
@@ -107,13 +106,12 @@ export class ControlScreen {
 	};
 
 	private onCreateRoomBtnClick = (): void => {
-		this.lastBtn === this.createRoomBtn ? this.createRoom() : this.showCreateRoomScreen();
+		this.createRoom();
 	};
 
 	private onJoinRoomBtnClick = (): void => {
 		WSHlp.send(this.wS, MessageType.QUIT_ROOM);
 
-		this.lastBtn = undefined;
 		this.getAvailableRooms();
 		this.setScreen(JOIN_ROOM_SCREEN);
 	};
@@ -121,10 +119,6 @@ export class ControlScreen {
 	private onCloseBtnClick = (): void => {
 		this.hide();
 		this.onHide(ServiceInput.Escape);
-	};
-
-	private onRoomNameInputKeydown = (event: KeyboardEvent): void => {
-		event.code === 'Enter' && this.onCreateRoomBtnClick();
 	};
 
 	private onAvailableRoomClick = (e: Event): void => {
@@ -139,7 +133,7 @@ export class ControlScreen {
 		WSHlp.send(this.wS, MessageType.JOIN_ROOM, uuid);
 	};
 
-	private onKeyDown = (event: KeyboardEvent): void => {
+	private onGlobalKeyDown = (event: KeyboardEvent): void => {
 		const playerInput = +KeyCode[event.code as unknown as KeyCode];
 
 		if (playerInput === ServiceInput.Enter || playerInput === ServiceInput.Escape) {
@@ -164,7 +158,7 @@ export class ControlScreen {
 
 		if (closeable) {
 			this.showEls(this.closeBtn);
-			document.addEventListener('keydown', this.onKeyDown);
+			document.addEventListener('keydown', this.onGlobalKeyDown);
 		}
 	};
 
@@ -175,12 +169,14 @@ export class ControlScreen {
 		this.setScreen(CREATE_ROOM_SCREEN);
 
 		this.createRoomBtn.innerHTML = CREATE_LABEL;
-		this.lastBtn = this.createRoomBtn;
 
-		const roomNameInput = this.contentEl.querySelector('.js-Snakes__RoomName') as HTMLInputElement;
+		const roomNameInpt = this.contentEl.querySelector('.js-Snakes__RoomName') as HTMLInputElement;
+		const liveNumInpt = this.contentEl.querySelector('.js-Snakes__LivesNum') as HTMLInputElement;
 
-		roomNameInput.addEventListener('keydown', this.onRoomNameInputKeydown);
-		roomNameInput.focus();
+		this.bindOnEnter(liveNumInpt, this.onCreateRoomBtnClick);
+		this.bindOnEnter(roomNameInpt, liveNumInpt.focus.bind(liveNumInpt) as Observer);
+
+		roomNameInpt.focus();
 	};
 
 	private showCreateRoomSuccessScreen = (uuid: UUId): void => {
@@ -207,10 +203,11 @@ export class ControlScreen {
 
 		this.availableRoomsListEl.innerHTML = uuids.reduce((acc, { uuid, name }) => {
 			return `
-			${acc}<li class="Snakes__AvailableRoom">
-				<a class="btn Snakes__AvailableRoomLink js-Snakes__AvailableRoomLink" data-uuid="${uuid}">${name}</a>
-			</li>
-		`;
+				${acc}
+				<li class="Snakes__AvailableRoom">
+					<a class="btn Snakes__AvailableRoomLink js-Snakes__AvailableRoomLink" data-uuid="${uuid}">${name}</a>
+				</li>
+			`;
 		}, '');
 
 		this.availableRoomsListEl.addEventListener('click', this.onAvailableRoomClick);
@@ -232,15 +229,29 @@ export class ControlScreen {
 	private showRoomIsReadyScreen = (): void => this.showInfoScreen(ROOM_IS_READY_SCREEN);
 
 	private createRoom = (): void => {
-		const roomName = (this.contentEl.querySelector('.js-Snakes__RoomName') as HTMLInputElement)?.value;
+		if (!this.contentEl.querySelector('.js-Snakes__CreateRoom')) {
+			return this.showCreateRoomScreen();
+		}
 
-		if (!roomName) {
+		const name = (this.contentEl.querySelector('.js-Snakes__RoomName') as HTMLInputElement)?.value;
+		const validationMessageEl = this.contentEl.querySelector(
+			'.js-Snakes__ControlScreenValidationMessage'
+		) as HTMLElement;
+
+		if (!name) {
+			validationMessageEl.innerHTML = WRONG_ROOM_NAME_MSG;
 			return;
 		}
 
+		const lives = parseInt((this.contentEl.querySelector('.js-Snakes__LivesNum') as HTMLInputElement)?.value);
+
+		if (!(lives > 0)) {
+			validationMessageEl.innerHTML = WRONG_LIVES_NUM_MSG;
+			return;
+		}
+
+		WSHlp.send(this.wS, MessageType.CREATE_ROOM, { name, lives });
 		this.createRoomBtn.innerHTML = CREATE_ROOM_LABEL;
-		this.lastBtn = undefined;
-		WSHlp.send(this.wS, MessageType.CREATE_ROOM, roomName);
 	};
 
 	private showEls = (...els: HTMLElement[]): void => {
@@ -258,4 +269,7 @@ export class ControlScreen {
 	private createRoomUrl = (uuid: UUId): string => `${location.origin}?room=${uuid}`;
 
 	private setScreen = (content: string): void => void (this.contentEl.innerHTML = content);
+
+	private bindOnEnter = (el: HTMLElement, action: Observer): void =>
+		el.addEventListener('keydown', event => event.code === 'Enter' && action());
 }

@@ -25,13 +25,16 @@ export const CONNECTION_LOST_SCREEN = `
 `;
 
 export const ROOM_IS_READY_SCREEN = `
-	<p>We're almost ready to play.</p>
+	<h3>We're almost ready to play.</h3>
 	<p>The game will start in a few seconds.</p>
 `;
 
 export const CREATE_ROOM_SCREEN = `
-	<p>Please enter the room name</p>
-	<input class="Snakes__RoomName js-Snakes__RoomName inpt">
+	<h3 class="js-Snakes__CreateRoom">Create room</h3>
+	<p>Please enter the name and lives number:</p>
+	<input class="Snakes__RoomName js-Snakes__RoomName inpt" placeholder="room name">
+	<input class="Snakes__LivesNum js-Snakes__LivesNum inpt" type="number" min="1" pattern="[0-9]" placeholder="lives number">
+	<span class="Snakes__ControlScreenValidationMessage js-Snakes__ControlScreenValidationMessage"></span>
 `;
 
 export const CREATE_ROOM_SUCCESS_SCREEN = `
@@ -45,6 +48,7 @@ export const CREATE_ROOM_FAIL_SCREEN = `
 `;
 
 export const JOIN_ROOM_SCREEN = `
+	<h3>Join room</h3>
 	<p>Please select the room to join</p>
 `;
 

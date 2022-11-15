@@ -6,6 +6,7 @@ import { ActionType } from '../../actions/actionType';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
 import { setValue } from '../utils';
+import { InitialData } from '../../../utils/types';
 
 export type ArenaState = {
 	status: GameStatus;
@@ -52,7 +53,7 @@ export abstract class ArenaReducer extends Reducer<ArenaStore> {
 			case ActionType.SET_GAME_STATUS:
 				return setValue(arenaStore, action, 'arena', 'status');
 			case ActionType.GAME_RESET:
-				const { size } = arenaStore.arena;
+				const { size } = (action as SetValueAction<InitialData>).value;
 				return { ...state, ...{ arena: { ...this.initialState.arena, size } } };
 			default:
 				return state;

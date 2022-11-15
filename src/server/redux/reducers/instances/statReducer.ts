@@ -1,9 +1,8 @@
-import { Action, SetValueAction, SetValueByIdAction } from '../../actions';
 import { Player } from '../../../../common/enums';
 import { Id, Notification, PlayerStat, StatState } from '../../../../common/types';
-import { LIVES } from '../../../utils/constants';
 import { Hlp } from '../../../utils/hlp';
-import { DirectionWithId } from '../../../utils/types';
+import { InitialData } from '../../../utils/types';
+import { Action, SetValueAction, SetValueByIdAction } from '../../actions';
 import { ActionType } from '../../actions/actionType';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
@@ -49,8 +48,8 @@ export abstract class StatReducer extends Reducer<StatStore> {
 			case ActionType.REMOVE_NOTIFICATION:
 				return this.removeNotification(statStore, (action as SetValueAction<Id>).value);
 			case ActionType.GAME_RESET:
-				const initialData = (action as SetValueAction<DirectionWithId[]>).value;
-				const playersStat = initialData.map(({ id }) => ({ id, lives: LIVES, score: 0 }));
+				const { players, lives } = (action as SetValueAction<InitialData>).value;
+				const playersStat = players.map(({ id }) => ({ id, lives, score: 0 }));
 
 				return {
 					...state,

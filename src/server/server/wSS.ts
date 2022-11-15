@@ -1,8 +1,8 @@
+import { v4 } from 'node-uuid';
 import { WebSocket, WebSocketServer } from 'ws';
 import { MessageType } from '../../common/messageType';
-import { Message, Observer, UUId } from '../../common/types';
+import { Message, Observer, Room, UUId } from '../../common/types';
 import { WSHlp } from '../../common/wSHlp';
-import { Hlp } from '../utils/hlp';
 import { WaitingRoom } from './waitingRoom';
 
 declare module 'ws' {
@@ -27,14 +27,14 @@ export class WSS {
 
 	private initConnection = (): void => {
 		this.wSS.on('connection', wS => {
-			wS.uuid = Hlp.uuid();
+			wS.uuid = this.uuid();
 
 			wS.on('message', (message: string) => {
 				const { type, data } = JSON.parse(message) as Message<unknown>;
 
 				switch (type) {
 					case MessageType.CREATE_ROOM:
-						this.handleCreateRoomMsg(wS, data as string);
+						this.handleCreateRoomMsg(wS, data as Room);
 						break;
 					case MessageType.GET_AVAILABLE_ROOMS_LIST:
 						this.handleGetAvailableRoomsListMsg(wS);
@@ -60,15 +60,16 @@ export class WSS {
 		});
 	};
 
-	private handleCreateRoomMsg = (wS: WebSocket, name: string): void => {
+	private handleCreateRoomMsg = (wS: WebSocket, room: Room): void => {
 		this.quitRoom(wS);
 
-		const id = Hlp.uuid();
-		const wRoom = new WaitingRoom(id, name, wS);
+		const uuid = this.uuid();
+		const wRoom = new WaitingRoom({ ...room, uuid }, wS);
 
-		this.wRooms[id] = wRoom;
+		this.wRooms[uuid] = wRoom;
 		this.trace(`Room ${wRoom.toString()} was created.`);
-		WSHlp.send(wS, MessageType.CREATE_ROOM_SUCCESS, id);
+
+		WSHlp.send(wS, MessageType.CREATE_ROOM_SUCCESS, uuid);
 	};
 
 	private handleGetAvailableRoomsListMsg = (wS: WebSocket): void => {
@@ -78,6 +79,7 @@ export class WSS {
 		// const ids = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(() => Hlp.uuid());
 
 		WSHlp.send(wS, MessageType.AVAILABLE_ROOMS_LIST, wRoomsList);
+
 		this.trace(
 			`Available rooms: num = ${wRoomsList.length}, rooms = ${wRoomsList
 				.map(({ uuid, name }) => `${name}: ${uuid}`)
@@ -132,6 +134,8 @@ export class WSS {
 		wRoom.removePlayer(wS);
 		wRoom.isEmpty && delete this.wRooms[roomUUId];
 	};
+
+	private uuid = (): UUId => v4();
 
 	private trace = (...params: unknown[]): void => {
 		console.log(...params);

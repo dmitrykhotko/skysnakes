@@ -1,6 +1,5 @@
-import { v4 } from 'node-uuid';
 import { Direction } from '../../common/enums';
-import { Id, LinkedPoint, ObjectWithId, Point, Size, UUId } from '../../common/types';
+import { Id, LinkedPoint, ObjectWithId, Point, Size } from '../../common/types';
 import { ArenaStore } from '../redux';
 import { State } from '../redux/state';
 
@@ -22,8 +21,6 @@ export abstract class Hlp {
 		x1 === x2 && y1 === y2;
 
 	static id = (): Id => ++this.lastId;
-
-	static uuid = (): UUId => v4();
 
 	static lcm = (...x: number[]): number => {
 		let j = Math.max(...x);
