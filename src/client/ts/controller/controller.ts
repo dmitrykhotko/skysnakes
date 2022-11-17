@@ -5,13 +5,13 @@ import { WSHlp } from '../../../common/wSHlp';
 import { ControlPanel } from '../controlPanel/controlPanel';
 import { ControlScreen } from '../controlScreen/controlScreen';
 import { CanvasRenderer } from '../renderers/instances/canvasRenderer';
-import { MAIN_SCREEN_TIMEOUT } from '../utils/constants';
+import { MAIN_SCREEN_DELAY } from '../utils/constants';
 import { ScreenType } from '../utils/enums';
 import { CanvasRendererProps, GameProps } from '../utils/types';
 
 export class Controller {
-	private size: Size;
 	private wS!: WebSocket;
+	private size: Size;
 	private controlScreen!: ControlScreen;
 	private prevState?: GameState;
 	private renderer: CanvasRenderer;
@@ -92,7 +92,7 @@ export class Controller {
 
 	private handlePlayerDisconnectMsg = (): void => {
 		this.controlScreen.show(ScreenType.PlayerDisconnected);
-		setTimeout(this.onPlayerDisconnect, MAIN_SCREEN_TIMEOUT);
+		setTimeout(this.onPlayerDisconnect, MAIN_SCREEN_DELAY);
 	};
 
 	private checkStatusChanged = (status: GameStatus): void => {
