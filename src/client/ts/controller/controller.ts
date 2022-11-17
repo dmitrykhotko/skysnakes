@@ -1,45 +1,34 @@
-import { GameStatus } from '../../../common/enums';
+import { GameStatus, ServiceInput } from '../../../common/enums';
 import { MessageType } from '../../../common/messageType';
-import { GameState, Message, Observer, PlayerInput, Size, UUId } from '../../../common/types';
+import { GameState, Message, Observer, PlayerInput, Size } from '../../../common/types';
 import { WSHlp } from '../../../common/wSHlp';
 import { ControlPanel } from '../controlPanel/controlPanel';
 import { ControlScreen } from '../controlScreen/controlScreen';
 import { CanvasRenderer } from '../renderers/instances/canvasRenderer';
+import { MAIN_SCREEN_TIMEOUT } from '../utils/constants';
 import { ScreenType } from '../utils/enums';
 import { CanvasRendererProps, GameProps } from '../utils/types';
 
 export class Controller {
+	private size: Size;
 	private wS!: WebSocket;
 	private controlScreen!: ControlScreen;
 	private prevState?: GameState;
 	private renderer: CanvasRenderer;
 
-	constructor({ roomUUId, showServiceInfo = false }: GameProps, rProps: CanvasRendererProps, size: Size) {
-		const onInputObserver = this.onInput as Observer;
+	constructor({ roomUUId, showServiceInfo = false }: GameProps, rProps: CanvasRendererProps) {
+		this.size = rProps.size;
+		this.wS = new WebSocket(`ws://${location.hostname}:8080`);
+		this.renderer = new CanvasRenderer(rProps, this.onInput as Observer, showServiceInfo);
+		this.controlScreen = new ControlScreen(this.wS, this.onControlScreenHide as Observer, roomUUId);
 
-		this.renderer = new CanvasRenderer(rProps, onInputObserver, showServiceInfo);
-
-		new ControlPanel(this.renderer.focus);
-		this.initConnection(size, roomUUId);
+		new ControlPanel(this.renderer.focus, this.openMenu);
+		this.initConnection();
 	}
 
-	private initConnection = (size: Size, roomUUId?: UUId): void => {
-		const { hostname } = location;
-		const wSUrl = `ws://${hostname}:8080`;
-
-		this.wS = new WebSocket(wSUrl);
-
+	private initConnection = (): void => {
 		this.wS.addEventListener('open', (): void => {
-			console.log(`Connection to ${wSUrl} established.`);
-
-			this.controlScreen = new ControlScreen(
-				this.wS,
-				((input?: PlayerInput): void => {
-					input && this.onInput(input);
-					this.renderer.focus();
-				}) as Observer,
-				roomUUId
-			);
+			console.log(`Connection established.`);
 			this.controlScreen.show();
 		});
 
@@ -48,23 +37,16 @@ export class Controller {
 
 			switch (type) {
 				case MessageType.GET_SIZE:
-					WSHlp.send(this.wS, MessageType.SET_SIZE, size);
-
+					WSHlp.send(this.wS, MessageType.SET_SIZE, this.size);
 					break;
 				case MessageType.START:
 					this.handleStartMsg();
-
 					break;
 				case MessageType.TICK:
 					this.handleTickMsg(data as GameState);
-
 					break;
 				case MessageType.PLAYER_DISCONNECTED:
-					this.controlScreen.show(ScreenType.PlayerDisconnected);
-
-					setTimeout(() => {
-						this.controlScreen.show();
-					}, 3000);
+					this.handlePlayerDisconnectMsg();
 					break;
 				default:
 					break;
@@ -72,13 +54,31 @@ export class Controller {
 		});
 
 		this.wS.onclose = (): void => {
-			console.log(`Connection to ${wSUrl} closed.`);
+			console.log(`Connection closed.`);
 			this.controlScreen.show(ScreenType.ConnectionLost);
 		};
 	};
 
+	private onPlayerDisconnect = (): void => {
+		this.wS.close();
+		this.wS = new WebSocket(`ws://${location.hostname}:8080`);
+
+		this.initConnection();
+		this.controlScreen.initConnection(this.wS);
+	};
+
+	private onInput = (input: PlayerInput): void => {
+		this.wS.readyState === WebSocket.OPEN && WSHlp.send(this.wS, MessageType.USER_INPUT, input);
+	};
+
+	private onControlScreenHide = (input?: PlayerInput): void => {
+		input && this.onInput(input);
+		this.renderer.focus();
+	};
+
 	private handleStartMsg = (): void => {
 		this.controlScreen.hide();
+
 		this.renderer.reset();
 		this.renderer.focus();
 	};
@@ -90,15 +90,17 @@ export class Controller {
 		this.prevState = state;
 	};
 
+	private handlePlayerDisconnectMsg = (): void => {
+		this.controlScreen.show(ScreenType.PlayerDisconnected);
+		setTimeout(this.onPlayerDisconnect, MAIN_SCREEN_TIMEOUT);
+	};
+
 	private checkStatusChanged = (status: GameStatus): void => {
 		const prevStatus = this.prevState?.status ?? GameStatus.Pause;
 
 		switch (status) {
 			case GameStatus.Pause:
-				if (prevStatus === GameStatus.InProgress) {
-					this.controlScreen.show(ScreenType.GamePaused);
-				}
-
+				prevStatus === GameStatus.InProgress && this.pause();
 				break;
 			case GameStatus.InProgress:
 				if (prevStatus === GameStatus.Pause) {
@@ -115,7 +117,11 @@ export class Controller {
 		}
 	};
 
-	private onInput = (input: PlayerInput): void => {
-		this.wS.readyState === WebSocket.OPEN && WSHlp.send(this.wS, MessageType.USER_INPUT, input);
+	private pause = (): void => {
+		this.controlScreen.show(ScreenType.GamePaused);
+	};
+
+	private openMenu = (): void => {
+		this.onInput(ServiceInput.Escape);
 	};
 }

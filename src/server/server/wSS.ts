@@ -42,8 +42,8 @@ export class WSS {
 					case MessageType.JOIN_ROOM:
 						this.handleJoinRoomMsg(wS, data as UUId);
 						break;
-					case MessageType.QUIT_ROOM:
-						this.handleQuitRoomMsg(wS);
+					case MessageType.QUIT_WAITING_ROOM:
+						this.handleQuitWaitingRoomMsg(wS);
 						break;
 					default:
 						break;
@@ -61,13 +61,13 @@ export class WSS {
 	};
 
 	private handleCreateRoomMsg = (wS: WebSocket, room: Room): void => {
-		this.quitRoom(wS);
+		this.quitWaitingRoom(wS);
 
 		const uuid = this.uuid();
 		const wRoom = new WaitingRoom({ ...room, uuid }, wS);
 
 		this.wRooms[uuid] = wRoom;
-		this.trace(`Room ${wRoom.toString()} was created.`);
+		this.trace(`Room ${wRoom.toString()} was created. Total num = ${Object.values(this.wRooms).length}.`);
 
 		WSHlp.send(wS, MessageType.CREATE_ROOM_SUCCESS, uuid);
 	};
@@ -95,7 +95,7 @@ export class WSS {
 			return WSHlp.send(wS, MessageType.JOIN_ROOM_FAIL, uuid);
 		}
 
-		this.quitRoom(wS);
+		this.quitWaitingRoom(wS);
 
 		wRoom.addPlayer(wS);
 		WSHlp.send(wS, MessageType.JOIN_ROOM_SUCCESS, wRoom.room);
@@ -109,16 +109,16 @@ export class WSS {
 		}
 	};
 
-	private handleQuitRoomMsg = (wS: WebSocket): void => {
-		this.quitRoom(wS);
+	private handleQuitWaitingRoomMsg = (wS: WebSocket): void => {
+		this.quitWaitingRoom(wS);
 	};
 
 	private handleWSCloseEvent = (wS: WebSocket): void => {
 		this.trace(`Removing client ${wS.uuid}, connection closed.`);
-		this.quitRoom(wS);
+		this.quitWaitingRoom(wS);
 	};
 
-	private quitRoom = (wS: WebSocket): void => {
+	private quitWaitingRoom = (wS: WebSocket): void => {
 		const { roomUUId } = wS;
 
 		if (!roomUUId) {

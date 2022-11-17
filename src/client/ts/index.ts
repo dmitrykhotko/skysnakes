@@ -28,11 +28,7 @@ const run = (): void => {
 	width /= cellSize;
 	height /= cellSize;
 
-	new Controller(
-		{ roomUUId, showServiceInfo },
-		{ presenterEl, statEl, serviceEl, size: { width, height } },
-		{ width, height }
-	);
+	new Controller({ roomUUId, showServiceInfo }, { presenterEl, statEl, serviceEl, size: { width, height } });
 };
 
 run();

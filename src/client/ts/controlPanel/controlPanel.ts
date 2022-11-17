@@ -4,23 +4,35 @@ import { SOUND_OFF, SOUND_ON } from '../utils/labels';
 
 export class ControlPanel {
 	private audio = new Audio();
-	private soundOnOffButton: HTMLButtonElement;
+	private menuBtn: HTMLButtonElement;
+	private soundOnOffBtn: HTMLButtonElement;
 
-	constructor(private onClick?: Observer) {
-		this.soundOnOffButton = document.querySelector('.js-Snakes__PlayMusic') as HTMLButtonElement;
+	constructor(private onBtnClickCb: Observer, private onMenuBtnClickCb: Observer) {
+		const el = document.querySelector('.js-Snakes__ControlPanel') as HTMLElement;
+
+		this.menuBtn = el.querySelector('.js-Snakes__Menu') as HTMLButtonElement;
+		this.soundOnOffBtn = el.querySelector('.js-Snakes__PlayMusic') as HTMLButtonElement;
+
 		this.init();
 	}
 
 	private init = (): void => {
-		this.soundOnOffButton.innerHTML = SOUND_OFF;
-		this.soundOnOffButton.addEventListener('click', this.onCloseBtnClick);
+		this.soundOnOffBtn.innerHTML = SOUND_OFF;
+
+		this.menuBtn.addEventListener('click', this.onMenuBtnClick);
+		this.soundOnOffBtn.addEventListener('click', this.onCloseBtnClick);
+	};
+
+	private onMenuBtnClick = (): void => {
+		this.onMenuBtnClickCb();
+		this.onBtnClickCb();
 	};
 
 	private onCloseBtnClick = (): void => {
 		void this.audio.playPauseBM().then(() => {
-			this.soundOnOffButton.innerHTML = this.audio.isBgMPlaying ? SOUND_ON : SOUND_OFF;
+			this.soundOnOffBtn.innerHTML = this.audio.isBgMPlaying ? SOUND_ON : SOUND_OFF;
 		});
 
-		this.onClick && this.onClick();
+		this.onBtnClickCb();
 	};
 }
