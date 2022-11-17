@@ -5,7 +5,7 @@ import { WSHlp } from '../../../common/wSHlp';
 import { ControlPanel } from '../controlPanel/controlPanel';
 import { ControlScreen } from '../controlScreen/controlScreen';
 import { CanvasRenderer } from '../renderers/instances/canvasRenderer';
-import { MAIN_SCREEN_DELAY } from '../utils/constants';
+import { MAIN_SCREEN_DELAY, WS_PORT } from '../utils/constants';
 import { ScreenType } from '../utils/enums';
 import { CanvasRendererProps, GameProps } from '../utils/types';
 
@@ -18,13 +18,15 @@ export class Controller {
 
 	constructor({ roomUUId, showServiceInfo = false }: GameProps, rProps: CanvasRendererProps) {
 		this.size = rProps.size;
-		this.wS = new WebSocket(`ws://${location.hostname}:8080`);
+		this.wS = this.createWS();
 		this.renderer = new CanvasRenderer(rProps, this.onInput as Observer, showServiceInfo);
 		this.controlScreen = new ControlScreen(this.wS, this.onControlScreenHide as Observer, roomUUId);
 
 		new ControlPanel(this.renderer.focus, this.openMenu);
 		this.initConnection();
 	}
+
+	private createWS = (): WebSocket => new WebSocket(`ws://${location.hostname}:${WS_PORT}`);
 
 	private initConnection = (): void => {
 		this.wS.addEventListener('open', (): void => {
@@ -61,7 +63,7 @@ export class Controller {
 
 	private onPlayerDisconnect = (): void => {
 		this.wS.close();
-		this.wS = new WebSocket(`ws://${location.hostname}:8080`);
+		this.wS = this.createWS();
 
 		this.initConnection();
 		this.controlScreen.initConnection(this.wS);

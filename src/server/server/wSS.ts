@@ -1,4 +1,4 @@
-import { v4 } from 'node-uuid';
+import { v4 } from 'uuid';
 import { WebSocket, WebSocketServer } from 'ws';
 import { MessageType } from '../../common/messageType';
 import { Message, Observer, Room, UUId } from '../../common/types';
@@ -14,12 +14,15 @@ declare module 'ws' {
 }
 
 export class WSS {
+	private port: number;
 	private wSS: WebSocketServer;
 	private wRooms = {} as Record<UUId, WaitingRoom>;
 
 	constructor(private onRoomIsReady: Observer) {
-		this.wSS = new WebSocketServer({ port: 8080 }, () => {
-			this.trace(`WS server started at :8080`);
+		this.port = parseInt(process.env.WSS_PORT || '8081');
+
+		this.wSS = new WebSocketServer({ port: this.port }, () => {
+			this.trace(`WS server started at :${this.port}`);
 		});
 
 		this.initConnection();
@@ -56,7 +59,7 @@ export class WSS {
 		});
 
 		this.wSS.on('listening', () => {
-			this.trace('WS listening on 8080');
+			this.trace(`WS listening on ${this.port}`);
 		});
 	};
 
