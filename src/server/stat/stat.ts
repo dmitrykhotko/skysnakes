@@ -54,7 +54,7 @@ export class Stat {
 		let award = 0;
 
 		for (let i = 0; i < coins.length; i++) {
-			const { player } = coins[i];
+			const { pr: player } = coins[i];
 
 			if (!player || player === id) {
 				award += STANDARD_COIN_AWARD;
@@ -69,15 +69,15 @@ export class Stat {
 	};
 
 	judge = (): void => {
-		const { playersStat } = this.state.get<StatStore>().stat;
+		const { ps: playersStat } = this.state.get<StatStore>().stat;
 
-		if (!playersStat.some(({ lives }) => lives === 0)) {
+		if (!playersStat.some(({ l: lives }) => lives === 0)) {
 			return;
 		}
 
-		const maxScore = Math.max(...Hlp.mapByProp(playersStat, 'score'));
+		const maxScore = Math.max(...Hlp.mapByProp(playersStat, 's'));
 		const winners = Hlp.mapByProp(
-			Hlp.filter(playersStat, 'score', maxScore, (item1: number, item2: number) => item1 === item2),
+			Hlp.filter(playersStat, 's', maxScore, (item1: number, item2: number) => item1 === item2),
 			'id'
 		);
 

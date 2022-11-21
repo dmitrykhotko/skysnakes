@@ -75,8 +75,8 @@ export class Arena {
 
 		for (let i = 0; i < bullets.length; i++) {
 			const bullet = bullets[i];
-			const { point } = bullet;
-			const { x, y } = point;
+			const { p: point } = bullet;
+			const [x, y] = point;
 			const faceCoin = !!this.coins.checkCollisions(point).length;
 			const facedWall = !(x === width || y === height || !~x || !~y);
 
@@ -137,7 +137,7 @@ export class Arena {
 
 	private checkWalls = (head: LinkedPoint, id: Player, { width, height }: Size): Action[] => {
 		const actions = [] as Action[];
-		let { x: headX, y: headY } = head;
+		let [headX, headY] = head;
 
 		if (!!~headX && !!~headY && headX !== width && headY !== height) {
 			return actions;
@@ -155,7 +155,9 @@ export class Arena {
 			headY = 0;
 		}
 
-		const newHead = { x: headX, y: headY, prev: head.prev };
+		const newHead = [headX, headY] as LinkedPoint;
+
+		newHead.prev = head.prev;
 
 		if (newHead.prev) {
 			newHead.prev.next = newHead;
@@ -180,7 +182,7 @@ export class Arena {
 			};
 		}
 
-		const { id: victim, point: facedPoint } = facedSnake;
+		const { id: victim, p: facedPoint } = facedSnake;
 
 		let victimDamage = 0;
 		let killerDamage = 0;
@@ -190,7 +192,7 @@ export class Arena {
 		if (victim !== killer) {
 			const { result: cutPoints, actions: cutActions } = this.snakes.cut({
 				id: victim,
-				point: facedPoint
+				p: facedPoint
 			});
 			const isVictimDead = Hlp.comparePoints(facedPoint, this.snakes.getById(victim).head);
 
@@ -233,7 +235,7 @@ export class Arena {
 
 		for (let i = 0; i < bullets.length; i++) {
 			const bullet = bullets[i];
-			const { player: killer, point: bulletPoint } = bullet;
+			const { pr: killer, p: bulletPoint } = bullet;
 			const snakeShotResult = this.snakes.checkCollisions(bulletPoint);
 
 			if (!snakeShotResult) {

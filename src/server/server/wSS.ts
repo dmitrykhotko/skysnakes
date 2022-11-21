@@ -33,7 +33,7 @@ export class WSS {
 			wS.uuid = this.uuid();
 
 			wS.on('message', (message: string) => {
-				const { type, data } = JSON.parse(message) as Message<unknown>;
+				const { t: type, d: data } = JSON.parse(message) as Message<unknown>;
 
 				switch (type) {
 					case MessageType.CREATE_ROOM:

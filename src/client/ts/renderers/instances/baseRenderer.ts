@@ -17,16 +17,7 @@ import { Renderer } from '../renderer';
 
 export abstract class BaseRenderer extends Renderer {
 	private static defaultPrevState = {
-		status: GameStatus.Finish,
-		coins: [],
-		snakes: [],
-		bullets: [],
-		stat: {
-			playersStat: [],
-			winners: [],
-			notifications: []
-		},
-		bin: []
+		s: GameStatus.Finish
 	} as GameState;
 
 	private static coinTypeToDrawingObject = {
@@ -65,7 +56,7 @@ export abstract class BaseRenderer extends Renderer {
 
 	render = (state: GameState): void => {
 		requestAnimationFrame(() => {
-			const { snakes, bullets, bin, stat } = state;
+			const { ss: snakes = [], bs: bullets = [], b: bin = [], st: stat, c: coins = [] } = state;
 
 			if (!this.isInitialized) {
 				this.use(Layer.Presenter).clearRect();
@@ -73,9 +64,9 @@ export abstract class BaseRenderer extends Renderer {
 
 			this.emptyBin(bin);
 			this.renderSnakes(snakes);
-			this.renderCoins(state.coins);
+			this.renderCoins(coins);
 			this.renderBullets(bullets);
-			this.renderStat(stat);
+			stat && this.renderStat(stat);
 
 			this.serviceInfoFlag && this.renderServiceInfo(state);
 
@@ -90,43 +81,43 @@ export abstract class BaseRenderer extends Renderer {
 	};
 
 	protected renderServiceInfo(state: GameState): void {
-		const {
-			stat: { playersStat, winners },
-			snakes,
-			additionalInfo
-		} = state;
+		const { st: stat, ss: snakes = [], ai: additionalInfo } = state;
 		let lineNumber = 2;
 
 		this.use(Layer.Service).clearRect();
 
-		if (winners.length) {
-			this.renderTextLine(WINNERS, lineNumber++);
+		if (stat) {
+			const { w: winners = [], ps: playersStat = [] } = stat;
 
-			for (let i = 0; i < winners.length; i++) {
-				this.renderTextLine(`${Player[winners[i]]}`, lineNumber++);
+			if (winners.length) {
+				this.renderTextLine(WINNERS, lineNumber++);
+
+				for (let i = 0; i < winners.length; i++) {
+					this.renderTextLine(`${Player[winners[i]]}`, lineNumber++);
+				}
+
+				lineNumber += 2;
 			}
 
-			lineNumber += 2;
-		}
+			for (let i = 0; i < playersStat.length; i++) {
+				const { id, l: lives, s: score } = playersStat[i];
 
-		for (let i = 0; i < playersStat.length; i++) {
-			const { id, lives, score } = playersStat[i];
+				this.renderTextLine(`${PLAYER} ${Player[id]}`, lineNumber++);
+				this.renderTextLine(`${LIVES} ${lives}`, lineNumber++);
+				this.renderTextLine(`${SCORE} ${score}`, lineNumber);
 
-			this.renderTextLine(`${PLAYER} ${Player[id]}`, lineNumber++);
-			this.renderTextLine(`${LIVES} ${lives}`, lineNumber++);
-			this.renderTextLine(`${SCORE} ${score}`, lineNumber);
-
-			lineNumber += 2;
+				lineNumber += 2;
+			}
 		}
 
 		for (let i = 0; i < snakes.length; i++) {
-			const { body, id } = snakes[i];
+			const { b: body, id } = snakes[i];
 
 			if (!body.length) {
 				return;
 			}
 
-			const { x, y } = body[0];
+			const [x, y] = body[0];
 
 			this.renderTextLine(`${HEAD} ${Player[id]}${SCORE_SEPARATOR} ${X} ${x}, ${Y} ${y}`, lineNumber++);
 		}
@@ -146,11 +137,11 @@ export abstract class BaseRenderer extends Renderer {
 	}
 
 	private renderStat = (stat: StatState): void => {
-		if (stat === this.prevState.stat) {
+		if (stat === this.prevState.st) {
 			return;
 		}
 
-		const { playersStat, winners, notifications } = stat;
+		const { ps: playersStat, w: winners = [], n: notifications } = stat;
 
 		this.renderWinners(winners);
 		this.use(Layer.Stat).clearRect();
@@ -159,32 +150,32 @@ export abstract class BaseRenderer extends Renderer {
 		const baseX = this.size.width / 2;
 		const sepLen = this.measureText(SCORE_SEPARATOR, LINE_HEIGHT);
 
-		this.renderText(SCORE_SEPARATOR, { x: baseX - sepLen / 2, y: 3 }, LINE_HEIGHT, DrawingObject.Bullet);
+		this.renderText(SCORE_SEPARATOR, [baseX - sepLen / 2, 3], LINE_HEIGHT, DrawingObject.Bullet);
 
 		for (let i = 0; i < playersStat.length; i++) {
-			const { id, lives, score } = playersStat[i];
+			const { id, l: lives, s: score } = playersStat[i];
 			const type = this.getSnakeDrawingObject(id);
 			const text = score.toString();
 			const textLength = this.measureText(text, LINE_HEIGHT);
 
-			this.renderText(text, { x: baseX + textLength * (i - 1) + (i ? 1 : -1), y: 3 }, LINE_HEIGHT, type);
+			this.renderText(text, [baseX + textLength * (i - 1) + (i ? 1 : -1), 3], LINE_HEIGHT, type);
 
 			if (lives) {
 				const livesLength = (lives + 3) * wh * (i - 1) - wh * ~(i - 1) * 2 + wh;
 
 				for (let j = 0; j < lives; j++) {
 					const x = baseX + livesLength + j * wh;
-					this.renderLive({ x, y: 1 }, { width: wh, height: wh }, type, 0.5);
+					this.renderLive([x, 1], { width: wh, height: wh }, type, 0.5);
 				}
 			}
 		}
 
 		if (winners.length) {
 			const sepLen = this.measureText(RESTART_MSG, LINE_HEIGHT);
-			this.renderText(RESTART_MSG, { x: baseX - sepLen / 2, y: 8 }, LINE_HEIGHT, DrawingObject.Bullet);
+			this.renderText(RESTART_MSG, [baseX - sepLen / 2, 8], LINE_HEIGHT, DrawingObject.Bullet);
 		}
 
-		this.renderNotifications(notifications);
+		this.renderNotifications(notifications ?? []);
 	};
 
 	private renderWinners = (winners: Player[]): void => {
@@ -215,25 +206,21 @@ export abstract class BaseRenderer extends Renderer {
 
 		for (let i = 0; i < winners.length; i++) {
 			this.renderLive(
-				{ x: baseX - (liveH * (i ? 1 : -1) * isSingleWinnerFactor) / 2, y: baseY - 1 },
+				[baseX - (liveH * (i ? 1 : -1) * isSingleWinnerFactor) / 2, baseY - 1],
 				{ width: wh, height: wh },
 				this.getSnakeDrawingObject(winners[i])
 			);
 		}
 
-		this.renderText(text, { x: baseX - textLength / 2, y: baseY - 2 }, lineHeight, DrawingObject.WinnersText);
+		this.renderText(text, [baseX - textLength / 2, baseY - 2], lineHeight, DrawingObject.WinnersText);
 	};
 
 	private renderNotifications = (notifications: Notification[]): void => {
 		for (let i = 0; i < notifications.length; i++) {
-			const {
-				type,
-				value,
-				point: { x, y }
-			} = notifications[i];
+			const { t: type, v: value, p: point } = notifications[i];
 			const drawingObject = BaseRenderer.notifTypeToDrawingObject[type];
 
-			this.renderText(value, { x, y }, LINE_HEIGHT, drawingObject);
+			this.renderText(value, point, LINE_HEIGHT, drawingObject);
 		}
 	};
 
@@ -241,7 +228,7 @@ export abstract class BaseRenderer extends Renderer {
 		this.use(Layer.Presenter);
 
 		for (let i = 0; i < coins.length; i++) {
-			const { point, type } = coins[i];
+			const { p: point, t: type } = coins[i];
 			this.renderCircle(point, BaseRenderer.coinTypeToDrawingObject[type]);
 		}
 	};
@@ -250,7 +237,7 @@ export abstract class BaseRenderer extends Renderer {
 		this.use(Layer.Presenter);
 
 		for (let i = 0; i < snakes.length; i++) {
-			const { id, body } = snakes[i];
+			const { id, b: body } = snakes[i];
 
 			if (!body.length) {
 				return;
@@ -283,7 +270,7 @@ export abstract class BaseRenderer extends Renderer {
 
 		// TODO: render bullet tail
 		for (let i = 0; i < bulletsArr.length; i++) {
-			const { point } = bulletsArr[i];
+			const { p: point } = bulletsArr[i];
 			this.renderCircle(point, DrawingObject.Bullet);
 		}
 	};

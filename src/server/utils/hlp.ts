@@ -7,18 +7,17 @@ export abstract class Hlp {
 	private static lastId = 0;
 
 	private static nextPointCreators = {
-		[Direction.Up]: (point: LinkedPoint, delta = 1): LinkedPoint => ({ x: point.x, y: point.y - delta }),
-		[Direction.Down]: (point: LinkedPoint, delta = 1): LinkedPoint => ({ x: point.x, y: point.y + delta }),
-		[Direction.Left]: (point: LinkedPoint, delta = 1): LinkedPoint => ({ x: point.x - delta, y: point.y }),
-		[Direction.Right]: (point: LinkedPoint, delta = 1): LinkedPoint => ({ x: point.x + delta, y: point.y })
+		[Direction.Up]: (point: LinkedPoint, delta = 1): LinkedPoint => [point[0], point[1] - delta],
+		[Direction.Down]: (point: LinkedPoint, delta = 1): LinkedPoint => [point[0], point[1] + delta],
+		[Direction.Left]: (point: LinkedPoint, delta = 1): LinkedPoint => [point[0] - delta, point[1]],
+		[Direction.Right]: (point: LinkedPoint, delta = 1): LinkedPoint => [point[0] + delta, point[1]]
 	};
 
 	static nextPoint = (point: LinkedPoint, direction: Direction): LinkedPoint => {
 		return this.nextPointCreators[direction](point);
 	};
 
-	static comparePoints = ({ x: x1, y: y1 }: LinkedPoint, { x: x2, y: y2 }: LinkedPoint): boolean =>
-		x1 === x2 && y1 === y2;
+	static comparePoints = ([x1, y1]: LinkedPoint, [x2, y2]: LinkedPoint): boolean => x1 === x2 && y1 === y2;
 
 	static id = (): Id => ++this.lastId;
 
@@ -92,8 +91,8 @@ export abstract class Hlp {
 		const points = [] as Point[];
 
 		for (let i = 0; i < lPoints.length; i++) {
-			const { x, y } = lPoints[i];
-			points.push({ x, y });
+			const [x, y] = lPoints[i];
+			points.push([x, y]);
 		}
 
 		return points;

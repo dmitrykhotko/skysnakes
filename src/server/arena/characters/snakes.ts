@@ -26,7 +26,8 @@ export class Snakes {
 		let point: LinkedPoint | undefined = start;
 
 		while (point) {
-			points.push({ x: point.x, y: point.y }) && (point = point.prev);
+			const [x, y] = point;
+			points.push([x, y]) && (point = point.prev);
 		}
 
 		return points;
@@ -92,7 +93,7 @@ export class Snakes {
 			}
 
 			if (point) {
-				return { point, id };
+				return { p: point, id };
 			}
 		}
 	};
@@ -103,7 +104,7 @@ export class Snakes {
 		for (let i = 0; i < ids.length; i++) {
 			const id = ids[i];
 			const { head } = this.getById(id);
-			const { actions: cutActions } = this.cut({ id, point: head });
+			const { actions: cutActions } = this.cut({ id, p: head });
 
 			actions.push(SnakesActions.removeSnake(id), ...cutActions);
 		}
@@ -118,17 +119,17 @@ export class Snakes {
 		isDead: boolean;
 		isHeadShot: boolean;
 	}> => {
-		const { id, point } = snakeShotResult;
+		const { id, p } = snakeShotResult;
 		const actions = [] as Action[];
-		const isDead = !point.next;
-		const isHeadShot = !!(isDead && point.prev);
+		const isDead = !p.next;
+		const isHeadShot = !!(isDead && p.prev);
 
 		let points: LinkedPoint[];
 
 		if (isDead) {
 			points = this.toArray(id);
 		} else {
-			const { result: cutRes, actions: cutActions } = this.cut({ id, point });
+			const { result: cutRes, actions: cutActions } = this.cut({ id, p });
 
 			points = cutRes;
 			actions.push(...cutActions);
@@ -158,7 +159,7 @@ export class Snakes {
 		const actions = [] as Action[];
 
 		for (let i = 0; i < cutIt.length; i++) {
-			const { id, point: start } = cutIt[i];
+			const { id, p: start } = cutIt[i];
 			const nextTail = start.next;
 
 			let point: LinkedPoint | undefined = start;
@@ -186,14 +187,16 @@ export class Snakes {
 		const D = Direction;
 		const xStep = direction === D.Left ? 1 : direction === D.Right ? -1 : 0;
 		const yStep = direction === D.Up ? 1 : direction === D.Down ? -1 : 0;
+		const [x, y] = head;
 
-		let point: LinkedPoint = { x: head.x + xStep, y: head.y + yStep };
+		let point: LinkedPoint = [x + xStep, y + yStep];
 
 		head.prev = point;
 		point.next = head;
 
 		for (let i = 0; i < length - 2; i++) {
-			const newPoint: LinkedPoint = { x: point.x + xStep, y: point.y + yStep };
+			const [x, y] = point;
+			const newPoint: LinkedPoint = [x + xStep, y + yStep];
 
 			point.prev = newPoint;
 			newPoint.next = point;
@@ -220,17 +223,17 @@ export class Snakes {
 
 		switch (direction) {
 			case Direction.Left:
-				head = { x: width, y: Hlp.randomInt(height) };
+				head = [width, Hlp.randomInt(height)];
 				break;
 			case Direction.Down:
-				head = { x: Hlp.randomInt(width), y: 0 };
+				head = [Hlp.randomInt(width), 0];
 				break;
 			case Direction.Up:
-				head = { x: Hlp.randomInt(width), y: height };
+				head = [Hlp.randomInt(width), height];
 				break;
 			case Direction.Right:
 			default:
-				head = { x: 0, y: Hlp.randomInt(height) };
+				head = [0, Hlp.randomInt(height)];
 				break;
 		}
 

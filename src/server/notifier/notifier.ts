@@ -1,5 +1,5 @@
 import { Direction, NotifType, Player } from '../../common/enums';
-import { LinkedPoint, Size } from '../../common/types';
+import { LinkedPoint } from '../../common/types';
 import { Snakes } from '../arena/characters/snakes';
 import { StatActions } from '../redux/actions';
 import { State } from '../redux/state';
@@ -37,7 +37,7 @@ export class Notifier {
 		damageType === DamageType.Death || damageType === DamageType.HeadShot;
 
 	private changeScore = (point: LinkedPoint, direction: Direction, value: string, type: NotifType): void => {
-		const { x, y } = point;
+		const [x, y] = point;
 		const { width, height } = Hlp.getSize(this.state);
 		const id = Hlp.id();
 
@@ -57,9 +57,9 @@ export class Notifier {
 		this.state.dispatch(
 			StatActions.addNotification({
 				id,
-				type,
-				value,
-				point: { x: newX, y: newY }
+				t: type,
+				v: value,
+				p: [newX, newY]
 			})
 		);
 

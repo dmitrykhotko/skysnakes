@@ -59,13 +59,13 @@ export class CanvasRenderer extends BaseRenderer {
 		return this;
 	};
 
-	protected renderRect = ({ x, y }: LinkedPoint, w: number, h: number, type: DrawingObject): void => {
+	protected renderRect = ([x, y]: LinkedPoint, w: number, h: number, type: DrawingObject): void => {
 		this.activeLayer.fillStyle = CanvasRenderer.colors[type];
 		this.activeLayer.fillRect(x, y, w * this.cellSize, h * this.cellSize);
 	};
 
 	protected renderCell = (point: LinkedPoint, type: DrawingObject): void => {
-		const { x, y } = this.weightPoint(point);
+		const [x, y] = this.weightPoint(point);
 
 		if (type !== DrawingObject.Empty) {
 			this.activeLayer.fillStyle = CanvasRenderer.colors[type];
@@ -76,8 +76,8 @@ export class CanvasRenderer extends BaseRenderer {
 		}
 	};
 
-	protected clearRect = (point = { x: 0, y: 0 }, size?: Size): void => {
-		const { x, y } = this.weightPoint(point);
+	protected clearRect = (point = [0, 0], size?: Size): void => {
+		const [x, y] = this.weightPoint(point);
 		const { width, height } = size ? this.weightSize(size) : this.activeLayer.canvas;
 
 		this.activeLayer.clearRect(x, y, width, height);
@@ -94,7 +94,7 @@ export class CanvasRenderer extends BaseRenderer {
 		fitToCell = true
 	): void => {
 		const cRadius = radius * this.cellSize;
-		const { x, y } = this.weightPoint(point, fitToCell ? cRadius : 0);
+		const [x, y] = this.weightPoint(point, fitToCell ? cRadius : 0);
 
 		this.activeLayer.fillStyle = CanvasRenderer.colors[type];
 		this.activeLayer.beginPath();
@@ -109,7 +109,7 @@ export class CanvasRenderer extends BaseRenderer {
 	};
 
 	protected renderText = (text: string, point: LinkedPoint, lineHeight: number, type: DrawingObject): void => {
-		const { x, y } = this.weightPoint(point);
+		const [x, y] = this.weightPoint(point);
 
 		this.activeLayer.fillStyle = CanvasRenderer.colors[type];
 		this.activeLayer.font = `700 ${lineHeight}px Verdana`;
@@ -128,7 +128,7 @@ export class CanvasRenderer extends BaseRenderer {
 
 	private renderHeart = (point: LinkedPoint, size: Size, type: DrawingObject): void => {
 		const { width, height } = this.weightSize(size);
-		const { x, y } = this.weightPoint(point);
+		const [x, y] = this.weightPoint(point);
 		const topCurveHeight = height * 0.3;
 
 		this.activeLayer.save();
@@ -167,10 +167,10 @@ export class CanvasRenderer extends BaseRenderer {
 	};
 
 	// make a single weight method
-	private weightPoint = ({ x, y }: LinkedPoint, extra = 0): LinkedPoint => ({
-		x: x * this.cellSize + extra,
-		y: y * this.cellSize + extra
-	});
+	private weightPoint = ([x, y]: LinkedPoint, extra = 0): LinkedPoint => [
+		x * this.cellSize + extra,
+		y * this.cellSize + extra
+	];
 
 	private weightSize = ({ width, height }: Size, extra = 0): Size => ({
 		width: width * this.cellSize + extra,

@@ -41,7 +41,7 @@ export class Controller {
 	private initConnection = (): void => {
 		this.players.forEach(({ wS }) => {
 			wS.on('message', (message: string) => {
-				const { type, data } = JSON.parse(message) as Message<unknown>;
+				const { t: type, d: data } = JSON.parse(message) as Message<unknown>;
 
 				switch (type) {
 					case MessageType.SET_SIZE:
@@ -89,14 +89,18 @@ export class Controller {
 
 		this.state.dispatch(ArenaActions.flushCoinsBuffer(), BinActions.emptyBin());
 
+		const result = {} as GameState;
+
+		bullets.length && (result.bs = bullets);
+		snakes.length && (result.ss = this.convertSnakes(snakes));
+		bin.length && (result.b = bin);
+		arena.coinsBuffer.length && (result.c = arena.coinsBuffer);
+
 		return {
-			...arena,
-			stat,
-			snakes: this.convertSnakes(snakes),
-			bullets,
-			bin,
-			coins: arena.coinsBuffer,
-			additionalInfo: { coinsNum: arena.coins.length }
+			s: arena.status,
+			st: stat,
+			// ai: { coinsNum: arena.coins.length },
+			...result
 		} as GameState;
 	};
 
@@ -168,8 +172,8 @@ export class Controller {
 			const { id, direction } = snakes[i];
 			arr.push({
 				id,
-				direction,
-				body: Snakes.toArray(this.state, id)
+				d: direction,
+				b: Snakes.toArray(this.state, id)
 			});
 		}
 
@@ -232,9 +236,9 @@ export class Controller {
 		this.state.dispatch(
 			BulletsActions.setBullet({
 				id: Hlp.id(),
-				player: id,
-				point: Hlp.nextPoint(head, direction),
-				direction
+				pr: id,
+				p: Hlp.nextPoint(head, direction),
+				d: direction
 			})
 		);
 	};

@@ -5,18 +5,18 @@ interface SendData {
 }
 
 export abstract class WSHlp {
-	static send = <T extends SendData>(wS: T, type: MessageType, data?: unknown): void => {
+	static send = <T extends SendData>(wS: T, t: MessageType, d?: unknown): void => {
 		wS.send(
 			JSON.stringify({
-				type,
-				data
+				t,
+				d
 			})
 		);
 	};
 
-	static broadcast = <T extends SendData>(wSs: T[], type: MessageType, data?: unknown): void => {
+	static broadcast = <T extends SendData>(wSs: T[], t: MessageType, d?: unknown): void => {
 		for (let i = 0; i < wSs.length; i++) {
-			this.send(wSs[i], type, data);
+			this.send(wSs[i], t, d);
 		}
 	};
 }

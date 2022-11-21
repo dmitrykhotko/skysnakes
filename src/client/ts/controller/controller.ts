@@ -35,7 +35,7 @@ export class Controller {
 		});
 
 		this.wS.addEventListener('message', (event: MessageEvent): void => {
-			const { type, data } = JSON.parse(event.data) as Message<unknown>;
+			const { t: type, d: data } = JSON.parse(event.data) as Message<unknown>;
 
 			switch (type) {
 				case MessageType.GET_SIZE:
@@ -86,7 +86,7 @@ export class Controller {
 	};
 
 	private handleTickMsg = (state: GameState): void => {
-		this.checkStatusChanged(state.status);
+		this.checkStatusChanged(state.s ?? GameStatus.Finish);
 		this.renderer.render(state);
 
 		this.prevState = state;
@@ -98,7 +98,7 @@ export class Controller {
 	};
 
 	private checkStatusChanged = (status: GameStatus): void => {
-		const prevStatus = this.prevState?.status ?? GameStatus.Pause;
+		const prevStatus = this.prevState?.s ?? GameStatus.Pause;
 
 		switch (status) {
 			case GameStatus.Pause:

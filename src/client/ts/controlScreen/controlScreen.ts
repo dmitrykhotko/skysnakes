@@ -68,7 +68,7 @@ export class ControlScreen {
 		}
 
 		this.wS.addEventListener('message', (event: MessageEvent): void => {
-			const { type, data } = JSON.parse(event.data) as Message<unknown>;
+			const { t: type, d: data } = JSON.parse(event.data) as Message<unknown>;
 
 			switch (type) {
 				case MessageType.ROOM_IS_READY:

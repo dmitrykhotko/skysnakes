@@ -1,6 +1,8 @@
 import { CoinType, Direction, FireInput, GameStatus, MoveInput, NotifType, Player, ServiceInput } from './enums';
+import { MessageType } from './messageType';
 
 export type Id = number;
+
 export type UUId = string;
 
 export type PlayerInput = FireInput | MoveInput | ServiceInput;
@@ -8,59 +10,57 @@ export type PlayerInput = FireInput | MoveInput | ServiceInput;
 export interface ObjectWithId {
 	id: Id;
 }
+
 export interface PlayerStat extends ObjectWithId {
-	lives: number;
-	score: number;
+	l: number;
+	s: number;
 }
 
-export interface Point {
-	x: number;
-	y: number;
-}
+export type Point = number[];
+
 export interface LinkedPoint extends Point {
 	next?: LinkedPoint;
 	prev?: LinkedPoint;
 }
-export interface Notification extends ObjectWithId {
-	type: NotifType;
-	value: string;
-	point: LinkedPoint;
-}
-
-export type StatState = {
-	playersStat: PlayerStat[];
-	winners: Player[];
-	notifications: Notification[];
-};
 
 export interface SnakeArrayData extends ObjectWithId {
-	body: Point[];
-	direction: Direction;
-}
-
-export interface Bullet extends ObjectWithId {
-	player: Player;
-	point: Point;
-	direction: Direction;
+	b: Point[];
+	d: Direction;
 }
 
 export interface PointWithId<T extends Point = Point> extends ObjectWithId {
-	point: T;
+	p: T;
+}
+
+export interface Notification extends PointWithId {
+	t: NotifType;
+	v: string;
+}
+
+export type StatState = {
+	ps: PlayerStat[];
+	w?: Player[];
+	n?: Notification[];
+};
+
+export interface Bullet extends PointWithId {
+	pr: Player;
+	d: Direction;
 }
 
 export interface Coin extends PointWithId {
-	type: CoinType;
-	player?: Player;
+	t: CoinType;
+	pr?: Player;
 }
 
 export type GameState = {
-	status: GameStatus;
-	coins: Coin[];
-	snakes: SnakeArrayData[];
-	bullets: Bullet[];
-	stat: StatState;
-	bin: Point[];
-	additionalInfo?: Record<string, string | number>;
+	s?: GameStatus;
+	c?: Coin[];
+	ss?: SnakeArrayData[];
+	bs?: Bullet[];
+	st?: StatState;
+	b?: Point[];
+	ai?: Record<string, string | number>;
 };
 
 export type Size = {
@@ -71,8 +71,8 @@ export type Size = {
 export type Observer = (...params: unknown[]) => void;
 
 export interface Message<T = unknown> {
-	type: string;
-	data?: T;
+	t: MessageType;
+	d?: T;
 }
 
 export type AvailableRoom = {

@@ -12,9 +12,9 @@ export class Bullets {
 		const bullets = this.state.get<BulletsStore>().bullets;
 
 		for (let i = 0; i < bullets.length; i++) {
-			const { id, player, point, direction } = bullets[i];
+			const { id, pr, p: point, d: direction } = bullets[i];
 			const nextPoint = Hlp.nextPoint(point, direction);
-			const newBullet = { id, player, point: nextPoint, direction };
+			const newBullet = { id, pr, p: nextPoint, d: direction };
 
 			this.state.dispatch(BulletsActions.setBullet(newBullet), BinActions.moveToBin([point]));
 			collisionActions.push(...this.checkCollisions(newBullet));
@@ -24,7 +24,7 @@ export class Bullets {
 	};
 
 	remove = (bullet: Bullet): Action[] => {
-		const { id, point } = bullet;
+		const { id, p: point } = bullet;
 		const bin = [point];
 
 		return [BulletsActions.remove(id), BinActions.moveToBin(bin)];
@@ -33,7 +33,7 @@ export class Bullets {
 	private checkCollisions = (bullet: Bullet): Action[] => {
 		const {
 			id,
-			point: { x, y }
+			p: [x, y]
 		} = bullet;
 		const actions = [] as Action[];
 		const bullets = this.state.get<BulletsStore>().bullets;
@@ -44,7 +44,7 @@ export class Bullets {
 			const currBullet = bullets[i];
 			const {
 				id: currId,
-				point: { x: currX, y: currY }
+				p: [currX, currY]
 			} = bullets[i];
 
 			if (id === currId || !(x === currX && y === currY)) {

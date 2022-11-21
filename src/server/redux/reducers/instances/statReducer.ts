@@ -14,11 +14,7 @@ export type StatStore = {
 
 export abstract class StatReducer extends Reducer<StatStore> {
 	private static initialState = {
-		stat: {
-			playersStat: [],
-			winners: [],
-			notifications: []
-		}
+		stat: {}
 	} as StatStore;
 
 	static getInitialState = (): StatStore => this.initialState;
@@ -29,7 +25,7 @@ export abstract class StatReducer extends Reducer<StatStore> {
 
 		switch (type) {
 			case ActionType.SET_WINNERS:
-				return setValue(statStore, action, 'stat', 'winners');
+				return setValue(statStore, action, 'stat', 'w');
 			case ActionType.RESET_SCORE:
 				return {
 					...state,
@@ -40,24 +36,21 @@ export abstract class StatReducer extends Reducer<StatStore> {
 				};
 			case ActionType.CHANGE_SCORE:
 				const { id, value } = action as SetValueByIdAction<number, Player>;
-				return this.changeStat(statStore, id, 'score', value);
+				return this.changeStat(statStore, id, 's', value);
 			case ActionType.DEC_LIVES:
-				return this.changeStat(statStore, (action as SetValueAction<Player>).value, 'lives', -1);
+				return this.changeStat(statStore, (action as SetValueAction<Player>).value, 'l', -1);
 			case ActionType.ADD_NOTIFICATION:
 				return this.addNotification(statStore, (action as SetValueAction<Notification>).value);
 			case ActionType.REMOVE_NOTIFICATION:
 				return this.removeNotification(statStore, (action as SetValueAction<Id>).value);
 			case ActionType.GAME_RESET:
 				const { players, lives } = (action as SetValueAction<InitialData>).value;
-				const playersStat = players.map(({ id }) => ({ id, lives, score: 0 }));
+				const playersStat = players.map(({ id }) => ({ id, l: lives, s: 0 }));
 
 				return {
 					...state,
 					stat: {
-						...statStore.stat,
-						playersStat,
-						winners: [],
-						notifications: []
+						ps: playersStat
 					}
 				};
 			default:
@@ -67,7 +60,7 @@ export abstract class StatReducer extends Reducer<StatStore> {
 
 	private static changeStat = (store: StatStore, id: Player, propName: string, value = 1): Store => {
 		const { stat } = store;
-		const { playersStat } = stat;
+		const { ps: playersStat } = stat;
 		const targetStat = Hlp.getById(id, playersStat);
 
 		if (!targetStat) {
@@ -81,7 +74,7 @@ export abstract class StatReducer extends Reducer<StatStore> {
 			...store,
 			stat: {
 				...stat,
-				playersStat: newPlayerStat
+				ps: newPlayerStat
 			}
 		};
 	};
@@ -93,19 +86,20 @@ export abstract class StatReducer extends Reducer<StatStore> {
 			...store,
 			stat: {
 				...stat,
-				notifications: [...stat.notifications, notification]
+				n: [...(stat.n ?? []), notification]
 			}
 		};
 	};
 
 	private static removeNotification = (store: StatStore, id: Id): Store => {
 		const { stat } = store;
+		const res = Hlp.excludeById(stat.n ?? [], id);
 
 		return {
 			...store,
 			stat: {
 				...stat,
-				notifications: Hlp.excludeById(stat.notifications, id)
+				n: res.length ? res : undefined
 			}
 		};
 	};
