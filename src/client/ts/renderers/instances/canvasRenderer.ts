@@ -52,10 +52,9 @@ export class CanvasRenderer extends BaseRenderer {
 
 		const wSize = this.weightSize(size);
 		const dpr = window.devicePixelRatio;
-		const { height: statElHeight } = this.statEl.getBoundingClientRect();
 		const { width: serviceElWidth } = this.serviceEl.getBoundingClientRect();
 		const presenterLayer = this.initCanvas(this.presenterEl, wSize);
-		const statLayer = this.initCanvas(this.statEl, { width: wSize.width, height: statElHeight * dpr });
+		const statLayer = this.initCanvas(this.statEl, wSize);
 		const serviceLayer = this.initCanvas(this.serviceEl, { width: serviceElWidth * dpr, height: wSize.height });
 
 		if (!(presenterLayer && serviceLayer && statLayer)) {
