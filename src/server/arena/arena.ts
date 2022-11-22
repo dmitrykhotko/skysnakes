@@ -78,9 +78,9 @@ export class Arena {
 			const { p: point } = bullet;
 			const [x, y] = point;
 			const faceCoin = !!this.coins.checkCollisions(point).length;
-			const facedWall = !(x === width || y === height || !~x || !~y);
+			const facedWall = x > width || y > height || x < 0 || y < 0;
 
-			(faceCoin || !facedWall) && actions.push(...this.bullets.remove(bullet));
+			(faceCoin || facedWall) && actions.push(...this.bullets.remove(bullet));
 		}
 
 		this.state.dispatch(...actions);
