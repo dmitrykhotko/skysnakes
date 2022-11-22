@@ -35,9 +35,8 @@ export class CanvasRenderer extends BaseRenderer {
 
 	constructor(props: CanvasRendererProps, onInput: Observer, serviceInfoFlag: boolean) {
 		const cProps = { ...CanvasRenderer.defaultProps, ...props };
-		const { size } = cProps;
 
-		super(size, onInput, serviceInfoFlag);
+		super(onInput, serviceInfoFlag);
 
 		({
 			presenterEl: this.presenterEl,
@@ -46,8 +45,34 @@ export class CanvasRenderer extends BaseRenderer {
 			cellSize: this.cellSize,
 			lineHeight: this.lineHeight
 		} = cProps);
+	}
 
-		this.init();
+	override init(size: Size): void {
+		super.init(size);
+
+		const wSize = this.weightSize(size);
+		const dpr = window.devicePixelRatio;
+		const { height: statElHeight } = this.statEl.getBoundingClientRect();
+		const { width: serviceElWidth } = this.serviceEl.getBoundingClientRect();
+		const presenterLayer = this.initCanvas(this.presenterEl, wSize);
+		const statLayer = this.initCanvas(this.statEl, { width: wSize.width, height: statElHeight * dpr });
+		const serviceLayer = this.initCanvas(this.serviceEl, { width: serviceElWidth * dpr, height: wSize.height });
+
+		if (!(presenterLayer && serviceLayer && statLayer)) {
+			return;
+		}
+
+		this.presenterLayer = presenterLayer;
+		this.statLayer = statLayer;
+		this.serviceLayer = serviceLayer;
+
+		this.layers = {
+			[Layer.Presenter]: this.presenterLayer,
+			[Layer.Stat]: this.statLayer,
+			[Layer.Service]: this.serviceLayer
+		};
+
+		this.presenterEl.addEventListener('keydown', this.onKeyDown);
 	}
 
 	focus = (): void => {
@@ -176,32 +201,6 @@ export class CanvasRenderer extends BaseRenderer {
 		width: width * this.cellSize + extra,
 		height: height * this.cellSize + extra
 	});
-
-	private init = (): void => {
-		const size = this.weightSize(this.size);
-		const dpr = window.devicePixelRatio;
-		const { height: statElHeight } = this.statEl.getBoundingClientRect();
-		const { width: serviceElWidth } = this.serviceEl.getBoundingClientRect();
-		const presenterLayer = this.initCanvas(this.presenterEl, size);
-		const statLayer = this.initCanvas(this.statEl, { width: size.width, height: statElHeight * dpr });
-		const serviceLayer = this.initCanvas(this.serviceEl, { width: serviceElWidth * dpr, height: size.height });
-
-		if (!(presenterLayer && serviceLayer && statLayer)) {
-			return;
-		}
-
-		this.presenterLayer = presenterLayer;
-		this.statLayer = statLayer;
-		this.serviceLayer = serviceLayer;
-
-		this.layers = {
-			[Layer.Presenter]: this.presenterLayer,
-			[Layer.Stat]: this.statLayer,
-			[Layer.Service]: this.serviceLayer
-		};
-
-		this.presenterEl.addEventListener('keydown', this.onKeyDown);
-	};
 
 	private initCanvas = (
 		canvas: HTMLCanvasElement,

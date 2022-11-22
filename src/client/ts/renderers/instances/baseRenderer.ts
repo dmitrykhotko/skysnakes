@@ -31,8 +31,11 @@ export abstract class BaseRenderer extends Renderer {
 		[NotifType.DecScore]: DrawingObject.DecScoreNotif
 	};
 
+	protected size!: Size;
+
 	private prevState = BaseRenderer.defaultPrevState;
 	private isInitialized = false;
+	private isReady = false;
 
 	protected abstract use: (layer: Layer) => BaseRenderer;
 	protected abstract renderRect: (point: LinkedPoint, w: number, h: number, type: DrawingObject) => void;
@@ -50,11 +53,20 @@ export abstract class BaseRenderer extends Renderer {
 	protected abstract clearCell: (point: LinkedPoint) => void;
 	protected abstract renderLive: (point: LinkedPoint, size: Size, type: DrawingObject, factor?: number) => void;
 
-	constructor(protected size: Size, protected onInput: Observer, private serviceInfoFlag = true) {
+	constructor(protected onInput: Observer, private serviceInfoFlag = true) {
 		super();
 	}
 
+	init(size: Size): void {
+		this.size = size;
+		this.isReady = true;
+	}
+
 	render = (state: GameState): void => {
+		if (!this.isReady) {
+			throw 'Renderer is not ready. Please initialize.';
+		}
+
 		requestAnimationFrame(() => {
 			const { ss: snakes = [], bs: bullets = [], b: bin = [], st: stat, c: coins = [] } = state;
 

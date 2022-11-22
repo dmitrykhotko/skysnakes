@@ -1,6 +1,7 @@
 export const WELCOME_SCREEN = `
 	<h3>WELCOME TO THE SKY SNAKES</h3>
 	<p>Collect coins, go through the walls, SHOOT each other, have fun!</p>
+	<br />
 	<p>Controls:</p>
 	<p>Arrows — move, Space — shoot,</p>
 	<p>ESC — play/pause, Enter — restart.</p>
@@ -8,6 +9,7 @@ export const WELCOME_SCREEN = `
 
 export const GAME_PAUSED_SCREEN = `
 	<h3>Game paused.</h3>
+	<br />
 	<p>Controls:</p>
 	<p>Arrows — move, Space — shoot,</p>
 	<p>ESC — play/pause, Enter — restart.</p>
@@ -27,7 +29,7 @@ export const CONNECTION_LOST_SCREEN = `
 
 export const ROOM_IS_READY_SCREEN = `
 	<h3>We're almost ready to play.</h3>
-	<p>The game will start in a few seconds.</p>
+	<p>The game starts in a few seconds.</p>
 `;
 
 export const CREATE_ROOM_SCREEN = `
@@ -39,8 +41,14 @@ export const CREATE_ROOM_SCREEN = `
 `;
 
 export const CREATE_ROOM_SUCCESS_SCREEN = `
-	<p>Room was created successfully. The link is copied to the clipboard.</p>
-	<p>Please send it to the second player to join.</p>
+	<p>Room was created successfully. The room link is copied to the clipboard.</p>
+	<p>You can send it to the second player to join.</p>
+	<p>Otherwise player can join using Join button.</p>
+`;
+
+export const CREATE_ROOM_SUCCESS_SCREEN_NO_CLIPBOARD = `
+	<p>Room was created successfully.</p>
+	<p>Please ask another player to join by Join button.</p>
 `;
 
 export const CREATE_ROOM_FAIL_SCREEN = `

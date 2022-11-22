@@ -17,7 +17,7 @@ export class ControlPanel {
 	}
 
 	private init = (): void => {
-		this.soundOnOffBtn.innerHTML = SOUND_OFF;
+		this.soundOnOffBtn.innerHTML = SOUND_ON;
 
 		this.menuBtn.addEventListener('click', this.onMenuBtnClick);
 		this.soundOnOffBtn.addEventListener('click', this.onCloseBtnClick);
@@ -30,7 +30,7 @@ export class ControlPanel {
 
 	private onCloseBtnClick = (): void => {
 		void this.audio.playPauseBM().then(() => {
-			this.soundOnOffBtn.innerHTML = this.audio.isBgMPlaying ? SOUND_ON : SOUND_OFF;
+			this.soundOnOffBtn.innerHTML = this.audio.isBgMPlaying ? SOUND_OFF : SOUND_ON;
 		});
 
 		this.onBtnClickCb();

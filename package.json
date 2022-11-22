@@ -9,8 +9,8 @@
   "scripts": {
     "build": "rm -rf dist; webpack --mode production",
     "build:dev": "rm -rf dist; webpack --mode development",
-    "build:nomaps": "webpack --mode production --env ENABLE_SOURCEMAPS=false",
-    "dev": "webpack --mode development --watch",
+    "build:nomaps": "rm -rf dist; webpack --mode production --env ENABLE_SOURCEMAPS=false",
+    "dev": "rm -rf dist; webpack --mode development --watch",
     "dev:nomaps": "webpack --mode development --watch --env ENABLE_SOURCEMAPS=false",
     "lint:dev": "eslint --quiet --fix **/*.ts -o lint-log.txt",
     "lint:fix": "eslint --fix src/**/*.ts",

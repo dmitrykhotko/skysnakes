@@ -33,17 +33,15 @@ const getPlugins = enableSourceMaps => {
 		})
 	];
 
-	if (enableSourceMaps) {
-		plugins.push(new SourceMapDevToolPlugin({ filename: '[file].map' }));
-	}
+	enableSourceMaps && plugins.push(new SourceMapDevToolPlugin({ filename: '[file].map' }));
 
 	return plugins;
 };
 
 export default ({ ENABLE_SOURCEMAPS = 'true' }) => ({
 	entry: {
-		'client/js/index': './src/client/ts/index.ts',
-		'client/css/index': './src/client/scss/index.scss'
+		'client/js/index': '/src/client/ts/index.ts',
+		'client/css/index': '/src/client/scss/index.scss'
 	},
 	output: {
 		libraryTarget: 'window',
@@ -74,7 +72,10 @@ export default ({ ENABLE_SOURCEMAPS = 'true' }) => ({
 					{
 						loader: 'resolve-url-loader'
 					},
-					'sass-loader'
+					{
+						loader: 'sass-loader',
+						options: { sourceMap: true }
+					}
 				]
 			},
 			{

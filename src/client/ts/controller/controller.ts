@@ -11,13 +11,11 @@ import { CanvasRendererProps, GameProps } from '../utils/types';
 
 export class Controller {
 	private wS!: WebSocket;
-	private size: Size;
 	private controlScreen!: ControlScreen;
 	private prevState?: GameState;
 	private renderer: CanvasRenderer;
 
-	constructor({ roomUUId, showServiceInfo = false }: GameProps, rProps: CanvasRendererProps) {
-		this.size = rProps.size;
+	constructor({ roomUUId, showServiceInfo = false }: GameProps, private size: Size, rProps: CanvasRendererProps) {
 		this.wS = this.createWS();
 		this.renderer = new CanvasRenderer(rProps, this.onInput as Observer, showServiceInfo);
 		this.controlScreen = new ControlScreen(this.wS, this.onControlScreenHide as Observer, roomUUId);
@@ -39,7 +37,11 @@ export class Controller {
 
 			switch (type) {
 				case MessageType.GET_SIZE:
-					WSHlp.send(this.wS, MessageType.SET_SIZE, this.size);
+					WSHlp.send(this.wS, MessageType.SEND_SIZE, this.size);
+					break;
+				case MessageType.SET_SIZE:
+					this.renderer.init(data as Size);
+					WSHlp.send(this.wS, MessageType.PLAYER_IS_READY);
 					break;
 				case MessageType.START:
 					this.handleStartMsg();

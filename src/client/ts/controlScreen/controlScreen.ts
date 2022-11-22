@@ -9,6 +9,7 @@ import {
 	CREATE_ROOM_FAIL_SCREEN,
 	CREATE_ROOM_SCREEN,
 	CREATE_ROOM_SUCCESS_SCREEN,
+	CREATE_ROOM_SUCCESS_SCREEN_NO_CLIPBOARD,
 	GAME_PAUSED_SCREEN,
 	JOIN_ROOM_FAIL_SCREEN,
 	JOIN_ROOM_SCREEN,
@@ -62,10 +63,11 @@ export class ControlScreen {
 	initConnection = (wS: WebSocket, roomUUId?: UUId): void => {
 		this.wS = wS;
 
-		if (roomUUId) {
-			console.log(`Joining ${roomUUId} game.`);
-			WSHlp.send(this.wS, MessageType.JOIN_ROOM, roomUUId);
-		}
+		roomUUId &&
+			this.wS.addEventListener('open', (): void => {
+				console.log(`Joining ${roomUUId} game.`);
+				WSHlp.send(this.wS, MessageType.JOIN_ROOM, roomUUId);
+			});
 
 		this.wS.addEventListener('message', (event: MessageEvent): void => {
 			const { t: type, d: data } = JSON.parse(event.data) as Message<unknown>;
@@ -217,12 +219,14 @@ export class ControlScreen {
 	};
 
 	private showCreateRoomSuccessScreen = (uuid: UUId): void => {
+		const isClipboardAvailable = window.isSecureContext && navigator.clipboard;
+
 		this.hideEls(this.availableRoomsContainerEl);
-		this.setScreen(CREATE_ROOM_SUCCESS_SCREEN);
+		this.setScreen(isClipboardAvailable ? CREATE_ROOM_SUCCESS_SCREEN : CREATE_ROOM_SUCCESS_SCREEN_NO_CLIPBOARD);
 
 		const gameUrl = this.createRoomUrl(uuid);
 
-		void navigator.clipboard.writeText(gameUrl);
+		isClipboardAvailable && void navigator.clipboard.writeText(gameUrl);
 		console.log(`New game starts here ${gameUrl}`);
 	};
 

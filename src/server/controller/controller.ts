@@ -26,13 +26,15 @@ export class Controller {
 	private state: State;
 	private timer: Timer;
 	private arena: Arena;
-	private size?: Size;
+	private sizes = [] as Size[];
+	private playersReady = 0;
 
 	constructor(private players: WSWithId[], private lives: number) {
 		this.state = createState();
 		this.arena = new Arena(this.state);
 		this.timer = new Timer(this.tick);
 		this.wSs = this.players.map(({ wS }) => wS);
+		// check do we ned players and wsssss arrs
 
 		this.initConnection();
 		WSHlp.broadcast(this.wSs, MessageType.GET_SIZE);
@@ -44,11 +46,21 @@ export class Controller {
 				const { t: type, d: data } = JSON.parse(message) as Message<unknown>;
 
 				switch (type) {
-					case MessageType.SET_SIZE:
+					case MessageType.SEND_SIZE:
 						const isSet = this.handleSetSizeMsg(data as Size);
 
 						if (!isSet) {
 							break;
+						}
+
+						WSHlp.broadcast(this.wSs, MessageType.SET_SIZE, Hlp.getSize(this.state));
+
+						break;
+					case MessageType.PLAYER_IS_READY:
+						this.playersReady++;
+
+						if (this.playersReady !== this.players.length) {
+							return;
 						}
 
 						setTimeout(() => {
@@ -105,11 +117,7 @@ export class Controller {
 	};
 
 	private start = (): void => {
-		const { lives, size } = this;
-
-		if (!size) {
-			return;
-		}
+		const { lives } = this;
 
 		const players = [
 			{ direction: Direction.Right, id: Player.P1 },
@@ -119,7 +127,7 @@ export class Controller {
 		DelayedTasks.reset();
 
 		this.state.dispatch(
-			CommonActions.resetGame({ players, lives, size }),
+			CommonActions.resetGame({ players, lives, size: Hlp.getSize(this.state) }),
 			ArenaActions.setGameStatus(GameStatus.InProgress)
 		);
 		this.arena.start(players);
@@ -152,15 +160,17 @@ export class Controller {
 	};
 
 	private handleSetSizeMsg = (size: Size): boolean => {
-		if (!this.size) {
-			this.size = size;
+		this.sizes.push(size);
+
+		if (this.sizes.length !== this.players.length) {
 			return false;
 		}
 
-		const width = Math.min(this.size.width, size.width);
-		const height = Math.min(this.size.height, size.height);
+		const width = Math.min(...this.sizes.map(({ width }) => width));
+		const height = Math.min(...this.sizes.map(({ height }) => height));
 
 		this.state.dispatch(ArenaActions.setSize({ width, height }));
+		this.sizes = [];
 
 		return true;
 	};

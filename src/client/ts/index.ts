@@ -3,9 +3,10 @@ import { Controller } from './controller/controller';
 import { CELL_SIZE } from './utils/constants';
 
 const run = (): void => {
-	const presenterEl = document.querySelector('.js-Snakes__Presenter') as HTMLCanvasElement;
-	const statEl = document.querySelector('.js-Snakes__Stat') as HTMLCanvasElement;
-	const serviceEl = document.querySelector('.js-Snakes__ServiceInfo') as HTMLCanvasElement;
+	const layers = document.querySelector('.js-Snakes__Layers') as HTMLElement;
+	const presenterEl = layers.querySelector('.js-Snakes__Presenter') as HTMLCanvasElement;
+	const statEl = layers.querySelector('.js-Snakes__Stat') as HTMLCanvasElement;
+	const serviceEl = layers.querySelector('.js-Snakes__ServiceInfo') as HTMLCanvasElement;
 
 	if (!(presenterEl && serviceEl && statEl)) {
 		return;
@@ -17,7 +18,7 @@ const run = (): void => {
 	const cellSize = CELL_SIZE;
 	const dpr = window.devicePixelRatio;
 
-	let { width, height } = presenterEl.getBoundingClientRect();
+	let { width, height } = layers.getBoundingClientRect();
 
 	width *= dpr;
 	height *= dpr;
@@ -28,7 +29,7 @@ const run = (): void => {
 	width /= cellSize;
 	height /= cellSize;
 
-	new Controller({ roomUUId, showServiceInfo }, { presenterEl, statEl, serviceEl, size: { width, height } });
+	new Controller({ roomUUId, showServiceInfo }, { width, height }, { presenterEl, statEl, serviceEl });
 };
 
 run();
