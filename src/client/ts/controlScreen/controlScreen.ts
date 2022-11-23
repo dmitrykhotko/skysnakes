@@ -31,6 +31,7 @@ export class ControlScreen {
 	private controlsEl: HTMLElement;
 	private createRoomBtn: HTMLButtonElement;
 	private joinRoomBtn: HTMLButtonElement;
+	private mainMenuBtn: HTMLButtonElement;
 	private closeBtn: HTMLButtonElement;
 
 	constructor(wS: WebSocket, private onHide: Observer, roomUUId?: UUId) {
@@ -41,6 +42,7 @@ export class ControlScreen {
 		this.controlsEl = this.el.querySelector('.js-Snakes__ControlScreenControls') as HTMLElement;
 		this.createRoomBtn = this.el.querySelector('.js-Snakes__CreateRoom') as HTMLButtonElement;
 		this.joinRoomBtn = this.el.querySelector('.js-Snakes__JoinRoom') as HTMLButtonElement;
+		this.mainMenuBtn = this.el.querySelector('.js-Snakes__MainMenu') as HTMLButtonElement;
 		this.closeBtn = this.el.querySelector('.js-Snakes__ControlScreenClose') as HTMLButtonElement;
 
 		this.initControls();
@@ -100,6 +102,7 @@ export class ControlScreen {
 	private initControls = (): void => {
 		this.createRoomBtn.addEventListener('click', this.onCreateRoomBtnClick);
 		this.joinRoomBtn.addEventListener('click', this.onJoinRoomBtnClick);
+		this.mainMenuBtn.addEventListener('click', this.onMainMenuBtnClick);
 		this.closeBtn.addEventListener('click', this.onCloseBtnClick);
 	};
 
@@ -145,6 +148,10 @@ export class ControlScreen {
 		this.setScreen(JOIN_ROOM_SCREEN);
 	};
 
+	private onMainMenuBtnClick = (): void => {
+		this.showMainScreen();
+	};
+
 	private onCloseBtnClick = (): void => {
 		this.hide();
 		this.onHide(ServiceInput.Escape);
@@ -179,8 +186,8 @@ export class ControlScreen {
 
 	private showMainScreen = (): void => {
 		this.setScreen(WELCOME_SCREEN);
-		this.hideEls(this.availableRoomsContainerEl, this.closeBtn);
-		this.showEls(this.el, this.controlsEl);
+		this.hideEls(this.availableRoomsContainerEl, this.closeBtn, this.mainMenuBtn);
+		this.showEls(this.el, this.controlsEl, this.createRoomBtn, this.joinRoomBtn);
 
 		this.createRoomBtn.focus();
 	};
@@ -194,7 +201,7 @@ export class ControlScreen {
 
 	private showInfoScreen = (screen: string, isCloseable = false): void => {
 		this.setScreen(screen);
-		this.hideEls(this.controlsEl, this.availableRoomsContainerEl);
+		this.hideEls(this.controlsEl, this.availableRoomsContainerEl, this.mainMenuBtn);
 		this.showEls(this.el);
 
 		this.isCloseable = isCloseable;
@@ -204,7 +211,8 @@ export class ControlScreen {
 	private showCreateRoomScreen = (): void => {
 		WSHlp.send(this.wS, MessageType.QUIT_WAITING_ROOM);
 
-		this.hideEls(this.availableRoomsContainerEl);
+		this.hideEls(this.availableRoomsContainerEl, this.joinRoomBtn);
+		this.showEls(this.mainMenuBtn);
 		this.setScreen(CREATE_ROOM_SCREEN);
 
 		this.createRoomBtn.innerHTML = CREATE_LABEL;
@@ -222,6 +230,7 @@ export class ControlScreen {
 		const isClipboardAvailable = window.isSecureContext && navigator.clipboard;
 
 		this.hideEls(this.availableRoomsContainerEl);
+		this.showMainMenuBtnOnly();
 		this.setScreen(isClipboardAvailable ? CREATE_ROOM_SUCCESS_SCREEN : CREATE_ROOM_SUCCESS_SCREEN_NO_CLIPBOARD);
 
 		const gameUrl = this.createRoomUrl(uuid);
@@ -233,6 +242,9 @@ export class ControlScreen {
 	private showCreateRoomFailScreen = (): void => this.setScreen(CREATE_ROOM_FAIL_SCREEN);
 
 	private showAvailableRoomsListScreen = (uuids: AvailableRoom[]): void => {
+		this.hideEls(this.availableRoomsContainerEl);
+		this.showMainMenuBtnOnly();
+
 		if (!uuids.length) {
 			this.hideEls(this.availableRoomsContainerEl);
 			this.setScreen(NO_ROOMS_AVAILABLE_SCREEN);
@@ -257,6 +269,7 @@ export class ControlScreen {
 
 	private showJoinRoomSuccessScreen = (room: Room): void => {
 		this.hideEls(this.availableRoomsContainerEl);
+		this.showMainMenuBtnOnly();
 		console.log(`You've joined room ${room.name}`);
 	};
 
@@ -286,4 +299,9 @@ export class ControlScreen {
 		el.addEventListener('keydown', event => event.code === 'Enter' && action());
 
 	private quitGame = (): void => window.location.reload();
+
+	private showMainMenuBtnOnly = (): void => {
+		this.hideEls(this.createRoomBtn, this.joinRoomBtn);
+		this.showEls(this.mainMenuBtn);
+	};
 }
