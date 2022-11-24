@@ -54,7 +54,7 @@ export class Stat {
 		let award = 0;
 
 		for (let i = 0; i < coins.length; i++) {
-			const { pr: player } = coins[i];
+			const { player } = coins[i];
 
 			if (!player || player === id) {
 				award += STANDARD_COIN_AWARD;

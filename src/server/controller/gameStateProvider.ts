@@ -1,5 +1,14 @@
 import { CmHlp } from '../../common/cmHlp';
-import { Coin, GameState, Point, PointWithId, SnakeDataSlim, StatState, StatStateSlim } from '../../common/types';
+import {
+	Coin,
+	CoinSlim,
+	GameState,
+	Point,
+	PointWithId,
+	SnakeDataSlim,
+	StatState,
+	StatStateSlim
+} from '../../common/types';
 import { ArenaStore, BinStore, BulletsStore, SnakesStore, StatStore } from '../redux';
 import { State } from '../redux/state';
 import { Hlp } from '../utils/hlp';
@@ -28,7 +37,23 @@ export class GameStateProvider {
 		} as GameState;
 	};
 
-	private convertCoins = (coins: Coin[]): Coin[] | undefined => (coins.length ? coins : undefined);
+	private convertCoins = (coins: Coin[]): CoinSlim[] | undefined => {
+		if (!(coins && coins.length)) {
+			return;
+		}
+
+		const { width } = Hlp.getSize(this.state);
+		const coinsSlim = [] as CoinSlim[];
+
+		for (let i = 0; i < coins.length; i++) {
+			const { point, type } = coins[i];
+			const coin = [CmHlp.pointToNum(width, point), type] as number[];
+
+			coinsSlim.push(coin);
+		}
+
+		return coinsSlim;
+	};
 
 	private convertSnakes = (snakes: SnakeData[]): SnakeDataSlim[] | undefined => {
 		const { width } = Hlp.getSize(this.state);

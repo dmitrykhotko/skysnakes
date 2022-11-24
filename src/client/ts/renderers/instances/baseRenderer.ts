@@ -1,7 +1,7 @@
 import { CmHlp } from '../../../../common/cmHlp';
 import { CoinType, GameStatus, NotifType, Player } from '../../../../common/enums';
 import {
-	Coin,
+	CoinSlim,
 	GameState,
 	LinkedPoint,
 	NotificationSlim,
@@ -223,22 +223,24 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	};
 
-	private renderCoins = (coins: Coin[]): void => {
+	private renderCoins = (coins: CoinSlim[]): void => {
+		const { width } = this.size;
+
 		this.use(Layer.Presenter);
 
 		for (let i = 0; i < coins.length; i++) {
-			const { point, t: type } = coins[i];
-			const dO = BaseRenderer.coinTypeToDrawingObject[type];
+			const [point, type] = coins[i];
+			const dO = BaseRenderer.coinTypeToDrawingObject[type as Player];
 
-			this.renderCircle(point, dO);
+			this.renderCircle(CmHlp.numToPoint(width, point), dO);
 		}
 	};
 
 	private renderSnakes = (snakes: SnakeDataSlim[]): void => {
-		this.use(Layer.Presenter);
-
 		const { width } = this.size;
 		const eDO = DrawingObject.Empty;
+
+		this.use(Layer.Presenter);
 
 		for (let i = 0; i < snakes.length; i++) {
 			const [id, headNum, skipRenderPrev] = snakes[i];
@@ -281,10 +283,10 @@ export abstract class BaseRenderer extends Renderer {
 		id === Player.P1 ? DrawingObject.Player1 : DrawingObject.Player2;
 
 	private renderBullets = (bullets: number[]): void => {
-		this.use(Layer.Presenter);
-
 		const { width } = this.size;
 		const bDO = DrawingObject.Bullet;
+
+		this.use(Layer.Presenter);
 
 		// TODO: render bullet tail
 		for (let i = 0; i < bullets.length; i++) {

@@ -48,9 +48,11 @@ export interface Bullet extends PointWithId {
 }
 
 export interface Coin extends PointWithId {
-	t: CoinType;
-	pr?: Player;
+	type: CoinType;
+	player?: Player;
 }
+
+export type CoinSlim = number[];
 
 export type SnakeDataSlim = number[];
 
@@ -64,7 +66,7 @@ export type StatStateSlim = {
 
 export type GameState = {
 	s?: GameStatus;
-	c?: Coin[];
+	c?: CoinSlim[];
 	ss?: SnakeDataSlim[];
 	bs?: PointSlim[];
 	st?: StatStateSlim;
