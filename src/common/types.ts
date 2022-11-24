@@ -24,8 +24,8 @@ export interface LinkedPoint extends Point {
 }
 
 export interface SnakeArrayData extends ObjectWithId {
-	b: Point[];
-	d: Direction;
+	h: Point;
+	p?: number;
 }
 
 export interface PointWithId<T extends Point = Point> extends ObjectWithId {
@@ -57,7 +57,7 @@ export type GameState = {
 	s?: GameStatus;
 	c?: Coin[];
 	ss?: SnakeArrayData[];
-	bs?: Bullet[];
+	bs?: Point[];
 	st?: StatState;
 	b?: Point[];
 	ai?: Record<string, string | number>;

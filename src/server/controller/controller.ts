@@ -1,18 +1,19 @@
 import { WebSocket } from 'ws';
 import { Direction, FireInput, GameStatus, MoveInput, Player, ServiceInput } from '../../common/enums';
 import { MessageType } from '../../common/messageType';
-import { GameState, Message, PlayerInput, Size, SnakeArrayData } from '../../common/types';
+import { Message, PlayerInput, Size } from '../../common/types';
 import { WSHlp } from '../../common/wSHlp';
 import { Arena } from '../arena/arena';
 import { Snakes } from '../arena/characters/snakes';
-import { ArenaStore, BinStore, BulletsStore, SnakesStore, StatStore } from '../redux';
+import { ArenaStore } from '../redux';
 import { ArenaActions, BinActions, BulletsActions, CommonActions, SnakesActions } from '../redux/actions';
 import { createState, State } from '../redux/state';
 import { Timer } from '../timer/timer';
 import { GAME_START_DELAY } from '../utils/constants';
 import { DelayedTasks } from '../utils/delayedTasks';
 import { Hlp } from '../utils/hlp';
-import { SnakeData, WSWithId } from '../utils/types';
+import { WSWithId } from '../utils/types';
+import { GameStateProvider } from './gameStateProvider';
 
 export class Controller {
 	static inputToDirection = {
@@ -26,6 +27,7 @@ export class Controller {
 	private state: State;
 	private timer: Timer;
 	private arena: Arena;
+	private gameStateProvider: GameStateProvider;
 	private sizes = [] as Size[];
 	private playersReady = 0;
 
@@ -34,6 +36,7 @@ export class Controller {
 		this.arena = new Arena(this.state);
 		this.timer = new Timer(this.tick);
 		this.wSs = this.players.map(({ wS }) => wS);
+		this.gameStateProvider = new GameStateProvider(this.state);
 		// check do we ned players and wsssss arrs
 
 		this.initConnection();
@@ -94,31 +97,8 @@ export class Controller {
 		this.arena.tick();
 	};
 
-	private getData = (): GameState => {
-		const { arena, snakes, bullets, bin, stat } = this.state.get<
-			ArenaStore & SnakesStore & BulletsStore & BinStore & StatStore
-		>();
-
-		this.state.dispatch(ArenaActions.flushCoinsBuffer(), BinActions.emptyBin());
-
-		const result = {} as GameState;
-
-		bullets.length && (result.bs = bullets);
-		snakes.length && (result.ss = this.convertSnakes(snakes));
-		bin.length && (result.b = bin);
-		arena.coinsBuffer.length && (result.c = arena.coinsBuffer);
-
-		return {
-			s: arena.status,
-			st: stat,
-			// ai: { coinsNum: arena.coins.length },
-			...result
-		} as GameState;
-	};
-
 	private start = (): void => {
 		const { lives } = this;
-
 		const players = [
 			{ direction: Direction.Right, id: Player.P1 },
 			{ direction: Direction.Left, id: Player.P2 }
@@ -148,7 +128,8 @@ export class Controller {
 	};
 
 	private tick = (): void => {
-		WSHlp.broadcast(this.wSs, MessageType.TICK, this.getData());
+		WSHlp.broadcast(this.wSs, MessageType.TICK, this.gameStateProvider.get());
+		this.state.dispatch(ArenaActions.flushCoinsBuffer(), BinActions.emptyBin());
 
 		const { status } = this.state.get<ArenaStore>().arena;
 
@@ -173,21 +154,6 @@ export class Controller {
 		this.sizes = [];
 
 		return true;
-	};
-
-	private convertSnakes = (snakes: SnakeData[]): SnakeArrayData[] => {
-		const arr = [] as SnakeArrayData[];
-
-		for (let i = 0; i < snakes.length; i++) {
-			const { id, direction } = snakes[i];
-			arr.push({
-				id,
-				d: direction,
-				b: Snakes.toArray(this.state, id)
-			});
-		}
-
-		return arr;
 	};
 
 	private handleInputMsg = (input: PlayerInput, id: Player): void => {

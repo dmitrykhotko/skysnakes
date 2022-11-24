@@ -1,4 +1,5 @@
 import { Player } from '../../../../common/enums';
+import { getById } from '../../../../common/getById';
 import { Id, Notification, PlayerStat, StatState } from '../../../../common/types';
 import { Hlp } from '../../../utils/hlp';
 import { InitialData } from '../../../utils/types';
@@ -61,7 +62,7 @@ export abstract class StatReducer extends Reducer<StatStore> {
 	private static changeStat = (store: StatStore, id: Player, propName: string, value = 1): Store => {
 		const { stat } = store;
 		const { ps: playersStat } = stat;
-		const targetStat = Hlp.getById(id, playersStat);
+		const targetStat = getById(id, playersStat);
 
 		if (!targetStat) {
 			return store;

@@ -1,4 +1,5 @@
 import { Direction, Player } from '../../../common/enums';
+import { getById } from '../../../common/getById';
 import { LinkedPoint, Point, PointWithId } from '../../../common/types';
 import { Action, BinActions, SnakesActions } from '../../redux/actions';
 import { SnakesStore, SnakeState } from '../../redux/reducers/instances/snakesReducer';
@@ -19,7 +20,7 @@ export class Snakes {
 
 	static get = (state: State): SnakeState[] => state.get<SnakesStore>().snakes;
 
-	static getById = (state: State, id: Player): SnakeState => Hlp.getById(id, this.get(state));
+	static getById = (state: State, id: Player): SnakeState => getById(id, this.get(state));
 
 	static toArray = (state: State, id: Player, start = this.getById(state, id).head): Point[] => {
 		const points = [] as Point[];
@@ -35,23 +36,25 @@ export class Snakes {
 
 	get = (): SnakeState[] => Snakes.get(this.state);
 
-	getById = (id: Player): SnakeState => Hlp.getById(id, Snakes.get(this.state));
+	getById = (id: Player): SnakeState => getById(id, Snakes.get(this.state));
 
 	init = (snakesInitial: DirectionWithId[]): void => {
 		const { width, height } = Hlp.getSize(this.state);
 
 		for (let i = 0; i < snakesInitial.length; i++) {
+			const serviceId = Hlp.id();
 			const { id, direction } = snakesInitial[i];
 			const head = this.getStartPoint(direction, width, height);
 			const tail = this.initBody(head, SNAKE_LENGTH, direction);
 
-			this.state.dispatch(SnakesActions.setSnake({ id, head, tail, direction, growthBuffer: 0 }));
+			this.state.dispatch(SnakesActions.setSnake({ id, serviceId, head, tail, direction, growthBuffer: 0 }));
 		}
 	};
 
 	move = (id: Player, checkGrowth: (id: Player, head: LinkedPoint) => number): void => {
 		const snake = this.getById(id);
 		const actions = [] as Action[];
+		const { serviceId } = snake;
 
 		let { head, tail, direction, growthBuffer } = snake;
 
@@ -74,7 +77,7 @@ export class Snakes {
 			tail.prev = undefined;
 		}
 
-		this.state.dispatch(SnakesActions.setSnake({ id, head, tail, direction, growthBuffer }), ...actions);
+		this.state.dispatch(SnakesActions.setSnake({ id, serviceId, head, tail, direction, growthBuffer }), ...actions);
 	};
 
 	checkCollisions = (object: LinkedPoint): PointWithId | undefined => {

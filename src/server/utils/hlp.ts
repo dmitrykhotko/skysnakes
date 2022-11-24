@@ -37,21 +37,6 @@ export abstract class Hlp {
 
 	static randomInt = (max: number, min = 0): number => Math.floor(Math.random() * (max - min + 1)) + min;
 
-	static getById = <T extends ObjectWithId>(id: Id, items: T[]): T => {
-		let target!: T;
-
-		for (let i = 0; i < items.length; i++) {
-			const item = items[i];
-
-			if (item.id === id) {
-				target = item;
-				break;
-			}
-		}
-
-		return target;
-	};
-
 	static filter = <T>(
 		items: T[],
 		prop: keyof T,

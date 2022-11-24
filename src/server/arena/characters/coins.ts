@@ -1,4 +1,5 @@
 import { CoinType, Player } from '../../../common/enums';
+import { getById } from '../../../common/getById';
 import { Coin, Id, LinkedPoint, Size } from '../../../common/types';
 import { ArenaStore } from '../../redux';
 import { ArenaActions, BinActions } from '../../redux/actions';
@@ -90,7 +91,7 @@ export class Coins {
 	};
 
 	private remove = (id: Id, type: CoinType): void => {
-		const coin = Hlp.getById(id, this.state.get<ArenaStore>().arena.coins);
+		const coin = getById(id, this.state.get<ArenaStore>().arena.coins);
 
 		if (!coin) {
 			return;

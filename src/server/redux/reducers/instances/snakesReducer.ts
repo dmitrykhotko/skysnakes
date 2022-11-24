@@ -1,8 +1,9 @@
-import { Action, SetValueAction, SetValueByIdAction } from '../../actions';
 import { Direction, Player } from '../../../../common/enums';
+import { getById } from '../../../../common/getById';
 import { LinkedPoint } from '../../../../common/types';
 import { Hlp } from '../../../utils/hlp';
 import { SnakeData } from '../../../utils/types';
+import { Action, SetValueAction, SetValueByIdAction } from '../../actions';
 import { ActionType } from '../../actions/actionType';
 import { Store } from '../../state';
 import { Reducer } from '../reducer';
@@ -69,7 +70,7 @@ export abstract class SnakesReducer extends Reducer<SnakesStore> {
 	): SnakesStore => {
 		const snakesState = state as SnakesStore;
 		const { id, value } = action as SetValueByIdAction<T, Player>;
-		const targetSnake = Hlp.getById(id, snakesState.snakes);
+		const targetSnake = getById(id, snakesState.snakes);
 
 		return {
 			...snakesState,

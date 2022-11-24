@@ -1,18 +1,19 @@
 import { CoinType, GameStatus, NotifType, Player } from '../../../../common/enums';
+import { getById } from '../../../../common/getById';
 import {
-	Bullet,
 	Coin,
 	GameState,
 	LinkedPoint,
 	Notification,
 	Observer,
+	Point,
 	Size,
 	SnakeArrayData,
 	StatState
 } from '../../../../common/types';
 import { LINE_HEIGHT, LIVE_SIZE_CELLS } from '../../utils/constants';
 import { DrawingObject, Layer } from '../../utils/enums';
-import { HEAD, LIVES, PLAYER, RESTART_MSG, SCORE, SCORE_SEPARATOR, WINNER, WINNERS, X, Y } from '../../utils/labels';
+import { LIVES, PLAYER, RESTART_MSG, SCORE, SCORE_SEPARATOR, WINNER, WINNERS } from '../../utils/labels';
 import { Renderer } from '../renderer';
 
 export abstract class BaseRenderer extends Renderer {
@@ -33,7 +34,8 @@ export abstract class BaseRenderer extends Renderer {
 
 	protected size!: Size;
 
-	private prevState = BaseRenderer.defaultPrevState;
+	private prevStat?: StatState;
+	private prevSnakes?: SnakeArrayData[];
 	private isInitialized = false;
 	private isReady = false;
 
@@ -78,22 +80,25 @@ export abstract class BaseRenderer extends Renderer {
 			this.renderSnakes(snakes);
 			this.renderCoins(coins);
 			this.renderBullets(bullets);
-			stat && this.renderStat(stat);
+			this.renderStat(stat);
 
 			this.serviceInfoFlag && this.renderServiceInfo(state);
-
 			!this.isInitialized && (this.isInitialized = true);
-			this.prevState = state;
+
+			// this.prevState = state;
+			stat && (this.prevStat = stat);
+			snakes.length && (this.prevSnakes = snakes);
 		});
 	};
 
 	reset = (): void => {
-		this.prevState = BaseRenderer.defaultPrevState;
+		this.prevStat = undefined;
+		this.prevSnakes = undefined;
 		this.isInitialized = false;
 	};
 
 	protected renderServiceInfo(state: GameState): void {
-		const { st: stat, ss: snakes = [], ai: additionalInfo } = state;
+		const { st: stat, ai: additionalInfo } = state;
 		let lineNumber = 2;
 
 		this.use(Layer.Service).clearRect();
@@ -122,18 +127,6 @@ export abstract class BaseRenderer extends Renderer {
 			}
 		}
 
-		for (let i = 0; i < snakes.length; i++) {
-			const { b: body, id } = snakes[i];
-
-			if (!body.length) {
-				return;
-			}
-
-			const [x, y] = body[0];
-
-			this.renderTextLine(`${HEAD} ${Player[id]}${SCORE_SEPARATOR} ${X} ${x}, ${Y} ${y}`, lineNumber++);
-		}
-
 		lineNumber++;
 
 		if (!additionalInfo) {
@@ -148,8 +141,8 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	}
 
-	private renderStat = (stat: StatState): void => {
-		if (stat === this.prevState.st) {
+	private renderStat = (stat?: StatState): void => {
+		if (!stat || stat === this.prevStat) {
 			return;
 		}
 
@@ -249,41 +242,30 @@ export abstract class BaseRenderer extends Renderer {
 		this.use(Layer.Presenter);
 
 		for (let i = 0; i < snakes.length; i++) {
-			const { id, b: body } = snakes[i];
-
-			if (!body.length) {
-				return;
-			}
-
-			const head = body[0];
+			const { id, h: head, p: renderPrev } = snakes[i];
 			const type = this.getSnakeDrawingObject(id);
 
-			if (this.isInitialized) {
-				this.renderCell(head, type);
-				this.renderCircle(head, DrawingObject.Empty);
-				body[1] && this.renderCell(body[1], type);
-
-				continue;
-			}
-
-			for (let j = 0; j < body.length - 1; j++) {
-				this.renderCell(body[j], type);
-			}
-
+			this.renderCell(head, type);
 			this.renderCircle(head, DrawingObject.Empty);
+
+			if (!renderPrev) {
+				break;
+			}
+
+			const prevHead = this.prevSnakes ? getById(id, this.prevSnakes)?.h : undefined;
+			prevHead && this.renderCell(prevHead, type);
 		}
 	};
 
 	private getSnakeDrawingObject = (id: Player): DrawingObject =>
 		id === Player.P1 ? DrawingObject.Player1 : DrawingObject.Player2;
 
-	private renderBullets = (bulletsArr: Bullet[]): void => {
+	private renderBullets = (bulletsArr: Point[]): void => {
 		this.use(Layer.Presenter);
 
 		// TODO: render bullet tail
 		for (let i = 0; i < bulletsArr.length; i++) {
-			const { p: point } = bulletsArr[i];
-			this.renderCircle(point, DrawingObject.Bullet);
+			this.renderCircle(bulletsArr[i], DrawingObject.Bullet);
 		}
 	};
 

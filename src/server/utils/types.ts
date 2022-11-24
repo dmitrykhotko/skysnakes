@@ -1,9 +1,10 @@
 import { WebSocket } from 'ws';
 import { Direction } from '../../common/enums';
-import { LinkedPoint, ObjectWithId, Size } from '../../common/types';
+import { Id, LinkedPoint, ObjectWithId, Size } from '../../common/types';
 import { Action } from '../redux/actions';
 
 export interface SnakeData extends ObjectWithId {
+	serviceId: Id;
 	head: LinkedPoint;
 	tail: LinkedPoint;
 	direction: Direction;
