@@ -57,9 +57,9 @@ export class Notifier {
 		this.state.dispatch(
 			StatActions.addNotification({
 				id,
-				t: type,
-				v: value,
-				p: [newX, newY]
+				type,
+				value,
+				point: [newX, newY]
 			})
 		);
 

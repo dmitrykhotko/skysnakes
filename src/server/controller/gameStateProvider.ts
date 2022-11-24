@@ -1,14 +1,5 @@
 import { CmHlp } from '../../common/cmHlp';
-import {
-	Coin,
-	GameState,
-	NotificationLight,
-	Point,
-	PointWithId,
-	SnakeArrayData,
-	StatState,
-	StatStateLight
-} from '../../common/types';
+import { Coin, GameState, Point, PointWithId, SnakeDataSlim, StatState, StatStateSlim } from '../../common/types';
 import { ArenaStore, BinStore, BulletsStore, SnakesStore, StatStore } from '../redux';
 import { State } from '../redux/state';
 import { Hlp } from '../utils/hlp';
@@ -39,22 +30,24 @@ export class GameStateProvider {
 
 	private convertCoins = (coins: Coin[]): Coin[] | undefined => (coins.length ? coins : undefined);
 
-	private convertSnakes = (snakes: SnakeData[]): SnakeArrayData[] | undefined => {
-		const arr = [] as SnakeArrayData[];
+	private convertSnakes = (snakes: SnakeData[]): SnakeDataSlim[] | undefined => {
+		const { width } = Hlp.getSize(this.state);
+		const arr = [] as SnakeDataSlim[];
 
 		for (let i = 0; i < snakes.length; i++) {
 			const { id, serviceId, head } = snakes[i];
-			const [x, y] = head;
 			const prevSnake = CmHlp.getById(id, this.prevSnakes);
 			const prevHead = prevSnake?.head;
 			const shouldSend = !(prevHead && Hlp.comparePoints(head, prevHead));
 
-			shouldSend &&
-				arr.push({
-					id,
-					h: [x, y],
-					p: prevSnake && prevSnake.serviceId === serviceId && head.prev ? 1 : undefined
-				});
+			if (!shouldSend) {
+				continue;
+			}
+
+			const data = [id, CmHlp.pointToNum(width, head)];
+
+			!(prevSnake && prevSnake.serviceId === serviceId && head.prev) && data.push(1);
+			arr.push(data);
 		}
 
 		snakes.length && (this.prevSnakes = snakes);
@@ -62,30 +55,37 @@ export class GameStateProvider {
 		return arr.length ? arr : undefined;
 	};
 
-	private convertStat = (stat: StatState): StatStateLight | undefined => {
-		const { n: notifications } = stat;
+	private convertStat = (stat: StatState): StatStateSlim | undefined => {
+		const { notifications } = stat;
+		const { playersStat, winners } = stat;
 
-		if (!(notifications && notifications.length)) {
-			return stat as StatStateLight;
+		const pStatSlim = [];
+
+		for (let i = 0; i < playersStat.length; i++) {
+			const { id, lives, score } = playersStat[i];
+
+			pStatSlim.push([id, lives, score]);
 		}
 
-		const { ps, w } = stat;
-		const nLight = [] as NotificationLight[];
+		const res = {
+			ps: pStatSlim,
+			w: winners
+		};
+
+		if (!(notifications && notifications.length)) {
+			return res;
+		}
+
 		const { width } = Hlp.getSize(this.state);
+		const nLight = [];
 
 		for (let i = 0; i < notifications.length; i++) {
-			const { p, t, v } = notifications[i];
-
-			nLight.push({
-				p: CmHlp.pointToNum(width, p),
-				t,
-				v
-			});
+			const { point, type, value } = notifications[i];
+			nLight.push([CmHlp.pointToNum(width, point), type, value]);
 		}
 
 		return {
-			ps,
-			w,
+			...res,
 			n: nLight
 		};
 	};
@@ -103,5 +103,5 @@ export class GameStateProvider {
 
 	private getPointItem = (p: Point): Point => p;
 
-	private getPointWithIdItem = ({ p }: PointWithId): Point => p;
+	private getPointWithIdItem = ({ point }: PointWithId): Point => point;
 }

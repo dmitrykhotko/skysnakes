@@ -49,7 +49,7 @@ export class Coins {
 
 		for (let i = 0; i < coins.length; i++) {
 			const coin = coins[i];
-			const { id, p: point, t: type } = coin;
+			const { id, point, t: type } = coin;
 			const success = Hlp.comparePoints(object, point);
 
 			if (success) {
@@ -86,7 +86,7 @@ export class Coins {
 		type = CoinType.Standard,
 		player?: Player
 	): void => {
-		this.state.dispatch(ArenaActions.setCoin({ id, p: point, t: type, pr: player }));
+		this.state.dispatch(ArenaActions.setCoin({ id, point, t: type, pr: player }));
 		DelayedTasks.delay(this.remove as Task, Hlp.randomInt(Coins.typeToLifeTime[type]), id, type);
 	};
 
@@ -98,7 +98,7 @@ export class Coins {
 		}
 
 		type === CoinType.Standard && this.activeCoinsNum--;
-		this.state.dispatch(ArenaActions.removeCoin(id), BinActions.moveToBin([coin.p]));
+		this.state.dispatch(ArenaActions.removeCoin(id), BinActions.moveToBin([coin.point]));
 	};
 
 	private spreadPoints = (points: LinkedPoint[], { width, height }: Size): LinkedPoint[] => {

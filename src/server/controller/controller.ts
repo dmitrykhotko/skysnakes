@@ -212,9 +212,9 @@ export class Controller {
 		this.state.dispatch(
 			BulletsActions.setBullet({
 				id: Hlp.id(),
-				pr: id,
-				p: Hlp.nextPoint(head, direction),
-				d: direction
+				player: id,
+				point: Hlp.nextPoint(head, direction),
+				direction
 			})
 		);
 	};

@@ -69,15 +69,15 @@ export class Stat {
 	};
 
 	judge = (): void => {
-		const { ps: playersStat } = this.state.get<StatStore>().stat;
+		const { playersStat } = this.state.get<StatStore>().stat;
 
-		if (!playersStat.some(({ l: lives }) => lives === 0)) {
+		if (!playersStat.some(({ lives }) => lives === 0)) {
 			return;
 		}
 
-		const maxScore = Math.max(...Hlp.mapByProp(playersStat, 's'));
+		const maxScore = Math.max(...Hlp.mapByProp(playersStat, 'score'));
 		const winners = Hlp.mapByProp(
-			Hlp.filter(playersStat, 's', maxScore, (item1: number, item2: number) => item1 === item2),
+			Hlp.filter(playersStat, 'score', maxScore, (item1: number, item2: number) => item1 === item2),
 			'id'
 		);
 

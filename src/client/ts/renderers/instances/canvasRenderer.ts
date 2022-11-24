@@ -114,10 +114,10 @@ export class CanvasRenderer extends BaseRenderer {
 	protected renderCircle = (
 		point: LinkedPoint,
 		type: DrawingObject,
-		radius = CIRCLE_RADIUS_CELLS,
+		r = CIRCLE_RADIUS_CELLS,
 		fitToCell = true
 	): void => {
-		const cRadius = radius * this.cellSize;
+		const cRadius = r * this.cellSize;
 		const [x, y] = this.weightPoint(point, fitToCell ? cRadius : 0);
 
 		this.activeLayer.fillStyle = CanvasRenderer.colors[type];

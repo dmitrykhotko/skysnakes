@@ -12,9 +12,11 @@ export interface ObjectWithId {
 }
 
 export interface PlayerStat extends ObjectWithId {
-	l: number;
-	s: number;
+	lives: number;
+	score: number;
 }
+
+export type PlayerStatSlim = number[];
 
 export type Point = number[];
 
@@ -23,41 +25,26 @@ export interface LinkedPoint extends Point {
 	prev?: LinkedPoint;
 }
 
-export interface SnakeArrayData extends ObjectWithId {
-	h: Point;
-	p?: number;
-}
-
 export interface PointWithId<T extends Point = Point> extends ObjectWithId {
-	p: T;
+	point: T;
 }
 
 export interface Notification extends PointWithId {
-	t: NotifType;
-	v: string;
+	type: NotifType;
+	value: string;
 }
 
-export interface NotificationLight {
-	p: number;
-	t: NotifType;
-	v: string;
-}
+export type NotificationSlim = (number | string)[];
 
 export type StatState = {
-	ps: PlayerStat[];
-	w?: Player[];
-	n?: Notification[];
-};
-
-export type StatStateLight = {
-	ps: PlayerStat[];
-	w?: Player[];
-	n?: NotificationLight[];
+	playersStat: PlayerStat[];
+	winners?: Player[];
+	notifications?: Notification[];
 };
 
 export interface Bullet extends PointWithId {
-	pr: Player;
-	d: Direction;
+	player: Player;
+	direction: Direction;
 }
 
 export interface Coin extends PointWithId {
@@ -65,13 +52,23 @@ export interface Coin extends PointWithId {
 	pr?: Player;
 }
 
+export type SnakeDataSlim = number[];
+
+export type PointSlim = number;
+
+export type StatStateSlim = {
+	ps: PlayerStatSlim[];
+	w?: Player[];
+	n?: NotificationSlim[];
+};
+
 export type GameState = {
 	s?: GameStatus;
 	c?: Coin[];
-	ss?: SnakeArrayData[];
-	bs?: number[];
-	st?: StatStateLight;
-	b?: number[];
+	ss?: SnakeDataSlim[];
+	bs?: PointSlim[];
+	st?: StatStateSlim;
+	b?: PointSlim[];
 	ai?: Record<string, string | number>;
 };
 

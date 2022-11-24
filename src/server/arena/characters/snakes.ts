@@ -96,7 +96,7 @@ export class Snakes {
 			}
 
 			if (point) {
-				return { p: point, id };
+				return { point, id };
 			}
 		}
 	};
@@ -107,7 +107,7 @@ export class Snakes {
 		for (let i = 0; i < ids.length; i++) {
 			const id = ids[i];
 			const { head } = this.getById(id);
-			const { actions: cutActions } = this.cut({ id, p: head });
+			const { actions: cutActions } = this.cut({ id, point: head });
 
 			actions.push(SnakesActions.removeSnake(id), ...cutActions);
 		}
@@ -122,17 +122,17 @@ export class Snakes {
 		isDead: boolean;
 		isHeadShot: boolean;
 	}> => {
-		const { id, p } = snakeShotResult;
+		const { id, point } = snakeShotResult;
 		const actions = [] as Action[];
-		const isDead = !p.next;
-		const isHeadShot = !!(isDead && p.prev);
+		const isDead = !point.next;
+		const isHeadShot = !!(isDead && point.prev);
 
 		let points: LinkedPoint[];
 
 		if (isDead) {
 			points = this.toArray(id);
 		} else {
-			const { result: cutRes, actions: cutActions } = this.cut({ id, p });
+			const { result: cutRes, actions: cutActions } = this.cut({ id, point });
 
 			points = cutRes;
 			actions.push(...cutActions);
@@ -162,7 +162,7 @@ export class Snakes {
 		const actions = [] as Action[];
 
 		for (let i = 0; i < cutIt.length; i++) {
-			const { id, p: start } = cutIt[i];
+			const { id, point: start } = cutIt[i];
 			const nextTail = start.next;
 
 			let point: LinkedPoint | undefined = start;

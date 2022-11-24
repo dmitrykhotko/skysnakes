@@ -26,7 +26,7 @@ export abstract class StatReducer extends Reducer<StatStore> {
 
 		switch (type) {
 			case ActionType.SET_WINNERS:
-				return setValue(statStore, action, 'stat', 'w');
+				return setValue(statStore, action, 'stat', 'winners');
 			case ActionType.RESET_SCORE:
 				return {
 					...state,
@@ -37,21 +37,19 @@ export abstract class StatReducer extends Reducer<StatStore> {
 				};
 			case ActionType.CHANGE_SCORE:
 				const { id, value } = action as SetValueByIdAction<number, Player>;
-				return this.changeStat(statStore, id, 's', value);
+				return this.changeStat(statStore, id, 'score', value);
 			case ActionType.DEC_LIVES:
-				return this.changeStat(statStore, (action as SetValueAction<Player>).value, 'l', -1);
+				return this.changeStat(statStore, (action as SetValueAction<Player>).value, 'lives', -1);
 			case ActionType.ADD_NOTIFICATION:
 				return this.addNotification(statStore, (action as SetValueAction<Notification>).value);
 			case ActionType.REMOVE_NOTIFICATION:
 				return this.removeNotification(statStore, (action as SetValueAction<Id>).value);
 			case ActionType.GAME_RESET:
 				const { players, lives } = (action as SetValueAction<InitialData>).value;
-				const playersStat = players.map(({ id }) => ({ id, l: lives, s: 0 }));
-
 				return {
 					...state,
 					stat: {
-						ps: playersStat
+						playersStat: players.map(({ id }) => ({ id, lives, score: 0 }))
 					}
 				};
 			default:
@@ -59,23 +57,23 @@ export abstract class StatReducer extends Reducer<StatStore> {
 		}
 	};
 
-	private static changeStat = (store: StatStore, id: Player, propName: string, value = 1): Store => {
+	private static changeStat = (store: StatStore, id: Player, propName: keyof PlayerStat, value = 1): Store => {
 		const { stat } = store;
-		const { ps: playersStat } = stat;
+		const { playersStat } = stat;
 		const targetStat = CmHlp.getById(id, playersStat);
 
 		if (!targetStat) {
 			return store;
 		}
 
-		const newPlayerStatItem = { ...targetStat, [propName]: targetStat[propName as keyof PlayerStat] + value };
+		const newPlayerStatItem = { ...targetStat, [propName]: targetStat[propName] + value };
 		const newPlayerStat = [...Hlp.excludeById(playersStat, id), newPlayerStatItem].sort((p1, p2) => p1.id - p2.id);
 
 		return {
 			...store,
 			stat: {
 				...stat,
-				ps: newPlayerStat
+				playersStat: newPlayerStat
 			}
 		};
 	};
@@ -87,20 +85,20 @@ export abstract class StatReducer extends Reducer<StatStore> {
 			...store,
 			stat: {
 				...stat,
-				n: [...(stat.n ?? []), notification]
+				notifications: [...(stat.notifications ?? []), notification]
 			}
 		};
 	};
 
 	private static removeNotification = (store: StatStore, id: Id): Store => {
 		const { stat } = store;
-		const res = Hlp.excludeById(stat.n ?? [], id);
+		const res = Hlp.excludeById(stat.notifications ?? [], id);
 
 		return {
 			...store,
 			stat: {
 				...stat,
-				n: res.length ? res : undefined
+				notifications: res.length ? res : undefined
 			}
 		};
 	};
