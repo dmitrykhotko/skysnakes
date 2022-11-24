@@ -4,11 +4,11 @@ import {
 	Coin,
 	GameState,
 	LinkedPoint,
-	Notification,
+	NotificationLight,
 	Observer,
 	Size,
 	SnakeArrayData,
-	StatState
+	StatStateLight
 } from '../../../../common/types';
 import { LINE_HEIGHT, LIVE_SIZE_CELLS } from '../../utils/constants';
 import { DrawingObject, Layer } from '../../utils/enums';
@@ -33,7 +33,7 @@ export abstract class BaseRenderer extends Renderer {
 
 	protected size!: Size;
 
-	private prevStat?: StatState;
+	private prevStat?: StatStateLight;
 	private prevSnakes?: SnakeArrayData[];
 	private isInitialized = false;
 	private isReady = false;
@@ -140,7 +140,7 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	}
 
-	private renderStat = (stat?: StatState): void => {
+	private renderStat = (stat?: StatStateLight): void => {
 		if (!stat || stat === this.prevStat) {
 			return;
 		}
@@ -219,12 +219,14 @@ export abstract class BaseRenderer extends Renderer {
 		this.renderText(text, [baseX - textLength / 2, baseY - 2], lineHeight, DrawingObject.WinnersText);
 	};
 
-	private renderNotifications = (notifications: Notification[]): void => {
+	private renderNotifications = (notifications: NotificationLight[]): void => {
+		const { width } = this.size;
+
 		for (let i = 0; i < notifications.length; i++) {
 			const { t: type, v: value, p: point } = notifications[i];
 			const dO = BaseRenderer.notifTypeToDrawingObject[type];
 
-			this.renderText(value, point, LINE_HEIGHT, dO);
+			this.renderText(value, CmHlp.numToPoint(width, point), LINE_HEIGHT, dO);
 		}
 	};
 

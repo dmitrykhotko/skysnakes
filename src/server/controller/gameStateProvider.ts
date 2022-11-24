@@ -1,5 +1,14 @@
 import { CmHlp } from '../../common/cmHlp';
-import { Bullet, Coin, GameState, Point, PointWithId, SnakeArrayData } from '../../common/types';
+import {
+	Coin,
+	GameState,
+	NotificationLight,
+	Point,
+	PointWithId,
+	SnakeArrayData,
+	StatState,
+	StatStateLight
+} from '../../common/types';
 import { ArenaStore, BinStore, BulletsStore, SnakesStore, StatStore } from '../redux';
 import { State } from '../redux/state';
 import { Hlp } from '../utils/hlp';
@@ -22,15 +31,13 @@ export class GameStateProvider {
 			c: this.convertCoins(arena.coinsBuffer),
 			ss: this.convertSnakes(snakes),
 			bs: this.convertPoints(bullets, this.getPointWithIdItem as getItemFunc),
-			st: stat,
+			st: this.convertStat(stat),
 			b: this.convertPoints(bin, this.getPointItem as getItemFunc)
 			// ai: { coinsNum: arena.coins.length },
 		} as GameState;
 	};
 
-	private getPointItem = (p: Point): Point => p;
-
-	private getPointWithIdItem = ({ p }: PointWithId): Point => p;
+	private convertCoins = (coins: Coin[]): Coin[] | undefined => (coins.length ? coins : undefined);
 
 	private convertSnakes = (snakes: SnakeData[]): SnakeArrayData[] | undefined => {
 		const arr = [] as SnakeArrayData[];
@@ -55,6 +62,34 @@ export class GameStateProvider {
 		return arr.length ? arr : undefined;
 	};
 
+	private convertStat = (stat: StatState): StatStateLight | undefined => {
+		const { n: notifications } = stat;
+
+		if (!(notifications && notifications.length)) {
+			return stat as StatStateLight;
+		}
+
+		const { ps, w } = stat;
+		const nLight = [] as NotificationLight[];
+		const { width } = Hlp.getSize(this.state);
+
+		for (let i = 0; i < notifications.length; i++) {
+			const { p, t, v } = notifications[i];
+
+			nLight.push({
+				p: CmHlp.pointToNum(width, p),
+				t,
+				v
+			});
+		}
+
+		return {
+			ps,
+			w,
+			n: nLight
+		};
+	};
+
 	private convertPoints = (points: Point[] | PointWithId[], getItem: getItemFunc): number[] | undefined => {
 		const arr = [] as number[];
 		const { width } = Hlp.getSize(this.state);
@@ -66,5 +101,7 @@ export class GameStateProvider {
 		return arr.length ? arr : undefined;
 	};
 
-	private convertCoins = (coins: Coin[]): Coin[] | undefined => (coins.length ? coins : undefined);
+	private getPointItem = (p: Point): Point => p;
+
+	private getPointWithIdItem = ({ p }: PointWithId): Point => p;
 }

@@ -37,10 +37,22 @@ export interface Notification extends PointWithId {
 	v: string;
 }
 
+export interface NotificationLight {
+	p: number;
+	t: NotifType;
+	v: string;
+}
+
 export type StatState = {
 	ps: PlayerStat[];
 	w?: Player[];
 	n?: Notification[];
+};
+
+export type StatStateLight = {
+	ps: PlayerStat[];
+	w?: Player[];
+	n?: NotificationLight[];
 };
 
 export interface Bullet extends PointWithId {
@@ -58,7 +70,7 @@ export type GameState = {
 	c?: Coin[];
 	ss?: SnakeArrayData[];
 	bs?: number[];
-	st?: StatState;
+	st?: StatStateLight;
 	b?: number[];
 	ai?: Record<string, string | number>;
 };
