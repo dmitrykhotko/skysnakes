@@ -59,7 +59,7 @@ export type GameState = {
 	ss?: SnakeArrayData[];
 	bs?: number[];
 	st?: StatState;
-	b?: Point[];
+	b?: number[];
 	ai?: Record<string, string | number>;
 };
 

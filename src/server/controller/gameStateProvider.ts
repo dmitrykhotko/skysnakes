@@ -1,9 +1,11 @@
 import { CmHlp } from '../../common/cmHlp';
-import { Bullet, GameState, SnakeArrayData } from '../../common/types';
+import { Bullet, Coin, GameState, Point, PointWithId, SnakeArrayData } from '../../common/types';
 import { ArenaStore, BinStore, BulletsStore, SnakesStore, StatStore } from '../redux';
 import { State } from '../redux/state';
 import { Hlp } from '../utils/hlp';
 import { SnakeData } from '../utils/types';
+
+type getItemFunc = (item: unknown) => Point;
 
 export class GameStateProvider {
 	private prevSnakes = [] as SnakeData[];
@@ -11,23 +13,24 @@ export class GameStateProvider {
 	constructor(private state: State) {}
 
 	get = (): GameState => {
-		const result = {} as GameState;
 		const { arena, snakes, bullets, bin, stat } = this.state.get<
 			ArenaStore & SnakesStore & BulletsStore & BinStore & StatStore
 		>();
 
-		bullets.length && (result.bs = this.convertBullets(bullets));
-		snakes.length && (result.ss = this.convertSnakes(snakes));
-		arena.coinsBuffer.length && (result.c = arena.coinsBuffer);
-		bin.length && (result.b = bin);
-
 		return {
 			s: arena.status,
+			c: this.convertCoins(arena.coinsBuffer),
+			ss: this.convertSnakes(snakes),
+			bs: this.convertPoints(bullets, this.getPointWithIdItem as getItemFunc),
 			st: stat,
+			b: this.convertPoints(bin, this.getPointItem as getItemFunc)
 			// ai: { coinsNum: arena.coins.length },
-			...result
 		} as GameState;
 	};
+
+	private getPointItem = (p: Point): Point => p;
+
+	private getPointWithIdItem = ({ p }: PointWithId): Point => p;
 
 	private convertSnakes = (snakes: SnakeData[]): SnakeArrayData[] | undefined => {
 		const arr = [] as SnakeArrayData[];
@@ -52,14 +55,16 @@ export class GameStateProvider {
 		return arr.length ? arr : undefined;
 	};
 
-	private convertBullets = (bullets: Bullet[]): number[] => {
+	private convertPoints = (points: Point[] | PointWithId[], getItem: getItemFunc): number[] | undefined => {
 		const arr = [] as number[];
 		const { width } = Hlp.getSize(this.state);
 
-		for (let i = 0; i < bullets.length; i++) {
-			arr.push(CmHlp.pointToNum(width, bullets[i]));
+		for (let i = 0; i < points.length; i++) {
+			arr.push(CmHlp.pointToNum(width, getItem(points[i])));
 		}
 
-		return arr;
+		return arr.length ? arr : undefined;
 	};
+
+	private convertCoins = (coins: Coin[]): Coin[] | undefined => (coins.length ? coins : undefined);
 }

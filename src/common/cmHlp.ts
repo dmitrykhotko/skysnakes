@@ -1,4 +1,4 @@
-import { Id, ObjectWithId, Point, PointWithId } from './types';
+import { Id, ObjectWithId, Point } from './types';
 
 export abstract class CmHlp {
 	static getById = <T extends ObjectWithId>(id: Id, items: T[]): T => {
@@ -16,8 +16,8 @@ export abstract class CmHlp {
 		return target;
 	};
 
-	static pointToNum = (width: number, point: PointWithId): number => {
-		const [x, y] = point.p;
+	static pointToNum = (width: number, point: Point): number => {
+		const [x, y] = point;
 		return x + y * width;
 	};
 

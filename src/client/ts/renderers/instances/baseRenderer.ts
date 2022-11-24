@@ -275,15 +275,17 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	};
 
-	private emptyBin = (bin: LinkedPoint[]): void => {
+	private emptyBin = (bin: number[]): void => {
 		this.use(Layer.Presenter);
 
 		if (!bin.length) {
 			return;
 		}
 
+		const { width } = this.size;
+
 		for (let i = 0; i < bin.length; i++) {
-			this.clearCell(bin[i]);
+			this.clearCell(CmHlp.numToPoint(width, bin[i]));
 		}
 	};
 }
