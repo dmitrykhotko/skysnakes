@@ -1,6 +1,5 @@
-import { Player } from '../../common/enums';
-import { getById } from '../../common/getById';
-import { Bullet, GameState, Point, SnakeArrayData } from '../../common/types';
+import { CmHlp } from '../../common/cmHlp';
+import { Bullet, GameState, SnakeArrayData } from '../../common/types';
 import { ArenaStore, BinStore, BulletsStore, SnakesStore, StatStore } from '../redux';
 import { State } from '../redux/state';
 import { Hlp } from '../utils/hlp';
@@ -36,7 +35,7 @@ export class GameStateProvider {
 		for (let i = 0; i < snakes.length; i++) {
 			const { id, serviceId, head } = snakes[i];
 			const [x, y] = head;
-			const prevSnake = getById(id, this.prevSnakes);
+			const prevSnake = CmHlp.getById(id, this.prevSnakes);
 			const prevHead = prevSnake?.head;
 			const shouldSend = !(prevHead && Hlp.comparePoints(head, prevHead));
 
@@ -53,5 +52,14 @@ export class GameStateProvider {
 		return arr.length ? arr : undefined;
 	};
 
-	private convertBullets = (bullets: Bullet[]): Point[] => Hlp.mapByProp(bullets, 'p') as Point[];
+	private convertBullets = (bullets: Bullet[]): number[] => {
+		const arr = [] as number[];
+		const { width } = Hlp.getSize(this.state);
+
+		for (let i = 0; i < bullets.length; i++) {
+			arr.push(CmHlp.pointToNum(width, bullets[i]));
+		}
+
+		return arr;
+	};
 }

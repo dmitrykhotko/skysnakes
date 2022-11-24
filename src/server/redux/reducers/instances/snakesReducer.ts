@@ -1,5 +1,5 @@
+import { CmHlp } from '../../../../common/cmHlp';
 import { Direction, Player } from '../../../../common/enums';
-import { getById } from '../../../../common/getById';
 import { LinkedPoint } from '../../../../common/types';
 import { Hlp } from '../../../utils/hlp';
 import { SnakeData } from '../../../utils/types';
@@ -70,7 +70,7 @@ export abstract class SnakesReducer extends Reducer<SnakesStore> {
 	): SnakesStore => {
 		const snakesState = state as SnakesStore;
 		const { id, value } = action as SetValueByIdAction<T, Player>;
-		const targetSnake = getById(id, snakesState.snakes);
+		const targetSnake = CmHlp.getById(id, snakesState.snakes);
 
 		return {
 			...snakesState,

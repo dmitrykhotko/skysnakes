@@ -1,12 +1,11 @@
+import { CmHlp } from '../../../../common/cmHlp';
 import { CoinType, GameStatus, NotifType, Player } from '../../../../common/enums';
-import { getById } from '../../../../common/getById';
 import {
 	Coin,
 	GameState,
 	LinkedPoint,
 	Notification,
 	Observer,
-	Point,
 	Size,
 	SnakeArrayData,
 	StatState
@@ -223,9 +222,9 @@ export abstract class BaseRenderer extends Renderer {
 	private renderNotifications = (notifications: Notification[]): void => {
 		for (let i = 0; i < notifications.length; i++) {
 			const { t: type, v: value, p: point } = notifications[i];
-			const drawingObject = BaseRenderer.notifTypeToDrawingObject[type];
+			const dO = BaseRenderer.notifTypeToDrawingObject[type];
 
-			this.renderText(value, point, LINE_HEIGHT, drawingObject);
+			this.renderText(value, point, LINE_HEIGHT, dO);
 		}
 	};
 
@@ -234,25 +233,29 @@ export abstract class BaseRenderer extends Renderer {
 
 		for (let i = 0; i < coins.length; i++) {
 			const { p: point, t: type } = coins[i];
-			this.renderCircle(point, BaseRenderer.coinTypeToDrawingObject[type]);
+			const dO = BaseRenderer.coinTypeToDrawingObject[type];
+
+			this.renderCircle(point, dO);
 		}
 	};
 
 	private renderSnakes = (snakes: SnakeArrayData[]): void => {
 		this.use(Layer.Presenter);
 
+		const eDO = DrawingObject.Empty;
+
 		for (let i = 0; i < snakes.length; i++) {
 			const { id, h: head, p: renderPrev } = snakes[i];
 			const type = this.getSnakeDrawingObject(id);
 
 			this.renderCell(head, type);
-			this.renderCircle(head, DrawingObject.Empty);
+			this.renderCircle(head, eDO);
 
 			if (!renderPrev) {
 				break;
 			}
 
-			const prevHead = this.prevSnakes ? getById(id, this.prevSnakes)?.h : undefined;
+			const prevHead = this.prevSnakes ? CmHlp.getById(id, this.prevSnakes)?.h : undefined;
 			prevHead && this.renderCell(prevHead, type);
 		}
 	};
@@ -260,12 +263,15 @@ export abstract class BaseRenderer extends Renderer {
 	private getSnakeDrawingObject = (id: Player): DrawingObject =>
 		id === Player.P1 ? DrawingObject.Player1 : DrawingObject.Player2;
 
-	private renderBullets = (bulletsArr: Point[]): void => {
+	private renderBullets = (bullets: number[]): void => {
 		this.use(Layer.Presenter);
 
+		const { width } = this.size;
+		const bDO = DrawingObject.Bullet;
+
 		// TODO: render bullet tail
-		for (let i = 0; i < bulletsArr.length; i++) {
-			this.renderCircle(bulletsArr[i], DrawingObject.Bullet);
+		for (let i = 0; i < bullets.length; i++) {
+			this.renderCircle(CmHlp.numToPoint(width, bullets[i]), bDO);
 		}
 	};
 

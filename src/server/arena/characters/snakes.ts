@@ -1,5 +1,5 @@
+import { CmHlp } from '../../../common/cmHlp';
 import { Direction, Player } from '../../../common/enums';
-import { getById } from '../../../common/getById';
 import { LinkedPoint, Point, PointWithId } from '../../../common/types';
 import { Action, BinActions, SnakesActions } from '../../redux/actions';
 import { SnakesStore, SnakeState } from '../../redux/reducers/instances/snakesReducer';
@@ -20,7 +20,7 @@ export class Snakes {
 
 	static get = (state: State): SnakeState[] => state.get<SnakesStore>().snakes;
 
-	static getById = (state: State, id: Player): SnakeState => getById(id, this.get(state));
+	static getById = (state: State, id: Player): SnakeState => CmHlp.getById(id, this.get(state));
 
 	static toArray = (state: State, id: Player, start = this.getById(state, id).head): Point[] => {
 		const points = [] as Point[];
@@ -36,7 +36,7 @@ export class Snakes {
 
 	get = (): SnakeState[] => Snakes.get(this.state);
 
-	getById = (id: Player): SnakeState => getById(id, Snakes.get(this.state));
+	getById = (id: Player): SnakeState => CmHlp.getById(id, Snakes.get(this.state));
 
 	init = (snakesInitial: DirectionWithId[]): void => {
 		const { width, height } = Hlp.getSize(this.state);
