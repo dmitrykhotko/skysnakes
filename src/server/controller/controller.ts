@@ -57,7 +57,6 @@ export class Controller {
 						}
 
 						WSHlp.broadcast(this.wSs, MessageType.SET_SIZE, Hlp.getSize(this.state));
-
 						break;
 					case MessageType.PLAYER_IS_READY:
 						this.playersReady++;
