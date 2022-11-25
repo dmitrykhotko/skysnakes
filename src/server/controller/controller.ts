@@ -6,7 +6,7 @@ import { WSHlp } from '../../common/wSHlp';
 import { Arena } from '../arena/arena';
 import { Snakes } from '../arena/characters/snakes';
 import { ArenaStore } from '../redux';
-import { ArenaActions, BinActions, BulletsActions, CommonActions, SnakesActions } from '../redux/actions';
+import { ArenaActions, BulletsActions, CommonActions, SnakesActions } from '../redux/actions';
 import { createState, State } from '../redux/state';
 import { Timer } from '../timer/timer';
 import { GAME_START_DELAY } from '../utils/constants';
@@ -129,7 +129,6 @@ export class Controller {
 
 	private tick = (): void => {
 		WSHlp.broadcast(this.wSs, MessageType.TICK, this.gameStateProvider.get());
-		this.state.dispatch(ArenaActions.flushCoinsBuffer(), BinActions.emptyBin());
 
 		const { status } = this.state.get<ArenaStore>().arena;
 
