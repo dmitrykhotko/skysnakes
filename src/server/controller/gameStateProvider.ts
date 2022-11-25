@@ -10,7 +10,7 @@ import {
 	StatStateSlim
 } from '../../common/types';
 import { ArenaStore, BinStore, BulletsStore, SnakesStore, StatStore } from '../redux';
-import { ArenaActions, BinActions } from '../redux/actions';
+import { Action, ArenaActions, BinActions } from '../redux/actions';
 import { State } from '../redux/state';
 import { Hlp } from '../utils/hlp';
 import { SnakeData } from '../utils/types';
@@ -23,6 +23,7 @@ export class GameStateProvider {
 	constructor(private state: State) {}
 
 	get = (): GameState => {
+		const actions = [] as Action[];
 		const {
 			arena: { status, coinsBuffer },
 			snakes,
@@ -35,17 +36,20 @@ export class GameStateProvider {
 			s: status,
 			ss: this.convertSnakes(snakes),
 			bs: this.convertPoints(bullets, this.getPointWithIdItem as getItemFunc),
-			st: this.convertStat(stat)
+			st: this.convertStat(stat),
+			b: this.convertPoints(bin, this.getPointItem as getItemFunc)
 			// ai: { coinsNum: arena.coins.length },
 		} as GameState;
 
+		actions.push(BinActions.emptyBin());
+
 		// balancing data object
 		if (!result.ss) {
-			result.b = this.convertPoints(bin, this.getPointItem as getItemFunc);
 			result.c = this.convertCoins(coinsBuffer);
-
-			this.state.dispatch(ArenaActions.flushCoinsBuffer(), BinActions.emptyBin());
+			actions.push(ArenaActions.flushCoinsBuffer());
 		}
+
+		this.state.dispatch(...actions);
 
 		return result;
 	};

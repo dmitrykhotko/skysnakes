@@ -8,6 +8,7 @@ export const SNAKE_LENGTH = 2;
 
 export const FPS = 30; // Valid values are 60, 30, 20,15,10...
 export const SNAKE_SPEED = 1;
+export const BULLET_THROTTLE_DELAY = 500;
 export const BULLET_SPEED = 2;
 export const GAME_START_DELAY = 3000;
 export const COINS_NUMBER = 50;

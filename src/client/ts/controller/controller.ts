@@ -1,7 +1,9 @@
-import { GameStatus, ServiceInput } from '../../../common/enums';
+import { CmHlp } from '../../../common/cmHlp';
+import { FireInput, GameStatus, ServiceInput } from '../../../common/enums';
 import { MessageType } from '../../../common/messageType';
 import { GameState, Message, Observer, PlayerInput, Size } from '../../../common/types';
 import { WSHlp } from '../../../common/wSHlp';
+import { BULLET_THROTTLE_DELAY } from '../../../server/utils/constants';
 import { ControlPanel } from '../controlPanel/controlPanel';
 import { ControlScreen } from '../controlScreen/controlScreen';
 import { CanvasRenderer } from '../renderers/instances/canvasRenderer';
@@ -15,6 +17,8 @@ export class Controller {
 	private prevState?: GameState;
 	private renderer: CanvasRenderer;
 
+	private throttledFireInput: Observer;
+
 	constructor({ roomUUId, showServiceInfo = false }: GameProps, private size: Size, rProps: CanvasRendererProps) {
 		this.wS = this.createWS();
 		this.renderer = new CanvasRenderer(rProps, this.onInput as Observer, showServiceInfo);
@@ -27,6 +31,11 @@ export class Controller {
 
 		new ControlPanel(this.renderer.focus, this.openMenu);
 		this.initConnection();
+
+		this.throttledFireInput = CmHlp.throttle(
+			WSHlp.send.bind(null, this.wS, MessageType.USER_INPUT, FireInput.RFire),
+			BULLET_THROTTLE_DELAY
+		);
 	}
 
 	private createWS = (): WebSocket => new WebSocket(`ws://${location.hostname}:${WS_PORT}`);
@@ -73,7 +82,7 @@ export class Controller {
 	};
 
 	private onInput = (input: PlayerInput): void => {
-		this.wS.readyState === WebSocket.OPEN && WSHlp.send(this.wS, MessageType.USER_INPUT, input);
+		FireInput[input] ? this.throttledFireInput() : WSHlp.send(this.wS, MessageType.USER_INPUT, input);
 	};
 
 	private onControlScreenHide = (input?: PlayerInput): void => {

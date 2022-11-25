@@ -1,4 +1,4 @@
-import { Id, ObjectWithId, Point } from './types';
+import { Id, ObjectWithId, Observer, Point } from './types';
 
 export abstract class CmHlp {
 	static getById = <T extends ObjectWithId>(id: Id, items: T[]): T => {
@@ -26,5 +26,21 @@ export abstract class CmHlp {
 		const y = (point - x) / width;
 
 		return [x, y];
+	};
+
+	static throttle = (func: Observer, delay: number): Observer => {
+		let flag = true;
+		const setFlag = (): void => void (flag = true);
+
+		return (): void => {
+			if (!flag) {
+				return;
+			}
+
+			flag = false;
+
+			func();
+			setTimeout(setFlag, delay);
+		};
 	};
 }
