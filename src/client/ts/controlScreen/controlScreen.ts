@@ -23,23 +23,22 @@ export class ControlScreen {
 	private wS!: WebSocket;
 	private screens!: Record<ScreenType, () => void>;
 	private isCloseable = false;
+	private reconnectRequired = false;
 
 	private el: HTMLElement;
 	private contentEl: HTMLElement;
 	private availableRoomsContainerEl: HTMLElement;
 	private availableRoomsListEl: HTMLElement;
-	private controlsEl: HTMLElement;
 	private createRoomBtn: HTMLButtonElement;
 	private joinRoomBtn: HTMLButtonElement;
 	private mainMenuBtn: HTMLButtonElement;
 	private closeBtn: HTMLButtonElement;
 
-	constructor(wS: WebSocket, private onHide: Observer, roomUUId?: UUId) {
+	constructor(wS: WebSocket, private onHide: Observer, private reconnect: Observer, roomUUId?: UUId) {
 		this.el = document.querySelector('.js-ControlScreen') as HTMLElement;
 		this.contentEl = this.el.querySelector('.js-Snakes__ControlScreenContent') as HTMLElement;
 		this.availableRoomsContainerEl = this.el.querySelector('.js-Snakes__AvailableRoomsContainer') as HTMLElement;
 		this.availableRoomsListEl = this.el.querySelector('.js-Snakes__AvailableRoomsList') as HTMLElement;
-		this.controlsEl = this.el.querySelector('.js-Snakes__ControlScreenControls') as HTMLElement;
 		this.createRoomBtn = this.el.querySelector('.js-Snakes__CreateRoom') as HTMLButtonElement;
 		this.joinRoomBtn = this.el.querySelector('.js-Snakes__JoinRoom') as HTMLButtonElement;
 		this.mainMenuBtn = this.el.querySelector('.js-Snakes__MainMenu') as HTMLButtonElement;
@@ -54,12 +53,14 @@ export class ControlScreen {
 
 	show = (type = ScreenType.Main): void => {
 		this.isCloseable = false;
+		this.reconnectRequired = false;
 		this.screens[type]();
 	};
 
 	hide = (): void => {
 		this.hideEls(this.el);
 		this.onHide();
+		this.reconnectRequired = false;
 	};
 
 	initConnection = (wS: WebSocket, roomUUId?: UUId): void => {
@@ -110,8 +111,8 @@ export class ControlScreen {
 		this.screens = {
 			[ScreenType.Main]: this.showMainScreen,
 			[ScreenType.GamePaused]: this.showPauseScreen,
-			[ScreenType.PlayerDisconnected]: this.showInfoScreen.bind(null, PLAYER_DISCONNECTED_SCREEN),
-			[ScreenType.ConnectionLost]: this.showInfoScreen.bind(null, CONNECTION_LOST_SCREEN)
+			[ScreenType.PlayerDisconnected]: this.showPlayerDisconnectedScreen,
+			[ScreenType.ConnectionLost]: this.showConnectionLostScreen
 		};
 	};
 
@@ -149,6 +150,13 @@ export class ControlScreen {
 	};
 
 	private onMainMenuBtnClick = (): void => {
+		if (this.reconnectRequired) {
+			this.reconnect();
+			this.reconnectRequired = false;
+
+			return;
+		}
+
 		this.showMainScreen();
 	};
 
@@ -187,21 +195,32 @@ export class ControlScreen {
 	private showMainScreen = (): void => {
 		this.setScreen(WELCOME_SCREEN);
 		this.hideEls(this.availableRoomsContainerEl, this.closeBtn, this.mainMenuBtn);
-		this.showEls(this.el, this.controlsEl, this.createRoomBtn, this.joinRoomBtn);
+		this.showEls(this.el, this.createRoomBtn, this.joinRoomBtn);
 
 		this.createRoomBtn.focus();
 	};
 
 	private showPauseScreen = (): void => {
-		this.showInfoScreen(GAME_PAUSED_SCREEN, true);
+		this.reconnectRequired = true;
 
-		const quitBtn = this.contentEl.querySelector('.js-Snakes__QuitToMainMenu') as HTMLButtonElement;
-		quitBtn.addEventListener('click', this.quitGame);
+		this.showInfoScreen(GAME_PAUSED_SCREEN, true);
+		this.showEls(this.mainMenuBtn);
+	};
+
+	private showPlayerDisconnectedScreen = (): void => this.showFinalScreen(PLAYER_DISCONNECTED_SCREEN);
+
+	private showConnectionLostScreen = (): void => this.showFinalScreen(CONNECTION_LOST_SCREEN);
+
+	private showFinalScreen = (screen: string): void => {
+		this.reconnectRequired = true;
+
+		this.showInfoScreen(screen);
+		this.showEls(this.mainMenuBtn);
 	};
 
 	private showInfoScreen = (screen: string, isCloseable = false): void => {
 		this.setScreen(screen);
-		this.hideEls(this.controlsEl, this.availableRoomsContainerEl, this.mainMenuBtn);
+		this.hideEls(this.createRoomBtn, this.joinRoomBtn, this.mainMenuBtn);
 		this.showEls(this.el);
 
 		this.isCloseable = isCloseable;
@@ -274,6 +293,7 @@ export class ControlScreen {
 	};
 
 	private showJoinRoomFailScreen = (uuid: UUId): void => {
+		this.showMainMenuBtnOnly();
 		this.setScreen(JOIN_ROOM_FAIL_SCREEN.replace('#{room}', `{ ${uuid} }`));
 	};
 
@@ -297,8 +317,6 @@ export class ControlScreen {
 
 	private bindOnEnter = (el: HTMLElement, action: Observer): void =>
 		el.addEventListener('keydown', event => event.code === 'Enter' && action());
-
-	private quitGame = (): void => window.location.reload();
 
 	private showMainMenuBtnOnly = (): void => {
 		this.hideEls(this.createRoomBtn, this.joinRoomBtn);

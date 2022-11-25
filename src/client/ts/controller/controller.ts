@@ -18,7 +18,12 @@ export class Controller {
 	constructor({ roomUUId, showServiceInfo = false }: GameProps, private size: Size, rProps: CanvasRendererProps) {
 		this.wS = this.createWS();
 		this.renderer = new CanvasRenderer(rProps, this.onInput as Observer, showServiceInfo);
-		this.controlScreen = new ControlScreen(this.wS, this.onControlScreenHide as Observer, roomUUId);
+		this.controlScreen = new ControlScreen(
+			this.wS,
+			this.onControlScreenHide as Observer,
+			this.reconnect as Observer,
+			roomUUId
+		);
 
 		new ControlPanel(this.renderer.focus, this.openMenu);
 		this.initConnection();
@@ -64,11 +69,7 @@ export class Controller {
 	};
 
 	private onPlayerDisconnect = (): void => {
-		this.wS.close();
-		this.wS = this.createWS();
-
-		this.initConnection();
-		this.controlScreen.initConnection(this.wS);
+		this.reconnect();
 	};
 
 	private onInput = (input: PlayerInput): void => {
@@ -78,6 +79,14 @@ export class Controller {
 	private onControlScreenHide = (input?: PlayerInput): void => {
 		input && this.onInput(input);
 		this.renderer.focus();
+	};
+
+	private reconnect = (): void => {
+		this.wS.close();
+		this.wS = this.createWS();
+
+		this.initConnection();
+		this.controlScreen.initConnection(this.wS);
 	};
 
 	private handleStartMsg = (): void => {

@@ -10,4 +10,11 @@
 	&:focus{
 		outline: none;
 	}
+
+	&.-large {
+		min-width: rem(160px);
+		padding: 0 rem(25px);
+		height: rem(25px);
+		border: rem(2px) solid;
+	}
 }

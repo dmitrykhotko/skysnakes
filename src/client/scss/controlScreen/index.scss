@@ -82,19 +82,8 @@
 			border-top: rem(2px) solid #FFFF00;
 		}
 
-		&__RoomActionControl {
-			min-width: rem(160px);
-			padding: 0 rem(25px);
-			height: rem(25px);
-			border: rem(2px) solid;
-		}
-
 		&__RoomName, &__LivesNum {
 			margin-top: rem(20px);
-		}
-
-		&__QuitToMainMenu {
-			margin-top: rem(40px);
 		}
 	}
 }

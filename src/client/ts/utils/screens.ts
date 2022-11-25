@@ -13,7 +13,6 @@ export const GAME_PAUSED_SCREEN = `
 	<p>Controls:</p>
 	<p>Arrows — move, Space — shoot,</p>
 	<p>ESC — play/pause, Enter — restart.</p>
-	<button class="Snakes__QuitToMainMenu js-Snakes__QuitToMainMenu btn">Quit to main menu</button>
 `;
 
 export const PLAYER_DISCONNECTED_SCREEN = `
