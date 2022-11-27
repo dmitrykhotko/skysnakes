@@ -9,7 +9,7 @@ import { ArenaStore } from '../redux';
 import { ArenaActions, BulletsActions, CommonActions, SnakesActions } from '../redux/actions';
 import { createState, State } from '../redux/state';
 import { Timer } from '../timer/timer';
-import { GAME_START_DELAY } from '../utils/constants';
+import { COINS_DENSITY, GAME_START_DELAY } from '../utils/constants';
 import { DelayedTasks } from '../utils/delayedTasks';
 import { Hlp } from '../utils/hlp';
 import { WSWithId } from '../utils/types';
@@ -98,6 +98,8 @@ export class Controller {
 
 	private start = (): void => {
 		const { lives } = this;
+		const { width, height } = Hlp.getSize(this.state);
+		const coinsNumberMax = Math.floor(width * height * COINS_DENSITY);
 		const players = [
 			{ direction: Direction.Right, id: Player.P1 },
 			{ direction: Direction.Left, id: Player.P2 }
@@ -109,7 +111,7 @@ export class Controller {
 			CommonActions.resetGame({ players, lives, size: Hlp.getSize(this.state) }),
 			ArenaActions.setGameStatus(GameStatus.InProgress)
 		);
-		this.arena.start(players);
+		this.arena.start(players, coinsNumberMax);
 		this.timer.start();
 
 		WSHlp.broadcast(this.wSs, MessageType.START);

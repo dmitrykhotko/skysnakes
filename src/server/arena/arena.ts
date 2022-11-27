@@ -38,12 +38,12 @@ export class Arena {
 		this.stat = new Stat(this.state);
 	}
 
-	start = (snakesInitial: DirectionWithId[]): void => {
+	start = (snakesInitial: DirectionWithId[], coinsNumberMax: number): void => {
 		this.steps = 0;
 		this.snakesInitial = snakesInitial;
 
 		this.snakes.init(this.snakesInitial);
-		this.coins.init();
+		this.coins.init(coinsNumberMax);
 	};
 
 	tick = (): void => {

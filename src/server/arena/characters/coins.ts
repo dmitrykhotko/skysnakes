@@ -5,7 +5,7 @@ import { ArenaStore } from '../../redux';
 import { ArenaActions, BinActions } from '../../redux/actions';
 import { State } from '../../redux/state';
 import {
-	COINS_NUMBER,
+	// COINS_NUMBER,
 	COINS_SPREAD,
 	DEATH_COIN_LIFETIME,
 	INIT_COINS_MAX_DELAY,
@@ -27,20 +27,22 @@ export class Coins {
 		[Player.P2]: CoinType.DeathPlayer2
 	};
 
+	private coinsNumberMax!: number;
 	private activeCoinsNum = 0;
 
 	constructor(private state: State) {}
 
-	init = (): void => {
+	init = (coinsNumberMax: number): void => {
+		this.coinsNumberMax = coinsNumberMax;
 		this.activeCoinsNum = 0;
 
-		for (let i = 0; i < COINS_NUMBER; i++) {
+		for (let i = 0; i < this.coinsNumberMax; i++) {
 			this.delayedSet(INIT_COINS_MAX_DELAY);
 		}
 	};
 
 	checkNumber = (): void => {
-		this.activeCoinsNum < COINS_NUMBER && this.delayedSet();
+		this.activeCoinsNum < this.coinsNumberMax && this.delayedSet();
 	};
 
 	checkCollisions = (object: LinkedPoint): Coin[] => {

@@ -11,7 +11,7 @@ export const SNAKE_SPEED = 1;
 export const BULLET_THROTTLE_DELAY = 500;
 export const BULLET_SPEED = 2;
 export const GAME_START_DELAY = 3000;
-export const COINS_NUMBER = 50;
+export const COINS_DENSITY = 0.003;
 
 export const STANDARD_COIN_AWARD = 1;
 export const DEATH_ENEMY_COIN_AWARD = STANDARD_COIN_AWARD * 2;
