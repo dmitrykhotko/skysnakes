@@ -59,7 +59,7 @@ export type SnakeDataSlim = number[];
 export type PointSlim = number;
 
 export type StatStateSlim = {
-	ps: PlayerStatSlim[];
+	ps?: PlayerStatSlim[];
 	w?: Player[];
 	n?: NotificationSlim[];
 };

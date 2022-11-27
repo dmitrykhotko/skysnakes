@@ -36,17 +36,17 @@ export class GameStateProvider {
 			s: status,
 			ss: this.convertSnakes(snakes),
 			bs: this.convertPoints(bullets, this.getPointWithIdItem as getItemFunc),
-			st: this.convertStat(stat),
 			b: this.convertPoints(bin, this.getPointItem as getItemFunc)
 			// ai: { coinsNum: arena.coins.length },
 		} as GameState;
 
-		actions.push(StatActions.clearNotifications(), BinActions.emptyBin());
+		actions.push(BinActions.emptyBin());
 
 		// balancing data object
 		if (!result.ss) {
 			result.c = this.convertCoins(coinsBuffer);
-			actions.push(ArenaActions.flushCoinsBuffer());
+			result.st = this.convertStat(stat);
+			actions.push(StatActions.clearNotifications(), ArenaActions.flushCoinsBuffer());
 		}
 
 		this.state.dispatch(...actions);

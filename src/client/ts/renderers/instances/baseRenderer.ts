@@ -1,5 +1,5 @@
 import { CmHlp } from '../../../../common/cmHlp';
-import { CoinType, GameStatus, NotifType, Player } from '../../../../common/enums';
+import { CoinType, NotifType, Player } from '../../../../common/enums';
 import {
 	CoinSlim,
 	GameState,
@@ -16,10 +16,6 @@ import { LIVES, PLAYER, RESTART_MSG, SCORE, SCORE_SEPARATOR, WINNER, WINNERS } f
 import { Renderer } from '../renderer';
 
 export abstract class BaseRenderer extends Renderer {
-	private static defaultPrevState = {
-		s: GameStatus.Finish
-	} as GameState;
-
 	private static coinTypeToDrawingObject = {
 		[CoinType.Standard]: DrawingObject.StandardCoin,
 		[CoinType.DeathPlayer1]: DrawingObject.Player1,
@@ -78,7 +74,10 @@ export abstract class BaseRenderer extends Renderer {
 			this.serviceInfoFlag && this.renderServiceInfo(state);
 			!this.isInitialized && (this.isInitialized = true);
 
-			stat && (this.prevStat = stat);
+			if (stat?.ps) {
+				this.prevStat = stat;
+			}
+
 			snakes.length && (this.prevSnakes = snakes);
 		});
 	};
@@ -89,56 +88,12 @@ export abstract class BaseRenderer extends Renderer {
 		this.isInitialized = false;
 	};
 
-	protected renderServiceInfo(state: GameState): void {
-		const { st: stat, ai: additionalInfo } = state;
-		let lineNumber = 2;
-
-		this.use(Layer.Service).clearRect();
-
-		if (stat) {
-			const { w: winners = [], ps: playersStat = [] } = stat;
-
-			if (winners.length) {
-				this.renderTextLine(WINNERS, lineNumber++);
-
-				for (let i = 0; i < winners.length; i++) {
-					this.renderTextLine(`${Player[winners[i]]}`, lineNumber++);
-				}
-
-				lineNumber += 2;
-			}
-
-			for (let i = 0; i < playersStat.length; i++) {
-				const [id, lives, score] = playersStat[i];
-
-				this.renderTextLine(`${PLAYER} ${Player[id]}`, lineNumber++);
-				this.renderTextLine(`${LIVES} ${lives}`, lineNumber++);
-				this.renderTextLine(`${SCORE} ${score}`, lineNumber);
-
-				lineNumber += 2;
-			}
-		}
-
-		lineNumber++;
-
-		if (!additionalInfo) {
-			return;
-		}
-
-		const aInfo = Object.entries(additionalInfo);
-
-		for (let i = 0; i < aInfo.length; i++) {
-			const [name, value] = aInfo[i];
-			this.renderTextLine(`${name}:  ${value.toString()}`, lineNumber++);
-		}
-	}
-
 	private renderStat = (stat?: StatStateSlim): void => {
-		if (!stat || stat === this.prevStat) {
+		if (!(stat && stat.ps)) {
 			return;
 		}
 
-		const { ps: playersStat, w: winners = [], n: notifications } = stat;
+		const { ps: playersStat = [], w: winners = [], n: notifications = [] } = stat;
 
 		this.renderWinners(winners);
 		this.use(Layer.Stat).clearRect();
@@ -264,6 +219,50 @@ export abstract class BaseRenderer extends Renderer {
 			prevHeadNum && this.renderCell(CmHlp.numToPoint(width, prevHeadNum), type);
 		}
 	};
+
+	private renderServiceInfo(state: GameState): void {
+		const { st: stat, ai: additionalInfo } = state;
+		let lineNumber = 2;
+
+		this.use(Layer.Service).clearRect();
+
+		if (stat) {
+			const { w: winners = [], ps: playersStat = [] } = stat;
+
+			if (winners.length) {
+				this.renderTextLine(WINNERS, lineNumber++);
+
+				for (let i = 0; i < winners.length; i++) {
+					this.renderTextLine(`${Player[winners[i]]}`, lineNumber++);
+				}
+
+				lineNumber += 2;
+			}
+
+			for (let i = 0; i < playersStat.length; i++) {
+				const [id, lives, score] = playersStat[i];
+
+				this.renderTextLine(`${PLAYER} ${Player[id]}`, lineNumber++);
+				this.renderTextLine(`${LIVES} ${lives}`, lineNumber++);
+				this.renderTextLine(`${SCORE} ${score}`, lineNumber);
+
+				lineNumber += 2;
+			}
+		}
+
+		lineNumber++;
+
+		if (!additionalInfo) {
+			return;
+		}
+
+		const aInfo = Object.entries(additionalInfo);
+
+		for (let i = 0; i < aInfo.length; i++) {
+			const [name, value] = aInfo[i];
+			this.renderTextLine(`${name}:  ${value.toString()}`, lineNumber++);
+		}
+	}
 
 	private getPrevSnake = (id: Player): number[] | undefined => {
 		if (!this.prevSnakes) {
