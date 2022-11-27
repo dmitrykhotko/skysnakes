@@ -44,6 +44,8 @@ export abstract class StatReducer extends Reducer<StatStore> {
 				return this.addNotification(statStore, (action as SetValueAction<Notification>).value);
 			case ActionType.REMOVE_NOTIFICATION:
 				return this.removeNotification(statStore, (action as SetValueAction<Id>).value);
+			case ActionType.CLEAR_NOTIFICATIONS:
+				return this.clearNotifications(statStore);
 			case ActionType.GAME_RESET:
 				const { players, lives } = (action as SetValueAction<InitialData>).value;
 				return {
@@ -99,6 +101,18 @@ export abstract class StatReducer extends Reducer<StatStore> {
 			stat: {
 				...stat,
 				notifications: res.length ? res : undefined
+			}
+		};
+	};
+
+	private static clearNotifications = (store: StatStore): Store => {
+		const { stat } = store;
+
+		return {
+			...store,
+			stat: {
+				...stat,
+				notifications: undefined
 			}
 		};
 	};

@@ -1,21 +1,36 @@
 import { CmHlp } from '../../../common/cmHlp';
 import { FireInput, GameStatus, ServiceInput } from '../../../common/enums';
 import { MessageType } from '../../../common/messageType';
-import { GameState, Message, Observer, PlayerInput, Size } from '../../../common/types';
+import {
+	GameState,
+	Message,
+	NotificationSlim,
+	Observer,
+	PlayerInput,
+	Size,
+	StatStateSlim
+} from '../../../common/types';
 import { WSHlp } from '../../../common/wSHlp';
 import { BULLET_THROTTLE_DELAY } from '../../../server/utils/constants';
 import { ControlPanel } from '../controlPanel/controlPanel';
 import { ControlScreen } from '../controlScreen/controlScreen';
 import { CanvasRenderer } from '../renderers/instances/canvasRenderer';
-import { MAIN_SCREEN_DELAY, WS_PORT } from '../utils/constants';
+import { MAIN_SCREEN_DELAY, NOTIFICATION_LIFETIME, WS_PORT } from '../utils/constants';
 import { ScreenType } from '../utils/enums';
 import { CanvasRendererProps, GameProps } from '../utils/types';
+import { AutoErasables } from '../utils/autoErasables';
+
+enum Eraseable {
+	Notifications
+}
 
 export class Controller {
 	private wS!: WebSocket;
 	private controlScreen!: ControlScreen;
 	private prevState?: GameState;
 	private renderer: CanvasRenderer;
+
+	private eraseables = new AutoErasables();
 
 	private throttledFireInput: Observer;
 
@@ -106,10 +121,12 @@ export class Controller {
 	};
 
 	private handleTickMsg = (state: GameState): void => {
-		this.checkStatusChanged(state.s ?? GameStatus.Finish);
-		this.renderer.render(state);
+		const newState = this.processNotifications(state);
 
-		this.prevState = state;
+		this.checkStatusChanged(newState.s ?? GameStatus.Finish);
+		this.renderer.render(newState);
+
+		this.prevState = newState;
 	};
 
 	private handlePlayerDisconnectMsg = (): void => {
@@ -145,5 +162,22 @@ export class Controller {
 
 	private openMenu = (): void => {
 		this.onInput(ServiceInput.Escape);
+	};
+
+	private processNotifications = (state: GameState): GameState => {
+		const newItems = state.st?.n;
+
+		newItems && this.eraseables.set(Eraseable.Notifications, newItems, NOTIFICATION_LIFETIME);
+		const items = this.eraseables.get<NotificationSlim>(Eraseable.Notifications);
+
+		return items && items.length
+			? {
+					...state,
+					st: {
+						...(state.st || {}),
+						n: items
+					} as StatStateSlim
+			  }
+			: state;
 	};
 }

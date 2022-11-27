@@ -10,4 +10,5 @@ export abstract class StatActions extends SetActions {
 	static decLives = super.setValue<Player>(ActionType.DEC_LIVES);
 	static addNotification = super.setValue<Notification>(ActionType.ADD_NOTIFICATION);
 	static removeNotification = super.setValue<Id>(ActionType.REMOVE_NOTIFICATION);
+	static clearNotifications = super.set(ActionType.CLEAR_NOTIFICATIONS);
 }

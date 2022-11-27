@@ -10,7 +10,7 @@ import {
 	StatStateSlim
 } from '../../common/types';
 import { ArenaStore, BinStore, BulletsStore, SnakesStore, StatStore } from '../redux';
-import { Action, ArenaActions, BinActions } from '../redux/actions';
+import { Action, ArenaActions, BinActions, StatActions } from '../redux/actions';
 import { State } from '../redux/state';
 import { Hlp } from '../utils/hlp';
 import { SnakeData } from '../utils/types';
@@ -41,7 +41,7 @@ export class GameStateProvider {
 			// ai: { coinsNum: arena.coins.length },
 		} as GameState;
 
-		actions.push(BinActions.emptyBin());
+		actions.push(StatActions.clearNotifications(), BinActions.emptyBin());
 
 		// balancing data object
 		if (!result.ss) {

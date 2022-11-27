@@ -3,14 +3,7 @@ import { LinkedPoint } from '../../common/types';
 import { Snakes } from '../arena/characters/snakes';
 import { StatActions } from '../redux/actions';
 import { State } from '../redux/state';
-import {
-	FACE_COIN_AWARD_LIFETIME,
-	NEGATIVE_OFFSET_X,
-	NEGATIVE_OFFSET_Y,
-	POSITIVE_OFFSET_X,
-	POSITIVE_OFFSET_Y
-} from '../utils/constants';
-import { DelayedTasks } from '../utils/delayedTasks';
+import { NEGATIVE_OFFSET_X, NEGATIVE_OFFSET_Y, POSITIVE_OFFSET_X, POSITIVE_OFFSET_Y } from '../utils/constants';
 import { DamageType } from '../utils/enums';
 import { Hlp } from '../utils/hlp';
 import { DEATH_FUN_PRINT, KILL_FUN_PRINT } from '../utils/labels';
@@ -62,9 +55,5 @@ export class Notifier {
 				point: [newX, newY]
 			})
 		);
-
-		DelayedTasks.delay(() => {
-			this.state.dispatch(StatActions.removeNotification(id));
-		}, FACE_COIN_AWARD_LIFETIME);
 	};
 }
