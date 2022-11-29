@@ -1,6 +1,7 @@
 .Snakes .Snakes {
 	&__ControlPanel {
 		position: absolute;
+		width: 100%;
 		display: flex;
 		padding: rem(5px);
 		z-index: 4;

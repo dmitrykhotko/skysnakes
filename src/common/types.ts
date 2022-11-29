@@ -39,6 +39,8 @@ export interface PointWithId<T extends Point = Point> extends ObjectWithId {
 	point: T;
 }
 
+export type NotifType = VisualNotifType | AudioNotifType;
+
 export interface Notification extends ObjectWithId {
 	point?: Point;
 	type: NotifType;
@@ -107,5 +109,3 @@ export type Room = {
 	name: string;
 	lives: number;
 };
-
-export type NotifType = VisualNotifType | AudioNotifType;

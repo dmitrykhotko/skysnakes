@@ -12,11 +12,4 @@ body {
 	*.-hidden {
 		display: none;
 	}
-
-	&__GitHubLink {
-		position: absolute;
-		top: rem(5px);
-		right: 0;
-		z-index: 10;
-	}
 }
