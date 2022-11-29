@@ -13,7 +13,7 @@ import {
 } from '../../../common/types';
 import { WSHlp } from '../../../common/wSHlp';
 import { BULLET_THROTTLE_DELAY } from '../../../server/utils/constants';
-import { AudioController } from '../audio/audioController';
+import { AudioController } from '../audio';
 import { ControlButton, ControlPanel } from '../controlPanel/controlPanel';
 import { ControlScreen } from '../controlScreen/controlScreen';
 import { CanvasRenderer } from '../renderers/instances/canvasRenderer';

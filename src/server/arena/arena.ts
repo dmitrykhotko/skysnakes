@@ -1,5 +1,6 @@
-import { GameStatus, Player } from '../../common/enums';
+import { AudioNotifType, GameStatus, Player } from '../../common/enums';
 import { Id, LinkedPoint, Observer, Size } from '../../common/types';
+import { Notifier } from '../notifier/notifier';
 import { ArenaState, ArenaStore, BulletsStore } from '../redux';
 import { Action, SnakesActions, StatActions } from '../redux/actions';
 import { State } from '../redux/state';
@@ -25,7 +26,7 @@ export class Arena {
 	private bullets: Bullets;
 	private stat: Stat;
 
-	constructor(private state: State) {
+	constructor(private state: State, private notifier: Notifier) {
 		this.stepsNum = Hlp.lcm(SNAKE_SPEED, BULLET_SPEED);
 		this.snakeStep = this.stepsNum / SNAKE_SPEED;
 		this.bulletStep = this.stepsNum / BULLET_SPEED;
@@ -33,7 +34,7 @@ export class Arena {
 		this.snakes = new Snakes(this.state);
 		this.coins = new Coins(this.state);
 		this.bullets = new Bullets(this.state);
-		this.stat = new Stat(this.state);
+		this.stat = new Stat(this.state, this.notifier);
 	}
 
 	start = (snakesInitial: DirectionWithId[], coinsNumberMax: number): void => {
@@ -77,6 +78,7 @@ export class Arena {
 			const faceCoin = !!this.coins.checkCollisions(point).length;
 			const facedWall = x > width - 1 || y > height - 1 || x < 0 || y < 0;
 
+			faceCoin && this.notifier.addUniqueType(AudioNotifType.ShootCoin);
 			(faceCoin || facedWall) && actions.push(...this.bullets.remove(bullet));
 		}
 
@@ -257,6 +259,8 @@ export class Arena {
 			if (isDead) {
 				const player = snakeShotResult.id;
 				return { result: player, actions: [StatActions.decLives(player)] };
+			} else {
+				this.notifier.addUniqueType(AudioNotifType.HitSnake);
 			}
 		}
 
@@ -267,6 +271,7 @@ export class Arena {
 
 	private respawn = (...ids: Player[]): void => {
 		this.snakes.remove(ids);
+		this.notifier.addUniqueType(AudioNotifType.ShootSnake);
 
 		this.callIfInProgress(
 			DelayedTasks.delay as Observer,

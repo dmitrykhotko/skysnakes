@@ -15,11 +15,7 @@ import { DamageType } from '../utils/enums';
 import { Hlp } from '../utils/hlp';
 
 export class Stat {
-	private notifier: Notifier;
-
-	constructor(private state: State) {
-		this.notifier = new Notifier(this.state);
-	}
+	constructor(private state: State, private notifier: Notifier) {}
 
 	setDamage = (victim: Player, damage: number, damageType?: DamageType): Action[] => {
 		const resultDamage = Math.ceil(damage * DAMAGE_FACTOR);

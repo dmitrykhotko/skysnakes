@@ -5,8 +5,11 @@ import { SoundLib } from './soundLibrary';
 
 export class AudioController {
 	private static typeToPath = {
+		[AudioNotifType.Coin]: SoundLib.coin,
+		[AudioNotifType.HitSnake]: SoundLib.hitSnake,
 		[AudioNotifType.Shoot]: SoundLib.shoot,
-		[AudioNotifType.Coin]: SoundLib.coin
+		[AudioNotifType.ShootSnake]: SoundLib.shootSnake,
+		[AudioNotifType.ShootCoin]: SoundLib.shootCoin
 	};
 
 	private audio = new Audio();

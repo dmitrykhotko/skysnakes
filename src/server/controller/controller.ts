@@ -28,7 +28,6 @@ export class Controller {
 	private state: State;
 	private timer: Timer;
 	private arena: Arena;
-	// TODO: make notifier single object in controller scope
 	private notifier: Notifier;
 	private gameStateProvider: GameStateProvider;
 	private sizes = [] as Size[];
@@ -36,8 +35,8 @@ export class Controller {
 
 	constructor(private players: WSWithId[], private lives: number) {
 		this.state = createState();
-		this.arena = new Arena(this.state);
 		this.notifier = new Notifier(this.state);
+		this.arena = new Arena(this.state, this.notifier);
 		this.timer = new Timer(this.tick);
 		this.wSs = this.players.map(({ wS }) => wS);
 		this.gameStateProvider = new GameStateProvider(this.state);
