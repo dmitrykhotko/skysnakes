@@ -1,4 +1,4 @@
-import { GameStatus, Player } from '../../common/enums';
+import { AudioNotifType, GameStatus, Player } from '../../common/enums';
 import { Coin } from '../../common/types';
 import { Notifier } from '../notifier/notifier';
 import { StatStore } from '../redux';
@@ -65,6 +65,7 @@ export class Stat {
 		}
 
 		this.notifier.incScore(award, id);
+		this.notifier.addUniqueType(AudioNotifType.Coin);
 		this.state.dispatch(StatActions.changeScore(award, id));
 	};
 

@@ -49,5 +49,6 @@ export enum VisualNotifType {
 }
 
 export enum AudioNotifType {
-	Shoot = 3
+	Shoot = 3,
+	Coin = 4
 }

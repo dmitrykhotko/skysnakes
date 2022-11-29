@@ -1,10 +1,17 @@
 import { Observer } from '../../../common/types';
 import { EFFECTS_OFF, EFFECTS_ON, SOUND_OFF, SOUND_ON } from '../utils/labels';
 
+export enum ControlButton {
+	Menu = 1,
+	BM = 2,
+	Effects = 3
+}
+
 export class ControlPanel {
 	private menuBtn: HTMLButtonElement;
 	private bMBtn: HTMLButtonElement;
 	private effectsBtn: HTMLButtonElement;
+	private mapButtons: Record<ControlButton, HTMLButtonElement>;
 
 	private effectsFlag = false;
 
@@ -20,8 +27,17 @@ export class ControlPanel {
 		this.bMBtn = el.querySelector('.js-Snakes__BM') as HTMLButtonElement;
 		this.effectsBtn = el.querySelector('.js-Snakes__Effects') as HTMLButtonElement;
 
+		this.mapButtons = {
+			[ControlButton.Menu]: this.menuBtn,
+			[ControlButton.BM]: this.bMBtn,
+			[ControlButton.Effects]: this.effectsBtn
+		};
+
 		this.init();
 	}
+
+	public toggleVisibility = (button: ControlButton, hidden = true): void =>
+		void this.mapButtons[button].classList.toggle('-hidden', hidden);
 
 	private init = (): void => {
 		this.bMBtn.innerHTML = SOUND_ON;

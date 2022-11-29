@@ -5,7 +5,6 @@ import { ArenaStore } from '../../redux';
 import { ArenaActions, BinActions } from '../../redux/actions';
 import { State } from '../../redux/state';
 import {
-	// COINS_NUMBER,
 	COINS_SPREAD,
 	DEATH_COIN_LIFETIME,
 	INIT_COINS_MAX_DELAY,

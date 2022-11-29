@@ -49,16 +49,12 @@ export class Audio {
 			return false;
 		}
 
-		const bgmVol = this.ctx.createGain();
-		bgmVol.connect(this.vol);
-		bgmVol.gain.value = 0.25;
-
 		const arrayBuffer = await this.getSoundFile(sound);
 		const source = this.ctx.createBufferSource();
 
 		void this.ctx.decodeAudioData(arrayBuffer, audioBuffer => {
 			source.buffer = audioBuffer;
-			source.connect(bgmVol);
+			source.connect(this.vol);
 			source.loop = true;
 			source.start();
 		});

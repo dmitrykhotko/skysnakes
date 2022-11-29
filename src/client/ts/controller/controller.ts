@@ -14,7 +14,7 @@ import {
 import { WSHlp } from '../../../common/wSHlp';
 import { BULLET_THROTTLE_DELAY } from '../../../server/utils/constants';
 import { AudioController } from '../audio/audioController';
-import { ControlPanel } from '../controlPanel/controlPanel';
+import { ControlButton, ControlPanel } from '../controlPanel/controlPanel';
 import { ControlScreen } from '../controlScreen/controlScreen';
 import { CanvasRenderer } from '../renderers/instances/canvasRenderer';
 import { AutoErasables } from '../utils/autoErasables';
@@ -27,8 +27,9 @@ enum Eraseable {
 }
 
 export class Controller {
-	private wS!: WebSocket;
-	private controlScreen!: ControlScreen;
+	private wS: WebSocket;
+	private controlPanel: ControlPanel;
+	private controlScreen: ControlScreen;
 	private prevState?: GameState;
 	private renderer: CanvasRenderer;
 
@@ -43,14 +44,20 @@ export class Controller {
 		this.wS = this.createWS();
 		this.renderer = new CanvasRenderer(rProps, this.onInput, showServiceInfo);
 		this.controlScreen = new ControlScreen(this.wS, this.onControlScreenHide, this.reconnect, roomUUId);
-
-		new ControlPanel(this.renderer.focus, this.openMenu, this.audioController.bMOnOff, this.setEffectsFlag);
-		this.initConnection();
+		this.controlPanel = new ControlPanel(
+			this.renderer.focus,
+			this.openMenu,
+			this.audioController.bMOnOff,
+			this.setEffectsFlag
+		);
 
 		this.throttledFireInput = CmHlp.throttle(
 			WSHlp.send.bind(null, this.wS, MessageType.USER_INPUT, FireInput.RFire),
 			BULLET_THROTTLE_DELAY
 		);
+
+		this.initConnection();
+		this.controlPanel.toggleVisibility(ControlButton.Menu, false);
 	}
 
 	private createWS = (): WebSocket => new WebSocket(`ws://${location.hostname}:${WS_PORT}`);
@@ -58,6 +65,7 @@ export class Controller {
 	private initConnection = (): void => {
 		this.wS.addEventListener('open', (): void => {
 			console.log(`Connection established.`);
+			this.controlPanel.toggleVisibility(ControlButton.Menu);
 			this.controlScreen.show();
 		});
 
@@ -88,6 +96,7 @@ export class Controller {
 
 		this.wS.onclose = (): void => {
 			console.log(`Connection closed.`);
+			this.controlPanel.toggleVisibility(ControlButton.Menu);
 			this.controlScreen.show(ScreenType.ConnectionLost);
 		};
 	};
@@ -101,6 +110,7 @@ export class Controller {
 	};
 
 	private onControlScreenHide = (input?: PlayerInput): void => {
+		this.controlPanel.toggleVisibility(ControlButton.Menu, false);
 		input && this.onInput(input);
 		this.renderer.focus();
 	};
@@ -130,6 +140,7 @@ export class Controller {
 	};
 
 	private handlePlayerDisconnectMsg = (): void => {
+		this.controlPanel.toggleVisibility(ControlButton.Menu);
 		this.controlScreen.show(ScreenType.PlayerDisconnected);
 		setTimeout(this.onPlayerDisconnect, MAIN_SCREEN_DELAY);
 	};
@@ -157,6 +168,7 @@ export class Controller {
 	};
 
 	private pause = (): void => {
+		this.controlPanel.toggleVisibility(ControlButton.Menu);
 		this.controlScreen.show(ScreenType.GamePaused);
 	};
 
