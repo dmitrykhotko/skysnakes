@@ -1,5 +1,3 @@
-// import { Theme } from './../../public/themes/theme';
-
 import { SoundLib } from './soundLibrary';
 
 export class Audio {
@@ -15,18 +13,14 @@ export class Audio {
 		this.vol.gain.value = 1;
 	}
 
-	get isBgMPlaying(): boolean {
-		return this.sounds[SoundLib.mainTheme] && this.sounds[SoundLib.mainTheme].isPlaying;
-	}
-
 	async play(sound: string): Promise<void> {
 		!this.sounds[sound] && (this.sounds[sound] = { isPlaying: false });
 
-		if (this.sounds[sound].isPlaying) {
-			return;
-		}
+		// if (this.sounds[sound].isPlaying) {
+		// 	return;
+		// }
 
-		this.sounds[sound].isPlaying = true;
+		// this.sounds[sound].isPlaying = true;
 
 		const arrayBuffer = await this.getSoundFile(sound);
 		const source = this.ctx.createBufferSource();
@@ -43,8 +37,8 @@ export class Audio {
 		});
 	}
 
-	async playPauseBM(): Promise<void> {
-		const sound = SoundLib.mainTheme;
+	async bMOnOff(): Promise<boolean> {
+		const sound = SoundLib.bMusic;
 
 		!this.sounds[sound] && (this.sounds[sound] = { isPlaying: false });
 
@@ -52,7 +46,7 @@ export class Audio {
 			this.terminateSound(this.bMSource);
 			this.sounds[sound].isPlaying = false;
 
-			return;
+			return false;
 		}
 
 		const bgmVol = this.ctx.createGain();
@@ -71,6 +65,8 @@ export class Audio {
 
 		this.bMSource = source;
 		this.sounds[sound].isPlaying = true;
+
+		return true;
 	}
 
 	private async getSoundFile(url: string): Promise<ArrayBuffer> {

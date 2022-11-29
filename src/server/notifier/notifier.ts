@@ -1,5 +1,5 @@
-import { Direction, NotifType, Player } from '../../common/enums';
-import { LinkedPoint } from '../../common/types';
+import { Direction, VisualNotifType, Player } from '../../common/enums';
+import { LinkedPoint, NotifType, Point, StatState } from '../../common/types';
 import { Snakes } from '../arena/characters/snakes';
 import { StatActions } from '../redux/actions';
 import { State } from '../redux/state';
@@ -15,7 +15,7 @@ export class Notifier {
 		const { head, direction } = Snakes.getById(this.state, id);
 		const funPrint = this.isDead(damageType) ? `  ${KILL_FUN_PRINT}` : '';
 
-		this.changeScore(head, direction, `+${award}${funPrint}`, NotifType.IncScore);
+		this.changeScore(head, direction, `+${award}${funPrint}`, VisualNotifType.IncScore);
 	};
 
 	decScore = (award: number, id: Player, damageType?: DamageType): void => {
@@ -23,7 +23,29 @@ export class Notifier {
 		const showOnTail = damageType !== DamageType.HeadShot;
 		const funPrint = this.isDead(damageType) ? `  ${DEATH_FUN_PRINT}` : '';
 
-		this.changeScore(showOnTail ? tail : head, direction, `-${award}${funPrint}`, NotifType.DecScore);
+		this.changeScore(showOnTail ? tail : head, direction, `-${award}${funPrint}`, VisualNotifType.DecScore);
+	};
+
+	addUniqueType = (type: NotifType, value?: string, point?: Point): void => {
+		const notifs = this.state.get<StatState>().notifications || [];
+		let isUnique = true;
+
+		for (let i = 0; i < notifs.length; i++) {
+			if (notifs[i].type === type) {
+				isUnique = false;
+				break;
+			}
+		}
+
+		isUnique &&
+			this.state.dispatch(
+				StatActions.addNotification({
+					id: Hlp.id(),
+					type,
+					value,
+					point
+				})
+			);
 	};
 
 	private isDead = (damageType?: DamageType): boolean =>

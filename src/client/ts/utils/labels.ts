@@ -15,6 +15,8 @@ export const SCORE_SEPARATOR = ':';
 
 export const SOUND_ON = 'Sound On';
 export const SOUND_OFF = 'Sound Off';
+export const EFFECTS_ON = 'Effects On';
+export const EFFECTS_OFF = 'Effects Off';
 export const JOIN_ROOM_LABEL = 'JOIN ROOM';
 export const CREATE_ROOM_LABEL = 'CREATE ROOM';
 export const CREATE_LABEL = 'CREATE';

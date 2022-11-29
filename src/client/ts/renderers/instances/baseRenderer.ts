@@ -1,11 +1,12 @@
 import { CmHlp } from '../../../../common/cmHlp';
-import { CoinType, NotifType, Player } from '../../../../common/enums';
+import { CoinType, Player, VisualNotifType } from '../../../../common/enums';
 import {
 	CoinSlim,
 	GameState,
 	LinkedPoint,
 	NotificationSlim,
 	Observer,
+	PlayerInput,
 	Size,
 	SnakeDataSlim,
 	StatStateSlim
@@ -16,19 +17,18 @@ import { LIVES, PLAYER, RESTART_MSG, SCORE, SCORE_SEPARATOR, WINNER, WINNERS } f
 import { Renderer } from '../renderer';
 
 export abstract class BaseRenderer extends Renderer {
-	private static coinTypeToDrawingObject = {
+	private static coinTypeToDO = {
 		[CoinType.Standard]: DrawingObject.StandardCoin,
 		[CoinType.DeathPlayer1]: DrawingObject.Player1,
 		[CoinType.DeathPlayer2]: DrawingObject.Player2
 	};
 
-	private static notifTypeToDrawingObject = {
-		[NotifType.IncScore]: DrawingObject.IncScoreNotif,
-		[NotifType.DecScore]: DrawingObject.DecScoreNotif
+	private static notifTypeToDO = {
+		[VisualNotifType.IncScore]: DrawingObject.IncScoreNotif,
+		[VisualNotifType.DecScore]: DrawingObject.DecScoreNotif
 	};
 
 	protected size!: Size;
-	private prevStat?: StatStateSlim;
 	private prevSnakes?: SnakeDataSlim[];
 	private isInitialized = false;
 	private isReady = false;
@@ -44,7 +44,7 @@ export abstract class BaseRenderer extends Renderer {
 	protected abstract clearCell: (point: LinkedPoint) => void;
 	protected abstract renderLive: (point: LinkedPoint, size: Size, type: DrawingObject, factor?: number) => void;
 
-	constructor(protected onInput: Observer, private serviceInfoFlag = true) {
+	constructor(protected onInput: Observer<PlayerInput>, private serviceInfoFlag = true) {
 		super();
 	}
 
@@ -74,16 +74,11 @@ export abstract class BaseRenderer extends Renderer {
 			this.serviceInfoFlag && this.renderServiceInfo(state);
 			!this.isInitialized && (this.isInitialized = true);
 
-			if (stat?.ps) {
-				this.prevStat = stat;
-			}
-
 			snakes.length && (this.prevSnakes = snakes);
 		});
 	};
 
 	reset = (): void => {
-		this.prevStat = undefined;
 		this.prevSnakes = undefined;
 		this.isInitialized = false;
 	};
@@ -106,7 +101,7 @@ export abstract class BaseRenderer extends Renderer {
 
 		for (let i = 0; i < playersStat.length; i++) {
 			const [id, lives, score] = playersStat[i];
-			const type = this.getSnakeDrawingObject(id);
+			const type = this.getSnakeDO(id);
 			const text = score.toString();
 			const textLength = this.measureText(text, LINE_HEIGHT);
 
@@ -160,7 +155,7 @@ export abstract class BaseRenderer extends Renderer {
 			this.renderLive(
 				[baseX - (liveH * (i ? 1 : -1) * isSingleWinnerFactor) / 2, baseY - 1],
 				{ width: wh, height: wh },
-				this.getSnakeDrawingObject(winners[i])
+				this.getSnakeDO(winners[i])
 			);
 		}
 
@@ -171,8 +166,12 @@ export abstract class BaseRenderer extends Renderer {
 		const { width } = this.size;
 
 		for (let i = 0; i < notifications.length; i++) {
-			const [point, type, value] = notifications[i];
-			const dO = BaseRenderer.notifTypeToDrawingObject[type as Player];
+			const [type, value, point] = notifications[i];
+			const dO = BaseRenderer.notifTypeToDO[type as VisualNotifType];
+
+			if (!dO) {
+				continue;
+			}
 
 			this.renderText(value as string, CmHlp.numToPoint(width, point as number), LINE_HEIGHT, dO);
 		}
@@ -185,7 +184,7 @@ export abstract class BaseRenderer extends Renderer {
 
 		for (let i = 0; i < coins.length; i++) {
 			const [point, type] = coins[i];
-			const dO = BaseRenderer.coinTypeToDrawingObject[type as Player];
+			const dO = BaseRenderer.coinTypeToDO[type as Player];
 
 			this.renderCircle(CmHlp.numToPoint(width, point), dO);
 		}
@@ -199,20 +198,20 @@ export abstract class BaseRenderer extends Renderer {
 
 		for (let i = 0; i < snakes.length; i++) {
 			const [id, headNum, skipRenderPrev] = snakes[i];
-			const type = this.getSnakeDrawingObject(id);
+			const type = this.getSnakeDO(id);
 			const head = CmHlp.numToPoint(width, headNum);
 
 			this.renderCell(head, type);
 			this.renderCircle(head, eDO);
 
 			if (skipRenderPrev) {
-				break;
+				continue;
 			}
 
 			const prevSnake = this.getPrevSnake(id);
 
 			if (!prevSnake) {
-				break;
+				continue;
 			}
 
 			const prevHeadNum = prevSnake[1];
@@ -278,7 +277,7 @@ export abstract class BaseRenderer extends Renderer {
 		}
 	};
 
-	private getSnakeDrawingObject = (id: Player): DrawingObject =>
+	private getSnakeDO = (id: Player): DrawingObject =>
 		id === Player.P1 ? DrawingObject.Player1 : DrawingObject.Player2;
 
 	private renderBullets = (bullets: number[]): void => {

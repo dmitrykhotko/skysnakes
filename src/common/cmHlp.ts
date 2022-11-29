@@ -28,19 +28,21 @@ export abstract class CmHlp {
 		return [x, y];
 	};
 
-	static throttle = (func: Observer, delay: number): Observer => {
+	static throttle = (func: Observer, delay: number): Observer<unknown, boolean> => {
 		let flag = true;
 		const setFlag = (): void => void (flag = true);
 
-		return (): void => {
+		return (): boolean => {
 			if (!flag) {
-				return;
+				return false;
 			}
 
 			flag = false;
 
 			func();
 			setTimeout(setFlag, delay);
+
+			return true;
 		};
 	};
 }

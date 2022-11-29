@@ -1,5 +1,7 @@
-import MAIN_THEME from '../../assets/sounds/sw-main.mp3';
+import B_MUSIC from '../../assets/sounds/sw-main.mp3';
+import SHOOT from '../../assets/sounds/shoot.mp3';
 
 export const SoundLib = {
-	mainTheme: MAIN_THEME
+	bMusic: B_MUSIC,
+	shoot: SHOOT
 };

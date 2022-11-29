@@ -1,6 +1,6 @@
 import { ServiceInput } from '../../../common/enums';
 import { MessageType } from '../../../common/messageType';
-import { AvailableRoom, Message, Observer, Room, UUId } from '../../../common/types';
+import { AvailableRoom, Message, Observer, PlayerInput, Room, UUId } from '../../../common/types';
 import { WSHlp } from '../../../common/wSHlp';
 import { KeyCode, ScreenType } from '../utils/enums';
 import { CREATE_LABEL, CREATE_ROOM_LABEL, WRONG_LIVES_NUM_MSG, WRONG_ROOM_NAME_MSG } from '../utils/labels';
@@ -34,7 +34,7 @@ export class ControlScreen {
 	private mainMenuBtn: HTMLButtonElement;
 	private closeBtn: HTMLButtonElement;
 
-	constructor(wS: WebSocket, private onHide: Observer, private reconnect: Observer, roomUUId?: UUId) {
+	constructor(wS: WebSocket, private onHide: Observer<PlayerInput>, private reconnect: Observer, roomUUId?: UUId) {
 		this.el = document.querySelector('.js-ControlScreen') as HTMLElement;
 		this.contentEl = this.el.querySelector('.js-Snakes__ControlScreenContent') as HTMLElement;
 		this.availableRoomsContainerEl = this.el.querySelector('.js-Snakes__AvailableRoomsContainer') as HTMLElement;
@@ -240,7 +240,7 @@ export class ControlScreen {
 		const liveNumInpt = this.contentEl.querySelector('.js-Snakes__LivesNum') as HTMLInputElement;
 
 		this.bindOnEnter(liveNumInpt, this.onCreateRoomBtnClick);
-		this.bindOnEnter(roomNameInpt, liveNumInpt.focus.bind(liveNumInpt) as Observer);
+		this.bindOnEnter(roomNameInpt, liveNumInpt.focus.bind(liveNumInpt));
 
 		roomNameInpt.focus();
 	};
@@ -315,7 +315,7 @@ export class ControlScreen {
 
 	private setScreen = (content: string): void => void (this.contentEl.innerHTML = content);
 
-	private bindOnEnter = (el: HTMLElement, action: Observer): void =>
+	private bindOnEnter = <T, K>(el: HTMLElement, action: Observer<T, K>): void =>
 		el.addEventListener('keydown', event => event.code === 'Enter' && action());
 
 	private showMainMenuBtnOnly = (): void => {

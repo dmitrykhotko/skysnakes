@@ -1,10 +1,11 @@
 import { WebSocket } from 'ws';
-import { Direction, FireInput, GameStatus, MoveInput, Player, ServiceInput } from '../../common/enums';
+import { AudioNotifType, Direction, FireInput, GameStatus, MoveInput, Player, ServiceInput } from '../../common/enums';
 import { MessageType } from '../../common/messageType';
 import { Message, PlayerInput, Size } from '../../common/types';
 import { WSHlp } from '../../common/wSHlp';
 import { Arena } from '../arena/arena';
 import { Snakes } from '../arena/characters/snakes';
+import { Notifier } from '../notifier/notifier';
 import { ArenaStore } from '../redux';
 import { ArenaActions, BulletsActions, CommonActions, SnakesActions } from '../redux/actions';
 import { createState, State } from '../redux/state';
@@ -27,6 +28,8 @@ export class Controller {
 	private state: State;
 	private timer: Timer;
 	private arena: Arena;
+	// TODO: make notifier single object in controller scope
+	private notifier: Notifier;
 	private gameStateProvider: GameStateProvider;
 	private sizes = [] as Size[];
 	private playersReady = 0;
@@ -34,6 +37,7 @@ export class Controller {
 	constructor(private players: WSWithId[], private lives: number) {
 		this.state = createState();
 		this.arena = new Arena(this.state);
+		this.notifier = new Notifier(this.state);
 		this.timer = new Timer(this.tick);
 		this.wSs = this.players.map(({ wS }) => wS);
 		this.gameStateProvider = new GameStateProvider(this.state);
@@ -169,8 +173,8 @@ export class Controller {
 			return;
 		}
 
-		MoveInput[input] && this.handleMoveInput(input as MoveInput, id);
-		FireInput[input] && this.handleFireInput(input as FireInput, id);
+		MoveInput[input] && this.handleMoveInput(id, input as MoveInput);
+		FireInput[input] && this.handleFireInput(id);
 	};
 
 	private handleServiceInput = (input: ServiceInput): void => {
@@ -193,14 +197,14 @@ export class Controller {
 		}
 	};
 
-	private handleMoveInput = (input: MoveInput, id: Player): void => {
+	private handleMoveInput = (id: Player, input: MoveInput): void => {
 		const direction = Controller.inputToDirection[input];
 		const snake = Snakes.getById(this.state, id);
 
 		snake && this.state.dispatch(SnakesActions.newDirection(direction, id));
 	};
 
-	private handleFireInput = (input: FireInput, id: Player): void => {
+	private handleFireInput = (id: Player): void => {
 		const snake = Snakes.getById(this.state, id);
 
 		if (!snake) {
@@ -217,5 +221,7 @@ export class Controller {
 				direction
 			})
 		);
+
+		this.notifier.addUniqueType(AudioNotifType.Shoot);
 	};
 }

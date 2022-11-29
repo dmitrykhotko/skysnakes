@@ -1,38 +1,55 @@
 import { Observer } from '../../../common/types';
-import { Audio } from '../audio';
-import { SOUND_OFF, SOUND_ON } from '../utils/labels';
+import { EFFECTS_OFF, EFFECTS_ON, SOUND_OFF, SOUND_ON } from '../utils/labels';
 
 export class ControlPanel {
-	private audio = new Audio();
 	private menuBtn: HTMLButtonElement;
-	private soundOnOffBtn: HTMLButtonElement;
+	private bMBtn: HTMLButtonElement;
+	private effectsBtn: HTMLButtonElement;
 
-	constructor(private onBtnClickCb: Observer, private onMenuBtnClickCb: Observer) {
+	private effectsFlag = false;
+
+	constructor(
+		private setFocus: Observer,
+		private openMenu: Observer,
+		private bMOnOff: Observer<boolean, Promise<boolean>>,
+		private setEffectsFlag: Observer<boolean, void>
+	) {
 		const el = document.querySelector('.js-Snakes__ControlPanel') as HTMLElement;
 
 		this.menuBtn = el.querySelector('.js-Snakes__Menu') as HTMLButtonElement;
-		this.soundOnOffBtn = el.querySelector('.js-Snakes__PlayMusic') as HTMLButtonElement;
+		this.bMBtn = el.querySelector('.js-Snakes__BM') as HTMLButtonElement;
+		this.effectsBtn = el.querySelector('.js-Snakes__Effects') as HTMLButtonElement;
 
 		this.init();
 	}
 
 	private init = (): void => {
-		this.soundOnOffBtn.innerHTML = SOUND_ON;
+		this.bMBtn.innerHTML = SOUND_ON;
+		this.effectsBtn.innerHTML = EFFECTS_ON;
 
 		this.menuBtn.addEventListener('click', this.onMenuBtnClick);
-		this.soundOnOffBtn.addEventListener('click', this.onCloseBtnClick);
+		this.bMBtn.addEventListener('click', this.onBMBtnClick);
+		this.effectsBtn.addEventListener('click', this.onEffectsBtnClick);
 	};
 
 	private onMenuBtnClick = (): void => {
-		this.onMenuBtnClickCb();
-		this.onBtnClickCb();
+		this.openMenu();
+		this.setFocus();
 	};
 
-	private onCloseBtnClick = (): void => {
-		void this.audio.playPauseBM().then(() => {
-			this.soundOnOffBtn.innerHTML = this.audio.isBgMPlaying ? SOUND_OFF : SOUND_ON;
+	private onBMBtnClick = (): void => {
+		void this.bMOnOff().then((isPlaying: boolean) => {
+			this.bMBtn.innerHTML = isPlaying ? SOUND_OFF : SOUND_ON;
 		});
 
-		this.onBtnClickCb();
+		this.setFocus();
+	};
+
+	private onEffectsBtnClick = (): void => {
+		this.effectsFlag = !this.effectsFlag;
+		this.effectsBtn.innerHTML = this.effectsFlag ? EFFECTS_OFF : EFFECTS_ON;
+
+		this.setEffectsFlag(this.effectsFlag);
+		this.setFocus();
 	};
 }

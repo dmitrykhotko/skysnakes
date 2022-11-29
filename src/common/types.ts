@@ -1,4 +1,14 @@
-import { CoinType, Direction, FireInput, GameStatus, MoveInput, NotifType, Player, ServiceInput } from './enums';
+import {
+	AudioNotifType,
+	CoinType,
+	Direction,
+	FireInput,
+	GameStatus,
+	MoveInput,
+	Player,
+	ServiceInput,
+	VisualNotifType
+} from './enums';
 import { MessageType } from './messageType';
 
 export type Id = number;
@@ -29,9 +39,10 @@ export interface PointWithId<T extends Point = Point> extends ObjectWithId {
 	point: T;
 }
 
-export interface Notification extends PointWithId {
+export interface Notification extends ObjectWithId {
+	point?: Point;
 	type: NotifType;
-	value: string;
+	value?: string;
 }
 
 export type NotificationSlim = (number | string)[];
@@ -79,7 +90,7 @@ export type Size = {
 	height: number;
 };
 
-export type Observer = (...params: unknown[]) => void;
+export type Observer<T = unknown, K = void> = (...params: T[]) => K;
 
 export interface Message<T = unknown> {
 	t: MessageType;
@@ -96,3 +107,5 @@ export type Room = {
 	name: string;
 	lives: number;
 };
+
+export type NotifType = VisualNotifType | AudioNotifType;

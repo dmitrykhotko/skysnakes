@@ -1,4 +1,3 @@
-import { Observer } from '../../common/types';
 import { Controller } from '../controller/controller';
 import './express';
 import { WaitingRoom } from './waitingRoom';
@@ -8,4 +7,4 @@ const createGameInstance = ({ players, room: { lives } }: WaitingRoom): void => 
 	new Controller(players, lives);
 };
 
-new WSS(createGameInstance as Observer);
+new WSS(createGameInstance);

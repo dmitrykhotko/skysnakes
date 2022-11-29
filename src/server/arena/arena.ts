@@ -1,5 +1,5 @@
 import { GameStatus, Player } from '../../common/enums';
-import { Id, LinkedPoint, Size } from '../../common/types';
+import { Id, LinkedPoint, Observer, Size } from '../../common/types';
 import { ArenaState, ArenaStore, BulletsStore } from '../redux';
 import { Action, SnakesActions, StatActions } from '../redux/actions';
 import { State } from '../redux/state';
@@ -12,8 +12,6 @@ import { DirectionWithId, ResultWitActions } from '../utils/types';
 import { Bullets } from './characters/bullets';
 import { Coins } from './characters/coins';
 import { Snakes } from './characters/snakes';
-
-type someFunc = (...params: unknown[]) => unknown;
 
 export class Arena {
 	private stepsNum: number;
@@ -56,11 +54,10 @@ export class Arena {
 		moveSnakes && this.callIfInProgress(this.moveSnakes);
 
 		this.steps === this.stepsNum && (this.steps = 0);
-
 		this.coins.checkNumber();
 	};
 
-	private callIfInProgress = (callMe: someFunc, ...params: unknown[]): unknown => {
+	private callIfInProgress = (callMe: Observer, ...params: unknown[]): unknown => {
 		const { status } = this.getState();
 		return status === GameStatus.InProgress ? callMe(...params) : undefined;
 	};
@@ -272,7 +269,7 @@ export class Arena {
 		this.snakes.remove(ids);
 
 		this.callIfInProgress(
-			DelayedTasks.delay as someFunc,
+			DelayedTasks.delay as Observer,
 			() => {
 				const snakesInitial = [];
 

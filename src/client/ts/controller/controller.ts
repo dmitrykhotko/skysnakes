@@ -1,10 +1,11 @@
 import { CmHlp } from '../../../common/cmHlp';
-import { FireInput, GameStatus, ServiceInput } from '../../../common/enums';
+import { AudioNotifType, FireInput, GameStatus, ServiceInput, VisualNotifType } from '../../../common/enums';
 import { MessageType } from '../../../common/messageType';
 import {
 	GameState,
 	Message,
 	NotificationSlim,
+	NotifType,
 	Observer,
 	PlayerInput,
 	Size,
@@ -12,13 +13,14 @@ import {
 } from '../../../common/types';
 import { WSHlp } from '../../../common/wSHlp';
 import { BULLET_THROTTLE_DELAY } from '../../../server/utils/constants';
+import { AudioController } from '../audio/audioController';
 import { ControlPanel } from '../controlPanel/controlPanel';
 import { ControlScreen } from '../controlScreen/controlScreen';
 import { CanvasRenderer } from '../renderers/instances/canvasRenderer';
+import { AutoErasables } from '../utils/autoErasables';
 import { MAIN_SCREEN_DELAY, NOTIFICATION_LIFETIME, WS_PORT } from '../utils/constants';
 import { ScreenType } from '../utils/enums';
 import { CanvasRendererProps, GameProps } from '../utils/types';
-import { AutoErasables } from '../utils/autoErasables';
 
 enum Eraseable {
 	Notifications
@@ -30,21 +32,19 @@ export class Controller {
 	private prevState?: GameState;
 	private renderer: CanvasRenderer;
 
+	private audioController = new AudioController();
 	private eraseables = new AutoErasables();
 
-	private throttledFireInput: Observer;
+	private throttledFireInput: Observer<unknown, boolean>;
+
+	private effectsFlag = false;
 
 	constructor({ roomUUId, showServiceInfo = false }: GameProps, private size: Size, rProps: CanvasRendererProps) {
 		this.wS = this.createWS();
-		this.renderer = new CanvasRenderer(rProps, this.onInput as Observer, showServiceInfo);
-		this.controlScreen = new ControlScreen(
-			this.wS,
-			this.onControlScreenHide as Observer,
-			this.reconnect as Observer,
-			roomUUId
-		);
+		this.renderer = new CanvasRenderer(rProps, this.onInput, showServiceInfo);
+		this.controlScreen = new ControlScreen(this.wS, this.onControlScreenHide, this.reconnect, roomUUId);
 
-		new ControlPanel(this.renderer.focus, this.openMenu);
+		new ControlPanel(this.renderer.focus, this.openMenu, this.audioController.bMOnOff, this.setEffectsFlag);
 		this.initConnection();
 
 		this.throttledFireInput = CmHlp.throttle(
@@ -165,12 +165,27 @@ export class Controller {
 	};
 
 	private processNotifications = (state: GameState): GameState => {
-		const newItems = state.st?.n;
+		const newNotifs = state.st?.n;
 
-		newItems && this.eraseables.set(Eraseable.Notifications, newItems, NOTIFICATION_LIFETIME);
+		if (newNotifs && newNotifs.length) {
+			const visualNotifs = [];
+
+			for (let i = 0; i < newNotifs.length; i++) {
+				const notif = newNotifs[i];
+				const [type] = notif;
+				const isAudioNotif = !!AudioNotifType[type as NotifType];
+				const isVisualNotif = !!VisualNotifType[type as NotifType];
+
+				isAudioNotif && this.effectsFlag && this.audioController.playNotif(notif);
+				isVisualNotif && visualNotifs.push(newNotifs[i]);
+			}
+
+			this.eraseables.set(Eraseable.Notifications, visualNotifs, NOTIFICATION_LIFETIME);
+		}
+
 		const items = this.eraseables.get<NotificationSlim>(Eraseable.Notifications);
 
-		return items && items.length
+		return items.length
 			? {
 					...state,
 					st: {
@@ -179,5 +194,9 @@ export class Controller {
 					} as StatStateSlim
 			  }
 			: state;
+	};
+
+	private setEffectsFlag = (value: boolean): void => {
+		this.effectsFlag = value;
 	};
 }

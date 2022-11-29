@@ -43,7 +43,11 @@ export enum CoinType {
 	// Super = 5
 }
 
-export enum NotifType {
+export enum VisualNotifType {
 	IncScore = 1,
 	DecScore = 2
+}
+
+export enum AudioNotifType {
+	Shoot = 3
 }

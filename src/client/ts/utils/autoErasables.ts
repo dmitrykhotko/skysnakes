@@ -18,13 +18,14 @@ export class AutoErasables {
 		this.data[key].push(new AutoErasable(item, delay));
 	};
 
-	get = <T>(key: Key): T[] | undefined => {
+	get = <T>(key: Key): T[] => {
+		const result = [] as T[];
+
 		if (!this.data[key]) {
-			return;
+			return result;
 		}
 
 		const aEData = this.data[key];
-		const result = [] as T[];
 		const emptyItems = [] as AutoErasable[];
 
 		for (let i = 0; i < aEData.length; i++) {

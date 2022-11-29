@@ -3,6 +3,8 @@ import {
 	Coin,
 	CoinSlim,
 	GameState,
+	NotificationSlim,
+	Observer,
 	Point,
 	PointWithId,
 	SnakeDataSlim,
@@ -14,8 +16,6 @@ import { Action, ArenaActions, BinActions, StatActions } from '../redux/actions'
 import { State } from '../redux/state';
 import { Hlp } from '../utils/hlp';
 import { SnakeData } from '../utils/types';
-
-type getItemFunc = (item: unknown) => Point;
 
 export class GameStateProvider {
 	private prevSnakes = [] as SnakeData[];
@@ -35,8 +35,8 @@ export class GameStateProvider {
 		const result = {
 			s: status,
 			ss: this.convertSnakes(snakes),
-			bs: this.convertPoints(bullets, this.getPointWithIdItem as getItemFunc),
-			b: this.convertPoints(bin, this.getPointItem as getItemFunc)
+			bs: this.convertPoints(bullets, this.getPointWithIdItem),
+			b: this.convertPoints(bin, this.getPointItem)
 			// ai: { coinsNum: arena.coins.length },
 		} as GameState;
 
@@ -119,20 +119,25 @@ export class GameStateProvider {
 		}
 
 		const { width } = Hlp.getSize(this.state);
-		const nLight = [];
+		const notifsLight = [];
 
 		for (let i = 0; i < notifications.length; i++) {
 			const { point, type, value } = notifications[i];
-			nLight.push([CmHlp.pointToNum(width, point), type, value]);
+			const notif = [type] as NotificationSlim;
+
+			value && notif.push(value);
+			point && notif.push(CmHlp.pointToNum(width, point));
+
+			notifsLight.push(notif);
 		}
 
 		return {
 			...res,
-			n: nLight
+			n: notifsLight
 		};
 	};
 
-	private convertPoints = (points: Point[] | PointWithId[], getItem: getItemFunc): number[] | undefined => {
+	private convertPoints = <T>(points: T[], getItem: Observer<T, Point>): number[] | undefined => {
 		const arr = [] as number[];
 		const { width } = Hlp.getSize(this.state);
 

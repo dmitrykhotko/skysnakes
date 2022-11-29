@@ -1,4 +1,4 @@
-import { LinkedPoint, Observer, Size } from '../../../../common/types';
+import { LinkedPoint, Observer, PlayerInput, Size } from '../../../../common/types';
 import { CELL_SIZE, CIRCLE_RADIUS_CELLS, LINE_HEIGHT } from '../../utils/constants';
 import { DrawingObject, KeyCode, Layer } from '../../utils/enums';
 import { CanvasRendererProps } from '../../utils/types';
@@ -33,7 +33,7 @@ export class CanvasRenderer extends BaseRenderer {
 	private activeLayer = this.presenterLayer;
 	private layers!: Record<Layer, CanvasRenderingContext2D>;
 
-	constructor(props: CanvasRendererProps, onInput: Observer, serviceInfoFlag: boolean) {
+	constructor(props: CanvasRendererProps, onInput: Observer<PlayerInput>, serviceInfoFlag: boolean) {
 		const cProps = { ...CanvasRenderer.defaultProps, ...props };
 
 		super(onInput, serviceInfoFlag);

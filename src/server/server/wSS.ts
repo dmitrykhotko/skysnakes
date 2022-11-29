@@ -18,7 +18,7 @@ export class WSS {
 	private wSS: WebSocketServer;
 	private wRooms = {} as Record<UUId, WaitingRoom>;
 
-	constructor(private onRoomIsReady: Observer) {
+	constructor(private onRoomIsReady: Observer<WaitingRoom>) {
 		this.port = parseInt(process.env.WSS_PORT || '8081');
 
 		this.wSS = new WebSocketServer({ port: this.port }, () => {
