@@ -45,16 +45,6 @@ export class Audio {
 			return false;
 		}
 
-		// const arrayBuffer = await this.getSoundFile(sound);
-		// const source = this.ctx.createBufferSource();
-
-		// void this.ctx.decodeAudioData(arrayBuffer, audioBuffer => {
-		// 	source.buffer = audioBuffer;
-		// 	source.connect(this.vol);
-		// 	source.loop = true;
-		// 	source.start();
-		// });
-
 		const source = await this.play(sound, true, false);
 
 		this.bMSource = source;
