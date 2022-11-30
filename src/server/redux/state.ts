@@ -4,6 +4,7 @@ import { TRACE_STATE } from '../utils/constants';
 import { ArenaReducer } from './reducers/instances/arenaReducer';
 import { BinReducer } from './reducers/instances/binReducer';
 import { BulletsReducer } from './reducers/instances/bulletsReducer';
+import { NotifsReducer } from './reducers/instances/notifsReducer';
 import { SnakesReducer } from './reducers/instances/snakesReducer';
 import { StatReducer } from './reducers/instances/statReducer';
 import { Reducer } from './reducers/reducer';
@@ -94,6 +95,13 @@ class ReduxState implements State {
 	};
 }
 
-const reducer = new ReducerCollection(ArenaReducer, SnakesReducer, BulletsReducer, BinReducer, StatReducer);
+const reducer = new ReducerCollection(
+	ArenaReducer,
+	BinReducer,
+	BulletsReducer,
+	NotifsReducer,
+	SnakesReducer,
+	StatReducer
+);
 
 export const createState = (): State => new ReduxState(reducer);

@@ -221,6 +221,6 @@ export class Controller {
 			})
 		);
 
-		this.notifier.addUniqueType(AudioNotifType.Shoot);
+		this.notifier.setAudioNotif(AudioNotifType.Shoot);
 	};
 }

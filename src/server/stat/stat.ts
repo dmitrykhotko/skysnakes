@@ -61,7 +61,7 @@ export class Stat {
 		}
 
 		this.notifier.incScore(award, id);
-		this.notifier.addUniqueType(AudioNotifType.Coin);
+		this.notifier.setAudioNotif(AudioNotifType.Coin);
 		this.state.dispatch(StatActions.changeScore(award, id));
 	};
 

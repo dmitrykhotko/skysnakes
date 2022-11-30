@@ -1,18 +1,21 @@
 import { CmHlp } from '../../common/cmHlp';
 import {
+	AudioNotif,
 	Coin,
 	CoinSlim,
 	GameState,
-	NotificationSlim,
+	NotifSlim,
+	NotifsState,
 	Observer,
 	Point,
 	PointWithId,
 	SnakeDataSlim,
 	StatState,
-	StatStateSlim
+	StatStateSlim,
+	VisualNotif
 } from '../../common/types';
-import { ArenaStore, BinStore, BulletsStore, SnakesStore, StatStore } from '../redux';
-import { Action, ArenaActions, BinActions, StatActions } from '../redux/actions';
+import { ArenaStore, BinStore, BulletsStore, NotifsStore, SnakesStore, StatStore } from '../redux';
+import { Action, ArenaActions, BinActions, NotifsActions } from '../redux/actions';
 import { State } from '../redux/state';
 import { Hlp } from '../utils/hlp';
 import { SnakeData } from '../utils/types';
@@ -29,8 +32,9 @@ export class GameStateProvider {
 			snakes,
 			bullets,
 			bin,
-			stat
-		} = this.state.get<ArenaStore & SnakesStore & BulletsStore & BinStore & StatStore>();
+			stat,
+			notifs
+		} = this.state.get<ArenaStore & BinStore & BulletsStore & NotifsStore & SnakesStore & StatStore>();
 
 		const result = {
 			s: status,
@@ -40,15 +44,19 @@ export class GameStateProvider {
 			// ai: { coinsNum: arena.coins.length },
 		} as GameState;
 
-		actions.push(BinActions.emptyBin());
+		const targetNotifs = this.convertNotifs(notifs, 'audio', this.convertAudioNotif);
+		actions.push(BinActions.emptyBin(), NotifsActions.clearAudioNotifs());
 
 		// balancing data object
 		if (!result.ss) {
 			result.c = this.convertCoins(coinsBuffer);
 			result.st = this.convertStat(stat);
-			actions.push(StatActions.clearNotifications(), ArenaActions.flushCoinsBuffer());
+
+			targetNotifs.push(...this.convertNotifs(notifs, 'visual', this.convertVisualNotif));
+			actions.push(NotifsActions.clearVisualNotifs(), ArenaActions.flushCoinsBuffer());
 		}
 
+		targetNotifs.length && (result.n = targetNotifs);
 		this.state.dispatch(...actions);
 
 		return result;
@@ -98,9 +106,7 @@ export class GameStateProvider {
 	};
 
 	private convertStat = (stat: StatState): StatStateSlim | undefined => {
-		const { notifications } = stat;
 		const { playersStat, winners } = stat;
-
 		const pStatSlim = [];
 
 		for (let i = 0; i < playersStat.length; i++) {
@@ -109,33 +115,39 @@ export class GameStateProvider {
 			pStatSlim.push([id, lives, score]);
 		}
 
-		const res = {
+		return {
 			ps: pStatSlim,
 			w: winners
 		};
-
-		if (!(notifications && notifications.length)) {
-			return res;
-		}
-
-		const { width } = Hlp.getSize(this.state);
-		const notifsLight = [];
-
-		for (let i = 0; i < notifications.length; i++) {
-			const { point, type, value } = notifications[i];
-			const notif = [type] as NotificationSlim;
-
-			value && notif.push(value);
-			point && notif.push(CmHlp.pointToNum(width, point));
-
-			notifsLight.push(notif);
-		}
-
-		return {
-			...res,
-			n: notifsLight
-		};
 	};
+
+	private convertNotifs = <T extends AudioNotif | VisualNotif>(
+		state: NotifsState,
+		type: keyof NotifsState,
+		toSlim: Observer<T, NotifSlim>
+	): NotifSlim[] => {
+		const notifs = state[type] as T[];
+
+		if (!notifs) {
+			return [];
+		}
+
+		const notifsSlim = [] as NotifSlim[];
+
+		for (let i = 0; i < notifs.length; i++) {
+			notifsSlim.push(toSlim(notifs[i]));
+		}
+
+		return notifsSlim;
+	};
+
+	private convertAudioNotif = ({ type }: AudioNotif): NotifSlim => [type];
+
+	private convertVisualNotif = ({ point, type, value }: VisualNotif): NotifSlim => [
+		type,
+		value,
+		CmHlp.pointToNum(Hlp.getSize(this.state).width, point)
+	];
 
 	private convertPoints = <T>(points: T[], getItem: Observer<T, Point>): number[] | undefined => {
 		const arr = [] as number[];

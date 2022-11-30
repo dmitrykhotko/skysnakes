@@ -1,6 +1,6 @@
 import { CmHlp } from '../../../../common/cmHlp';
 import { Player } from '../../../../common/enums';
-import { Id, Notification, PlayerStat, StatState } from '../../../../common/types';
+import { PlayerStat, StatState } from '../../../../common/types';
 import { Hlp } from '../../../utils/hlp';
 import { InitialData } from '../../../utils/types';
 import { Action, SetValueAction, SetValueByIdAction } from '../../actions';
@@ -40,12 +40,6 @@ export abstract class StatReducer extends Reducer<StatStore> {
 				return this.changeStat(statStore, id, 'score', value);
 			case ActionType.DEC_LIVES:
 				return this.changeStat(statStore, (action as SetValueAction<Player>).value, 'lives', -1);
-			case ActionType.ADD_NOTIFICATION:
-				return this.addNotification(statStore, (action as SetValueAction<Notification>).value);
-			case ActionType.REMOVE_NOTIFICATION:
-				return this.removeNotification(statStore, (action as SetValueAction<Id>).value);
-			case ActionType.CLEAR_NOTIFICATIONS:
-				return this.clearNotifications(statStore);
 			case ActionType.GAME_RESET:
 				const { players, lives } = (action as SetValueAction<InitialData>).value;
 				return {
@@ -76,43 +70,6 @@ export abstract class StatReducer extends Reducer<StatStore> {
 			stat: {
 				...stat,
 				playersStat: newPlayerStat
-			}
-		};
-	};
-
-	private static addNotification = (store: StatStore, notification: Notification): Store => {
-		const { stat } = store;
-
-		return {
-			...store,
-			stat: {
-				...stat,
-				notifications: [...(stat.notifications ?? []), notification]
-			}
-		};
-	};
-
-	private static removeNotification = (store: StatStore, id: Id): Store => {
-		const { stat } = store;
-		const res = Hlp.excludeById(stat.notifications ?? [], id);
-
-		return {
-			...store,
-			stat: {
-				...stat,
-				notifications: res.length ? res : undefined
-			}
-		};
-	};
-
-	private static clearNotifications = (store: StatStore): Store => {
-		const { stat } = store;
-
-		return {
-			...store,
-			stat: {
-				...stat,
-				notifications: undefined
 			}
 		};
 	};

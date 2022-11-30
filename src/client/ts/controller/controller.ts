@@ -1,16 +1,7 @@
 import { CmHlp } from '../../../common/cmHlp';
 import { AudioNotifType, FireInput, GameStatus, ServiceInput, VisualNotifType } from '../../../common/enums';
 import { MessageType } from '../../../common/messageType';
-import {
-	GameState,
-	Message,
-	NotificationSlim,
-	NotifType,
-	Observer,
-	PlayerInput,
-	Size,
-	StatStateSlim
-} from '../../../common/types';
+import { GameState, Message, NotifSlim, Observer, PlayerInput, Size } from '../../../common/types';
 import { WSHlp } from '../../../common/wSHlp';
 import { BULLET_THROTTLE_DELAY } from '../../../server/utils/constants';
 import { AudioController } from '../audio';
@@ -18,12 +9,12 @@ import { ControlButton, ControlPanel } from '../controlPanel/controlPanel';
 import { ControlScreen } from '../controlScreen/controlScreen';
 import { CanvasRenderer } from '../renderers/instances/canvasRenderer';
 import { AutoErasables } from '../utils/autoErasables';
-import { MAIN_SCREEN_DELAY, NOTIFICATION_LIFETIME, WS_PORT } from '../utils/constants';
+import { MAIN_SCREEN_DELAY, NOTIF_LIFETIME, WS_PORT } from '../utils/constants';
 import { ScreenType } from '../utils/enums';
 import { CanvasRendererProps, GameProps } from '../utils/types';
 
 enum Eraseable {
-	Notifications
+	Notifs
 }
 
 export class Controller {
@@ -131,7 +122,7 @@ export class Controller {
 	};
 
 	private handleTickMsg = (state: GameState): void => {
-		const newState = this.processNotifications(state);
+		const newState = this.processNotifs(state);
 
 		this.checkStatusChanged(newState.s ?? GameStatus.Finish);
 		this.renderer.render(newState);
@@ -176,8 +167,8 @@ export class Controller {
 		this.onInput(ServiceInput.Escape);
 	};
 
-	private processNotifications = (state: GameState): GameState => {
-		const newNotifs = state.st?.n;
+	private processNotifs = (state: GameState): GameState => {
+		const newNotifs = state.n;
 
 		if (newNotifs && newNotifs.length) {
 			const visualNotifs = [];
@@ -185,25 +176,22 @@ export class Controller {
 			for (let i = 0; i < newNotifs.length; i++) {
 				const notif = newNotifs[i];
 				const [type] = notif;
-				const isAudioNotif = !!AudioNotifType[type as NotifType];
-				const isVisualNotif = !!VisualNotifType[type as NotifType];
+				const isAudioNotif = !!AudioNotifType[type as AudioNotifType];
+				const isVisualNotif = !!VisualNotifType[type as VisualNotifType];
 
 				isAudioNotif && this.effectsFlag && this.audioController.playNotif(notif);
 				isVisualNotif && visualNotifs.push(newNotifs[i]);
 			}
 
-			this.eraseables.set(Eraseable.Notifications, visualNotifs, NOTIFICATION_LIFETIME);
+			this.eraseables.set(Eraseable.Notifs, visualNotifs, NOTIF_LIFETIME);
 		}
 
-		const items = this.eraseables.get<NotificationSlim>(Eraseable.Notifications);
+		const items = this.eraseables.get<NotifSlim>(Eraseable.Notifs);
 
 		return items.length
 			? {
 					...state,
-					st: {
-						...(state.st || {}),
-						n: items
-					} as StatStateSlim
+					n: items
 			  }
 			: state;
 	};

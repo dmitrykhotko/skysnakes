@@ -1,7 +1,7 @@
-import { Direction, VisualNotifType, Player } from '../../common/enums';
-import { LinkedPoint, NotifType, Point, StatState } from '../../common/types';
+import { AudioNotifType, Direction, Player, VisualNotifType } from '../../common/enums';
+import { LinkedPoint, NotifsState } from '../../common/types';
 import { Snakes } from '../arena/characters/snakes';
-import { StatActions } from '../redux/actions';
+import { NotifsActions } from '../redux/actions';
 import { State } from '../redux/state';
 import { NEGATIVE_OFFSET_X, NEGATIVE_OFFSET_Y, POSITIVE_OFFSET_X, POSITIVE_OFFSET_Y } from '../utils/constants';
 import { DamageType } from '../utils/enums';
@@ -26,8 +26,8 @@ export class Notifier {
 		this.changeScore(showOnTail ? tail : head, direction, `-${award}${funPrint}`, VisualNotifType.DecScore);
 	};
 
-	addUniqueType = (type: NotifType, value?: string, point?: Point): void => {
-		const notifs = this.state.get<StatState>().notifications || [];
+	setAudioNotif = (type: AudioNotifType): void => {
+		const notifs = this.state.get<NotifsState>().audio || [];
 		let isUnique = true;
 
 		for (let i = 0; i < notifs.length; i++) {
@@ -39,11 +39,9 @@ export class Notifier {
 
 		isUnique &&
 			this.state.dispatch(
-				StatActions.addNotification({
+				NotifsActions.addAudioNotif({
 					id: Hlp.id(),
-					type,
-					value,
-					point
+					type
 				})
 			);
 	};
@@ -51,7 +49,7 @@ export class Notifier {
 	private isDead = (damageType?: DamageType): boolean =>
 		damageType === DamageType.Death || damageType === DamageType.HeadShot;
 
-	private changeScore = (point: LinkedPoint, direction: Direction, value: string, type: NotifType): void => {
+	private changeScore = (point: LinkedPoint, direction: Direction, value: string, type: VisualNotifType): void => {
 		const [x, y] = point;
 		const { width, height } = Hlp.getSize(this.state);
 		const id = Hlp.id();
@@ -70,7 +68,7 @@ export class Notifier {
 		}
 
 		this.state.dispatch(
-			StatActions.addNotification({
+			NotifsActions.addVisualNotif({
 				id,
 				type,
 				value,

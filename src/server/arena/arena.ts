@@ -78,7 +78,7 @@ export class Arena {
 			const faceCoin = !!this.coins.checkCollisions(point).length;
 			const facedWall = x > width - 1 || y > height - 1 || x < 0 || y < 0;
 
-			faceCoin && this.notifier.addUniqueType(AudioNotifType.ShootCoin);
+			faceCoin && this.notifier.setAudioNotif(AudioNotifType.ShootCoin);
 			(faceCoin || facedWall) && actions.push(...this.bullets.remove(bullet));
 		}
 
@@ -260,7 +260,7 @@ export class Arena {
 				const player = snakeShotResult.id;
 				return { result: player, actions: [StatActions.decLives(player)] };
 			} else {
-				this.notifier.addUniqueType(AudioNotifType.HitSnake);
+				this.notifier.setAudioNotif(AudioNotifType.HitSnake);
 			}
 		}
 
@@ -271,7 +271,7 @@ export class Arena {
 
 	private respawn = (...ids: Player[]): void => {
 		this.snakes.remove(ids);
-		this.notifier.addUniqueType(AudioNotifType.ShootSnake);
+		this.notifier.setAudioNotif(AudioNotifType.ShootSnake);
 
 		this.callIfInProgress(
 			DelayedTasks.delay as Observer,

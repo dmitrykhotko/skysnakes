@@ -4,7 +4,7 @@ import {
 	CoinSlim,
 	GameState,
 	LinkedPoint,
-	NotificationSlim,
+	NotifSlim,
 	Observer,
 	PlayerInput,
 	Size,
@@ -59,7 +59,14 @@ export abstract class BaseRenderer extends Renderer {
 		}
 
 		requestAnimationFrame(() => {
-			const { ss: snakes = [], bs: bullets = [], b: bin = [], st: stat, c: coins = [] } = state;
+			const {
+				ss: snakes = [],
+				bs: bullets = [],
+				b: bin = [],
+				st: stat = {},
+				n: notifs = [],
+				c: coins = []
+			} = state;
 
 			if (!this.isInitialized) {
 				this.use(Layer.Presenter).clearRect();
@@ -69,7 +76,7 @@ export abstract class BaseRenderer extends Renderer {
 			this.renderSnakes(snakes);
 			this.renderCoins(coins);
 			this.renderBullets(bullets);
-			this.renderStat(stat);
+			this.renderStat(stat, notifs);
 
 			this.serviceInfoFlag && this.renderServiceInfo(state);
 			!this.isInitialized && (this.isInitialized = true);
@@ -83,12 +90,12 @@ export abstract class BaseRenderer extends Renderer {
 		this.isInitialized = false;
 	};
 
-	private renderStat = (stat?: StatStateSlim): void => {
-		if (!(stat && stat.ps)) {
+	private renderStat = (stat: StatStateSlim, notifs: NotifSlim[]): void => {
+		if (!stat.ps) {
 			return;
 		}
 
-		const { ps: playersStat = [], w: winners = [], n: notifications = [] } = stat;
+		const { ps: playersStat = [], w: winners = [] } = stat;
 
 		this.renderWinners(winners);
 		this.use(Layer.Stat).clearRect();
@@ -122,7 +129,7 @@ export abstract class BaseRenderer extends Renderer {
 			this.renderText(RESTART_MSG, [baseX - sepLen / 2, 8], LINE_HEIGHT, DrawingObject.Bullet);
 		}
 
-		this.renderNotifications(notifications ?? []);
+		this.renderNotifs(notifs);
 	};
 
 	private renderWinners = (winners: Player[]): void => {
@@ -162,11 +169,11 @@ export abstract class BaseRenderer extends Renderer {
 		this.renderText(text, [baseX - textLength / 2, baseY - 2], lineHeight, DrawingObject.WinnersText);
 	};
 
-	private renderNotifications = (notifications: NotificationSlim[]): void => {
+	private renderNotifs = (notifs: NotifSlim[]): void => {
 		const { width } = this.size;
 
-		for (let i = 0; i < notifications.length; i++) {
-			const [type, value, point] = notifications[i];
+		for (let i = 0; i < notifs.length; i++) {
+			const [type, value, point] = notifs[i];
 			const dO = BaseRenderer.notifTypeToDO[type as VisualNotifType];
 
 			if (!dO) {

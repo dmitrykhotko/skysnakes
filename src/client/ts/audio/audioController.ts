@@ -1,5 +1,5 @@
 import { AudioNotifType } from '../../../common/enums';
-import { NotificationSlim } from '../../../common/types';
+import { NotifSlim } from '../../../common/types';
 import { Audio } from './audio';
 import { SoundLib } from './soundLibrary';
 
@@ -18,7 +18,7 @@ export class AudioController {
 		return this.audio.bMOnOff();
 	};
 
-	playNotif = (notif: NotificationSlim): void => {
+	playNotif = (notif: NotifSlim): void => {
 		const [type] = notif;
 		void this.audio.play(AudioController.typeToPath[type as AudioNotifType]);
 	};
