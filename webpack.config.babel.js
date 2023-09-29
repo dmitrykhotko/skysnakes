@@ -14,10 +14,6 @@ const getPlugins = enableSourceMaps => {
 		new CopyWebpackPlugin({
 			patterns: [
 				{
-					from: 'src/server',
-					to: 'server'
-				},
-				{
 					from: 'src/common',
 					to: 'common'
 				},

@@ -15,6 +15,6 @@ export class Timer {
 	};
 
 	stop = (): void => {
-		this.iId && clearInterval(this.iId);
+		this.iId && clearInterval(Number(this.iId));
 	};
 }

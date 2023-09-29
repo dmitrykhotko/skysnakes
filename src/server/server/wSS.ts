@@ -10,6 +10,7 @@ declare module 'ws' {
 		uuid: UUId;
 		isAlive: boolean;
 		roomUUId?: UUId;
+		send: (data: string | ArrayBufferLike | Blob | ArrayBufferView) => void;
 	}
 }
 
@@ -29,7 +30,7 @@ export class WSS {
 	}
 
 	private initConnection = (): void => {
-		this.wSS.on('connection', wS => {
+		this.wSS.on('connection', (wS: WebSocket) => {
 			wS.uuid = this.uuid();
 
 			wS.on('message', (message: string) => {
