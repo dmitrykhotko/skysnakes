@@ -1,14 +1,14 @@
 import { UUId } from '../../../common/types';
 
 export type CanvasRendererProps = {
-	presenterEl: HTMLCanvasElement;
-	statEl: HTMLCanvasElement;
-	serviceEl: HTMLCanvasElement;
-	cellSize?: number;
-	lineHeight?: number;
+    presenterEl: HTMLCanvasElement;
+    statEl: HTMLCanvasElement;
+    serviceEl: HTMLCanvasElement;
+    cellSize?: number;
+    lineHeight?: number;
 };
 
 export type GameProps = {
-	showServiceInfo: boolean;
-	roomUUId?: UUId;
+    showServiceInfo: boolean;
+    roomUUId?: UUId;
 };

@@ -9,237 +9,237 @@ import { Hlp } from '../../utils/hlp';
 import { DirectionWithId, ResultWitActions } from '../../utils/types';
 
 export class Snakes {
-	private static directionWeights = {
-		[Direction.Up]: -1,
-		[Direction.Down]: 1,
-		[Direction.Left]: -2,
-		[Direction.Right]: 2
-	};
+    private static directionWeights = {
+        [Direction.Up]: -1,
+        [Direction.Down]: 1,
+        [Direction.Left]: -2,
+        [Direction.Right]: 2
+    };
 
-	constructor(private state: State) {}
+    constructor(private state: State) {}
 
-	static get = (state: State): SnakeState[] => state.get<SnakesStore>().snakes;
+    static get = (state: State): SnakeState[] => state.get<SnakesStore>().snakes;
 
-	static getById = (state: State, id: Player): SnakeState => CmHlp.getById(id, this.get(state));
+    static getById = (state: State, id: Player): SnakeState => CmHlp.getById(id, this.get(state));
 
-	static toArray = (state: State, id: Player, start = this.getById(state, id).head): Point[] => {
-		const points = [] as Point[];
-		let point: LinkedPoint | undefined = start;
+    static toArray = (state: State, id: Player, start = this.getById(state, id).head): Point[] => {
+        const points = [] as Point[];
+        let point: LinkedPoint | undefined = start;
 
-		while (point) {
-			const [x, y] = point;
-			points.push([x, y]) && (point = point.prev);
-		}
+        while (point) {
+            const [x, y] = point;
+            points.push([x, y]) && (point = point.prev);
+        }
 
-		return points;
-	};
+        return points;
+    };
 
-	get = (): SnakeState[] => Snakes.get(this.state);
+    get = (): SnakeState[] => Snakes.get(this.state);
 
-	getById = (id: Player): SnakeState => CmHlp.getById(id, Snakes.get(this.state));
+    getById = (id: Player): SnakeState => CmHlp.getById(id, Snakes.get(this.state));
 
-	init = (snakesInitial: DirectionWithId[]): void => {
-		const { width, height } = Hlp.getSize(this.state);
+    init = (snakesInitial: DirectionWithId[]): void => {
+        const { width, height } = Hlp.getSize(this.state);
 
-		for (let i = 0; i < snakesInitial.length; i++) {
-			const serviceId = Hlp.id();
-			const { id, direction } = snakesInitial[i];
-			const head = this.getStartPoint(direction, width, height);
-			const tail = this.initBody(head, SNAKE_LENGTH, direction);
+        for (let i = 0; i < snakesInitial.length; i++) {
+            const serviceId = Hlp.id();
+            const { id, direction } = snakesInitial[i];
+            const head = this.getStartPoint(direction, width, height);
+            const tail = this.initBody(head, SNAKE_LENGTH, direction);
 
-			this.state.dispatch(SnakesActions.setSnake({ id, serviceId, head, tail, direction, growthBuffer: 0 }));
-		}
-	};
+            this.state.dispatch(SnakesActions.setSnake({ id, serviceId, head, tail, direction, growthBuffer: 0 }));
+        }
+    };
 
-	move = (id: Player, checkGrowth: (id: Player, head: LinkedPoint) => number): void => {
-		const snake = this.getById(id);
-		const actions = [] as Action[];
-		const { serviceId } = snake;
+    move = (id: Player, checkGrowth: (id: Player, head: LinkedPoint) => number): void => {
+        const snake = this.getById(id);
+        const actions = [] as Action[];
+        const { serviceId } = snake;
 
-		let { head, tail, direction, growthBuffer } = snake;
+        let { head, tail, direction, growthBuffer } = snake;
 
-		direction = this.applyDirection(snake);
+        direction = this.applyDirection(snake);
 
-		const nextHead = Hlp.nextPoint(head, direction);
+        const nextHead = Hlp.nextPoint(head, direction);
 
-		nextHead.prev = head;
-		head.next = nextHead;
-		head = nextHead;
+        nextHead.prev = head;
+        head.next = nextHead;
+        head = nextHead;
 
-		growthBuffer += checkGrowth(id, head);
+        growthBuffer += checkGrowth(id, head);
 
-		if (growthBuffer) {
-			growthBuffer--;
-		} else {
-			actions.push(BinActions.moveToBin([tail]));
+        if (growthBuffer) {
+            growthBuffer--;
+        } else {
+            actions.push(BinActions.moveToBin([tail]));
 
-			tail.next && (tail = tail.next);
-			tail.prev = undefined;
-		}
+            tail.next && (tail = tail.next);
+            tail.prev = undefined;
+        }
 
-		this.state.dispatch(SnakesActions.setSnake({ id, serviceId, head, tail, direction, growthBuffer }), ...actions);
-	};
+        this.state.dispatch(SnakesActions.setSnake({ id, serviceId, head, tail, direction, growthBuffer }), ...actions);
+    };
 
-	checkCollisions = (object: LinkedPoint): PointWithId | undefined => {
-		const snakes = this.get();
+    checkCollisions = (object: LinkedPoint): PointWithId | undefined => {
+        const snakes = this.get();
 
-		for (let i = 0; i < snakes.length; i++) {
-			const { id, head } = snakes[i];
-			let point: LinkedPoint | undefined = head;
+        for (let i = 0; i < snakes.length; i++) {
+            const { id, head } = snakes[i];
+            let point: LinkedPoint | undefined = head;
 
-			while (point) {
-				if (object !== point && Hlp.comparePoints(object, point)) {
-					break;
-				}
+            while (point) {
+                if (object !== point && Hlp.comparePoints(object, point)) {
+                    break;
+                }
 
-				point = point.prev;
-			}
+                point = point.prev;
+            }
 
-			if (point) {
-				return { point, id };
-			}
-		}
-	};
+            if (point) {
+                return { point, id };
+            }
+        }
+    };
 
-	remove = (ids: Player[]): void => {
-		const actions = [] as Action[];
+    remove = (ids: Player[]): void => {
+        const actions = [] as Action[];
 
-		for (let i = 0; i < ids.length; i++) {
-			const id = ids[i];
-			const { head } = this.getById(id);
-			const { actions: cutActions } = this.cut({ id, point: head });
+        for (let i = 0; i < ids.length; i++) {
+            const id = ids[i];
+            const { head } = this.getById(id);
+            const { actions: cutActions } = this.cut({ id, point: head });
 
-			actions.push(SnakesActions.removeSnake(id), ...cutActions);
-		}
+            actions.push(SnakesActions.removeSnake(id), ...cutActions);
+        }
 
-		this.state.dispatch(...actions);
-	};
+        this.state.dispatch(...actions);
+    };
 
-	hit = (
-		snakeShotResult: PointWithId<LinkedPoint>
-	): ResultWitActions<{
-		points: LinkedPoint[];
-		isDead: boolean;
-		isHeadShot: boolean;
-	}> => {
-		const { id, point } = snakeShotResult;
-		const actions = [] as Action[];
-		const isDead = !point.next;
-		const isHeadShot = !!(isDead && point.prev);
+    hit = (
+        snakeShotResult: PointWithId<LinkedPoint>
+    ): ResultWitActions<{
+        points: LinkedPoint[];
+        isDead: boolean;
+        isHeadShot: boolean;
+    }> => {
+        const { id, point } = snakeShotResult;
+        const actions = [] as Action[];
+        const isDead = !point.next;
+        const isHeadShot = !!(isDead && point.prev);
 
-		let points: LinkedPoint[];
+        let points: LinkedPoint[];
 
-		if (isDead) {
-			points = this.toArray(id);
-		} else {
-			const { result: cutRes, actions: cutActions } = this.cut({ id, point });
+        if (isDead) {
+            points = this.toArray(id);
+        } else {
+            const { result: cutRes, actions: cutActions } = this.cut({ id, point });
 
-			points = cutRes;
-			actions.push(...cutActions);
-		}
+            points = cutRes;
+            actions.push(...cutActions);
+        }
 
-		return {
-			result: { points, isDead, isHeadShot },
-			actions
-		};
-	};
+        return {
+            result: { points, isDead, isHeadShot },
+            actions
+        };
+    };
 
-	len = (id: Player, start = this.getById(id).head): number => {
-		let point: LinkedPoint | undefined = start;
-		let len = 0;
+    len = (id: Player, start = this.getById(id).head): number => {
+        let point: LinkedPoint | undefined = start;
+        let len = 0;
 
-		while (point) {
-			++len && (point = point.prev);
-		}
+        while (point) {
+            ++len && (point = point.prev);
+        }
 
-		return len;
-	};
+        return len;
+    };
 
-	toArray = (id: Player, start = this.getById(id).head): Point[] => Snakes.toArray(this.state, id, start);
+    toArray = (id: Player, start = this.getById(id).head): Point[] => Snakes.toArray(this.state, id, start);
 
-	cut = (...cutIt: PointWithId<LinkedPoint>[]): ResultWitActions<LinkedPoint[]> => {
-		const bin = [] as LinkedPoint[];
-		const actions = [] as Action[];
+    cut = (...cutIt: PointWithId<LinkedPoint>[]): ResultWitActions<LinkedPoint[]> => {
+        const bin = [] as LinkedPoint[];
+        const actions = [] as Action[];
 
-		for (let i = 0; i < cutIt.length; i++) {
-			const { id, point: start } = cutIt[i];
-			const nextTail = start.next;
+        for (let i = 0; i < cutIt.length; i++) {
+            const { id, point: start } = cutIt[i];
+            const nextTail = start.next;
 
-			let point: LinkedPoint | undefined = start;
+            let point: LinkedPoint | undefined = start;
 
-			while (point) {
-				bin.push(point);
-				point = point.prev;
-			}
+            while (point) {
+                bin.push(point);
+                point = point.prev;
+            }
 
-			if (nextTail) {
-				nextTail.prev = undefined;
-				actions.push(SnakesActions.setTail(nextTail, id));
-			}
+            if (nextTail) {
+                nextTail.prev = undefined;
+                actions.push(SnakesActions.setTail(nextTail, id));
+            }
 
-			actions.push(BinActions.moveToBin(bin));
-		}
+            actions.push(BinActions.moveToBin(bin));
+        }
 
-		return {
-			result: bin,
-			actions
-		};
-	};
+        return {
+            result: bin,
+            actions
+        };
+    };
 
-	private initBody = (head: LinkedPoint, length: number, direction: Direction): LinkedPoint => {
-		const D = Direction;
-		const xStep = direction === D.Left ? 1 : direction === D.Right ? -1 : 0;
-		const yStep = direction === D.Up ? 1 : direction === D.Down ? -1 : 0;
-		const [x, y] = head;
+    private initBody = (head: LinkedPoint, length: number, direction: Direction): LinkedPoint => {
+        const D = Direction;
+        const xStep = direction === D.Left ? 1 : direction === D.Right ? -1 : 0;
+        const yStep = direction === D.Up ? 1 : direction === D.Down ? -1 : 0;
+        const [x, y] = head;
 
-		let point: LinkedPoint = [x + xStep, y + yStep];
+        let point: LinkedPoint = [x + xStep, y + yStep];
 
-		head.prev = point;
-		point.next = head;
+        head.prev = point;
+        point.next = head;
 
-		for (let i = 0; i < length - 2; i++) {
-			const [x, y] = point;
-			const newPoint: LinkedPoint = [x + xStep, y + yStep];
+        for (let i = 0; i < length - 2; i++) {
+            const [x, y] = point;
+            const newPoint: LinkedPoint = [x + xStep, y + yStep];
 
-			point.prev = newPoint;
-			newPoint.next = point;
-			point = newPoint;
-		}
+            point.prev = newPoint;
+            newPoint.next = point;
+            point = newPoint;
+        }
 
-		const tail = point;
-		return tail;
-	};
+        const tail = point;
+        return tail;
+    };
 
-	private applyDirection = (data: SnakeState): Direction => {
-		const { id, direction, newDirection } = data;
+    private applyDirection = (data: SnakeState): Direction => {
+        const { id, direction, newDirection } = data;
 
-		if (!(newDirection && Snakes.directionWeights[direction] + Snakes.directionWeights[newDirection])) {
-			return direction;
-		}
+        if (!(newDirection && Snakes.directionWeights[direction] + Snakes.directionWeights[newDirection])) {
+            return direction;
+        }
 
-		this.state.dispatch(SnakesActions.newDirection(undefined, id));
-		return newDirection;
-	};
+        this.state.dispatch(SnakesActions.newDirection(undefined, id));
+        return newDirection;
+    };
 
-	private getStartPoint = (direction: Direction, width: number, height: number): LinkedPoint => {
-		let head: LinkedPoint;
+    private getStartPoint = (direction: Direction, width: number, height: number): LinkedPoint => {
+        let head: LinkedPoint;
 
-		switch (direction) {
-			case Direction.Left:
-				head = [width, Hlp.randomInt(height)];
-				break;
-			case Direction.Down:
-				head = [Hlp.randomInt(width), 0];
-				break;
-			case Direction.Up:
-				head = [Hlp.randomInt(width), height];
-				break;
-			case Direction.Right:
-			default:
-				head = [0, Hlp.randomInt(height)];
-				break;
-		}
+        switch (direction) {
+            case Direction.Left:
+                head = [width, Hlp.randomInt(height)];
+                break;
+            case Direction.Down:
+                head = [Hlp.randomInt(width), 0];
+                break;
+            case Direction.Up:
+                head = [Hlp.randomInt(width), height];
+                break;
+            case Direction.Right:
+            default:
+                head = [0, Hlp.randomInt(height)];
+                break;
+        }
 
-		return head;
-	};
+        return head;
+    };
 }

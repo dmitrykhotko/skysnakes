@@ -4,7 +4,7 @@ import { WaitingRoom } from './waitingRoom';
 import { WSS } from './wSS';
 
 const createGameInstance = ({ players, room: { lives } }: WaitingRoom): void => {
-	new Controller(players, lives);
+    new Controller(players, lives);
 };
 
 new WSS(createGameInstance);

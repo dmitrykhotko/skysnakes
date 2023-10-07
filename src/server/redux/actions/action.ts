@@ -1,5 +1,5 @@
 import { ActionType } from './actionType';
 
 export interface Action {
-	type: ActionType;
+    type: ActionType;
 }

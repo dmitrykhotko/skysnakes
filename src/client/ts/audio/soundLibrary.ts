@@ -6,10 +6,10 @@ import SHOOT_COIN from '../../assets/sounds/shootCoin.mp3';
 import SHOOT_SNAKE from '../../assets/sounds/shootSnake.mp3';
 
 export const SoundLib = {
-	bMusic: B_MUSIC,
-	coin: COIN,
-	hitSnake: HIT_SNAKE,
-	shoot: SHOOT,
-	shootSnake: SHOOT_SNAKE,
-	shootCoin: SHOOT_COIN
+    bMusic: B_MUSIC,
+    coin: COIN,
+    hitSnake: HIT_SNAKE,
+    shoot: SHOOT,
+    shootSnake: SHOOT_SNAKE,
+    shootCoin: SHOOT_COIN
 };

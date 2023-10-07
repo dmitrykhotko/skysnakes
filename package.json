@@ -15,6 +15,7 @@
     "lint:dev": "eslint --quiet --fix **/*.ts -o lint-log.txt",
     "lint:fix": "eslint --fix src/**/*.ts",
     "lint:script": "scriptlint --fix && npmPkgJsonLint .",
+    "prettier": "prettier --write '**/*.{js,jsx,ts,tsx}'",
     "start": "nodemon dist/server/server/server.js",
     "start:dev": "nodemon src/server/server/server.ts",
     "scsslint": "npx stylelint",

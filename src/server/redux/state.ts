@@ -14,94 +14,94 @@ import { ReducerCollection } from './reducers/reducerCollection';
 export type Store = Record<string, unknown>;
 
 export interface State {
-	dispatch: (...actions: Action[]) => void;
-	get: <T extends Store>() => T;
-	// subscribe: (observer: Observer, type: ActionType) => void;
-	// unsubscribe: (observer: Observer, type: ActionType) => void;
+    dispatch: (...actions: Action[]) => void;
+    get: <T extends Store>() => T;
+    // subscribe: (observer: Observer, type: ActionType) => void;
+    // unsubscribe: (observer: Observer, type: ActionType) => void;
 }
 
 class ReduxState implements State {
-	public dispatch: (...actions: Action[]) => void;
+    public dispatch: (...actions: Action[]) => void;
 
-	private store!: Store;
-	private traceShift = '';
-	// private observers = {} as Record<ActionType, Observer[]>;
+    private store!: Store;
+    private traceShift = '';
+    // private observers = {} as Record<ActionType, Observer[]>;
 
-	constructor(private reducer: Reducer<Store>) {
-		this.dispatch = TRACE_STATE ? this.dispatchTrace : this.dispatchInternal;
-		this.store = this.reducer.getInitialState();
-	}
+    constructor(private reducer: Reducer<Store>) {
+        this.dispatch = TRACE_STATE ? this.dispatchTrace : this.dispatchInternal;
+        this.store = this.reducer.getInitialState();
+    }
 
-	get = <T extends Store>(): T => this.store as T;
+    get = <T extends Store>(): T => this.store as T;
 
-	// subscribe = (observer: Observer, type: ActionType): void => {
-	// 	!this.observers[type] && (this.observers[type] = []);
-	// 	this.observers[type].push(observer);
-	// };
+    // subscribe = (observer: Observer, type: ActionType): void => {
+    // 	!this.observers[type] && (this.observers[type] = []);
+    // 	this.observers[type].push(observer);
+    // };
 
-	// unsubscribe = (observer: Observer, type: ActionType): void => {
-	// 	const observers = this.observers[type];
-	// 	const index = observers.indexOf(observer);
-	// 	!!~index && observers.splice(index, 1);
-	// };
+    // unsubscribe = (observer: Observer, type: ActionType): void => {
+    // 	const observers = this.observers[type];
+    // 	const index = observers.indexOf(observer);
+    // 	!!~index && observers.splice(index, 1);
+    // };
 
-	// unsubscribeByType = (type?: ActionType): State => {
-	// 	if (type) {
-	// 		this.observers = {} as Record<ActionType, Observer[]>;
-	// 	} else {
-	// 		this.observers[type] = [];
-	// 	}
+    // unsubscribeByType = (type?: ActionType): State => {
+    // 	if (type) {
+    // 		this.observers = {} as Record<ActionType, Observer[]>;
+    // 	} else {
+    // 		this.observers[type] = [];
+    // 	}
 
-	// 	return this;
-	// };
+    // 	return this;
+    // };
 
-	// private notify = (type: ActionType, newStore: Store, oldStore: Store): void => {
-	// 	const observers = this.observers[type] || [];
+    // private notify = (type: ActionType, newStore: Store, oldStore: Store): void => {
+    // 	const observers = this.observers[type] || [];
 
-	// 	for (let i = 0; i < observers.length; i++) {
-	// 		observers[i](newStore, oldStore);
-	// 	}
-	// };
+    // 	for (let i = 0; i < observers.length; i++) {
+    // 		observers[i](newStore, oldStore);
+    // 	}
+    // };
 
-	private dispatchInternal = (...actions: Action[]): void => {
-		// const oldStore = this.store;
+    private dispatchInternal = (...actions: Action[]): void => {
+        // const oldStore = this.store;
 
-		for (let i = 0; i < actions.length; i++) {
-			const action = actions[i];
+        for (let i = 0; i < actions.length; i++) {
+            const action = actions[i];
 
-			this.store = this.reducer.reduce(this.store, action);
-			// this.notify(action.type, this.store, oldStore);
-		}
-	};
+            this.store = this.reducer.reduce(this.store, action);
+            // this.notify(action.type, this.store, oldStore);
+        }
+    };
 
-	private dispatchTrace = (...actions: Action[]): void => {
-		this.trace('-----------------------------');
-		this.trace(
-			'dispatch: action',
-			actions.reduce((acc, { type }) => `${acc} -> ${type}`, '')
-		);
-		// this.trace('dispatch: old state', this.store);
-		this.traceShift += '|   ';
+    private dispatchTrace = (...actions: Action[]): void => {
+        this.trace('-----------------------------');
+        this.trace(
+            'dispatch: action',
+            actions.reduce((acc, { type }) => `${acc} -> ${type}`, '')
+        );
+        // this.trace('dispatch: old state', this.store);
+        this.traceShift += '|   ';
 
-		this.dispatchInternal(...actions);
+        this.dispatchInternal(...actions);
 
-		this.traceShift = this.traceShift.substring(0, this.traceShift.length - 4);
-		// this.trace('dispatch: new state', this.store);
-		this.trace('-----------------------------');
-	};
+        this.traceShift = this.traceShift.substring(0, this.traceShift.length - 4);
+        // this.trace('dispatch: new state', this.store);
+        this.trace('-----------------------------');
+    };
 
-	private trace = (message = '', ...args: unknown[]): void => {
-		TRACE_STATE && console.log(`${this.traceShift}STATE ::: ${message}`, ...args);
-	};
+    private trace = (message = '', ...args: unknown[]): void => {
+        TRACE_STATE && console.log(`${this.traceShift}STATE ::: ${message}`, ...args);
+    };
 }
 
 const reducer = new ReducerCollection(
-	ArenaReducer,
-	BinReducer,
-	BulletsReducer,
-	NotifsReducer,
-	SnakesReducer,
-	StatReducer
+    ArenaReducer,
+    BinReducer,
+    BulletsReducer,
+    NotifsReducer,
+    SnakesReducer,
+    StatReducer
 );
 
 export const createState = (): State => new ReduxState(reducer);

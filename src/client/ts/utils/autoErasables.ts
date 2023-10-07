@@ -1,57 +1,57 @@
 class AutoErasable<T = unknown> {
-	constructor(private data: T | undefined, delay: number) {
-		setTimeout(this.erase, delay);
-	}
+    constructor(private data: T | undefined, delay: number) {
+        setTimeout(this.erase, delay);
+    }
 
-	get = (): T | undefined => this.data;
+    get = (): T | undefined => this.data;
 
-	private erase = (): void => (this.data = undefined);
+    private erase = (): void => (this.data = undefined);
 }
 
 type Key = string | number;
 
 export class AutoErasables {
-	private data = {} as Record<Key, AutoErasable[]>;
+    private data = {} as Record<Key, AutoErasable[]>;
 
-	set = (key: Key, item: unknown[], delay: number): void => {
-		!this.data[key] && (this.data[key] = [] as AutoErasable[]);
-		this.data[key].push(new AutoErasable(item, delay));
-	};
+    set = (key: Key, item: unknown[], delay: number): void => {
+        !this.data[key] && (this.data[key] = [] as AutoErasable[]);
+        this.data[key].push(new AutoErasable(item, delay));
+    };
 
-	get = <T>(key: Key): T[] => {
-		const result = [] as T[];
+    get = <T>(key: Key): T[] => {
+        const result = [] as T[];
 
-		if (!this.data[key]) {
-			return result;
-		}
+        if (!this.data[key]) {
+            return result;
+        }
 
-		const aEData = this.data[key];
-		const emptyItems = [] as AutoErasable[];
+        const aEData = this.data[key];
+        const emptyItems = [] as AutoErasable[];
 
-		for (let i = 0; i < aEData.length; i++) {
-			const aEItem = aEData[i];
-			const dataItems = aEItem.get();
+        for (let i = 0; i < aEData.length; i++) {
+            const aEItem = aEData[i];
+            const dataItems = aEItem.get();
 
-			if (dataItems) {
-				result.push(...(dataItems as T[]));
-			} else {
-				emptyItems.push(aEItem);
-			}
-		}
+            if (dataItems) {
+                result.push(...(dataItems as T[]));
+            } else {
+                emptyItems.push(aEItem);
+            }
+        }
 
-		for (let i = 0; i < emptyItems.length; i++) {
-			const item = emptyItems[i];
-			const indx = aEData.indexOf(item);
+        for (let i = 0; i < emptyItems.length; i++) {
+            const item = emptyItems[i];
+            const indx = aEData.indexOf(item);
 
-			if (!~indx) {
-				continue;
-			}
+            if (!~indx) {
+                continue;
+            }
 
-			aEData.splice(indx, 1);
-		}
+            aEData.splice(indx, 1);
+        }
 
-		!aEData.length && delete this.data[key];
+        !aEData.length && delete this.data[key];
 
-		return result;
-	};
+        return result;
+    };
 }
